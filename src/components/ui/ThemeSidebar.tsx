@@ -6,7 +6,7 @@ import { KEYBOARD_THEMES, type KeyboardTheme } from "@/lib/themes";
 import { 
   X, Palette, Check, 
   Gamepad2, Settings, ArrowLeft, ChevronRight,
-  Sliders
+  Sliders, BarChart3
 } from "lucide-react";
 
 interface ThemeSidebarProps {
@@ -14,8 +14,8 @@ interface ThemeSidebarProps {
   onClose: () => void;
   currentTheme: KeyboardTheme;
   onSelectTheme: (theme: KeyboardTheme) => void;
-  currentPage?: "start" | "academy" | "codesprint" | "speedtest" | "fallingwords" | "soundmatrix" | "blindtyping" | "shortcuts";
-  onNavigate?: (page: "start" | "academy" | "codesprint" | "speedtest" | "fallingwords" | "soundmatrix" | "blindtyping" | "shortcuts") => void;
+  currentPage?: string;
+  onNavigate?: (page: any) => void;
   colorZones?: boolean;
   onToggleColorZones?: () => void;
 }
@@ -120,7 +120,7 @@ export function ThemeSidebar({
                       handleClose();
                     }}
                     className={`w-full p-3 rounded-xl border flex items-center justify-between text-left transition-all cursor-pointer ${
-                      currentPage === "start" || currentPage === "academy" || currentPage === "speedtest" || currentPage === "fallingwords" || currentPage === "soundmatrix" || currentPage === "shortcuts"
+                      currentPage === "start" || currentPage === "academy" || currentPage === "speedtest" || currentPage === "fallingwords" || currentPage === "soundmatrix" || currentPage === "shortcuts" || currentPage === "codesprint" || currentPage === "blindtyping"
                         ? "border-orange-500 bg-orange-50/50 shadow-xs ring-1 ring-orange-200"
                         : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 shadow-xs"
                     }`}
@@ -131,13 +131,44 @@ export function ThemeSidebar({
                       </div>
                       <div>
                         <div className="font-extrabold text-xs text-slate-900">Let's Play</div>
-                        <div className="text-[10px] text-slate-500">Games & Academy</div>
+                        <div className="text-[10px] text-slate-500">Arcade & Games Hub</div>
                       </div>
                     </div>
                     <ChevronRight className="w-4 h-4 text-slate-400" />
                   </motion.button>
 
-                  {/* 2. Settings Button (Opens Theme Palette) */}
+                  {/* 2. Dashboard Button (User Data, Bar Graph & Line Graph) */}
+                  <motion.button
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                    onClick={() => {
+                      onNavigate?.("dashboard");
+                      handleClose();
+                    }}
+                    className={`w-full p-3 rounded-xl border flex items-center justify-between text-left transition-all cursor-pointer ${
+                      currentPage === "dashboard"
+                        ? "border-orange-500 bg-orange-50/50 shadow-xs ring-1 ring-orange-200"
+                        : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 shadow-xs"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-xs">
+                        <BarChart3 className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
+                          <span>Dashboard</span>
+                          <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-blue-100 text-blue-700 border border-blue-200">
+                            Stats
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-slate-500">User Data, Graphs & WPM</div>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                  </motion.button>
+
+                  {/* 3. Keyboard Settings Button (Opens Theme Palette & Color Zones) */}
                   <motion.button
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
@@ -146,16 +177,16 @@ export function ThemeSidebar({
                   >
                     <div className="flex items-center gap-2.5">
                       <div className="p-2 rounded-lg bg-slate-100 group-hover:bg-orange-100 text-slate-700 group-hover:text-orange-600 transition-colors">
-                        <Settings className="w-4 h-4" />
+                        <Palette className="w-4 h-4" />
                       </div>
                       <div>
                         <div className="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
-                          <span>Settings</span>
-                          <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-orange-100 text-orange-700 border border-orange-200">
-                            {currentTheme.name}
-                          </span>
+                          <span>Keyboard Settings</span>
                         </div>
-                        <div className="text-[10px] text-slate-500">Theme & Colors</div>
+                        <div className="text-[10px] text-slate-500 flex items-center gap-1">
+                          <span className="truncate max-w-[90px]">{currentTheme.name}</span>
+                          <span>• Palette</span>
+                        </div>
                       </div>
                     </div>
                     <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all" />

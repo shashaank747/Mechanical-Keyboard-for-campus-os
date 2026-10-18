@@ -18,6 +18,7 @@ import {
   Lock,
   Code2,
   Settings,
+  BarChart3,
 } from "lucide-react";
 
 export type GameId = "academy" | "codesprint" | "blindtyping" | "speedtest" | "fallingwords" | "soundmatrix" | "shortcuts";
@@ -129,9 +130,11 @@ const ARCADE_GAMES: GameCardInfo[] = [
 export function GamesHub({
   theme,
   onSelectGame,
+  onOpenDashboard,
 }: {
   theme: KeyboardTheme;
   onSelectGame: (gameId: GameId) => void;
+  onOpenDashboard?: () => void;
 }) {
   const isDark = theme.isDark || theme.category === "Dark";
 
@@ -152,17 +155,41 @@ export function GamesHub({
           </p>
         </div>
 
-        <div className={`flex items-center gap-3 p-3.5 rounded-2xl border shrink-0 ${
-          isDark ? "bg-slate-900/90 border-slate-800" : "bg-white/90 border-slate-200 shadow-xs"
-        }`}>
-          <div className="p-2.5 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 text-white shadow-md">
-            <Trophy className="w-5 h-5" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Available Modes</span>
-            <span className="text-sm font-black font-mono text-orange-500">
-              7 Interactive Games
-            </span>
+        <div className="flex items-center gap-3 shrink-0 self-stretch sm:self-auto">
+          {onOpenDashboard && (
+            <button
+              onClick={onOpenDashboard}
+              className={`flex items-center gap-2.5 p-3 rounded-2xl border transition-all cursor-pointer shadow-xs group ${
+                isDark
+                  ? "bg-slate-900/90 border-slate-800 hover:border-orange-500/60"
+                  : "bg-white/90 border-slate-200 hover:border-orange-400 hover:bg-orange-50/30"
+              }`}
+              title="Open User Activity Dashboard"
+            >
+              <div className="p-2 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-xs group-hover:scale-105 transition-transform">
+                <BarChart3 className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">User Data</span>
+                <span className="text-xs font-black text-slate-900 group-hover:text-orange-600 transition-colors">
+                  Dashboard
+                </span>
+              </div>
+            </button>
+          )}
+
+          <div className={`flex items-center gap-3 p-3.5 rounded-2xl border shrink-0 ${
+            isDark ? "bg-slate-900/90 border-slate-800" : "bg-white/90 border-slate-200 shadow-xs"
+          }`}>
+            <div className="p-2.5 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 text-white shadow-md">
+              <Trophy className="w-5 h-5" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Available Modes</span>
+              <span className="text-sm font-black font-mono text-orange-500">
+                7 Interactive Games
+              </span>
+            </div>
           </div>
         </div>
       </div>

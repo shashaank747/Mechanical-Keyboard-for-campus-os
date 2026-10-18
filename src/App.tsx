@@ -6,24 +6,27 @@ import Keyboard from "@/components/ui/keyboard";
 import { ThemeSidebar } from "@/components/ui/ThemeSidebar";
 import { KeyboardGame } from "@/components/ui/KeyboardGame";
 import { GamesHub } from "@/components/ui/GamesHub";
+import { Dashboard } from "@/components/ui/Dashboard";
 import { FallingWordsGame } from "@/components/ui/FallingWordsGame";
 import { SoundMatrixGame } from "@/components/ui/SoundMatrixGame";
 import { BlindTypingGame } from "@/components/ui/BlindTypingGame";
 import { CodeSprintGame } from "@/components/ui/CodeSprintGame";
 import { KEYBOARD_THEMES, type KeyboardTheme } from "@/lib/themes";
 import { registerUser, loginUser, resetPassword, validateUserExists, updateStudentProgress, updateUserTheme, getUserPreferences, type UserRecord } from "@/lib/db";
+import { recordGamePlay } from "@/lib/userStats";
 import { 
   Keyboard as KeyboardIcon, Sparkles, 
   Check, RotateCcw, Flame, Palette,
   Menu, Gamepad2, ShieldCheck, LogIn, User, X, AlertTriangle, UserPlus,
-  Eye, EyeOff, LogOut, ChevronDown, KeyRound, CheckCircle2, ArrowLeft
+  Eye, EyeOff, LogOut, ChevronDown, KeyRound, CheckCircle2, ArrowLeft,
+  BarChart3
 } from "lucide-react";
 import confetti from "canvas-confetti";
 // import { MusicPlayer } from "@/components/ui/MusicPlayer";
 // import { bgMusic } from "@/lib/bgMusic";
 import { soundEngine } from "@/lib/sound";
 
-export type AppPage = "start" | "academy" | "codesprint" | "speedtest" | "fallingwords" | "soundmatrix" | "blindtyping" | "shortcuts";
+export type AppPage = "start" | "academy" | "codesprint" | "speedtest" | "fallingwords" | "soundmatrix" | "blindtyping" | "shortcuts" | "dashboard";
 
 export default function KeyboardLandingPage() {
   const [currentPage, setCurrentPage] = useState<AppPage>("start");
@@ -229,6 +232,14 @@ export default function KeyboardLandingPage() {
         details: { wpm: calculatedWpm, accuracy: acc },
       });
 
+      // Record to user game analytics stats
+      recordGamePlay({
+        gameId: "speedtest",
+        gameTitle: "Speed Typing Arena",
+        wpm: calculatedWpm,
+        accuracy: acc,
+      });
+
       try {
         confetti({
           particleCount: 80,
@@ -286,12 +297,25 @@ export default function KeyboardLandingPage() {
       </button>
 
       {/* ============================================================ */}
+      {/* PAGE: USER ACTIVITY DASHBOARD (BAR & LINE GRAPHS)             */}
+      {/* ============================================================ */}
+      {currentPage === "dashboard" && (
+        <Dashboard
+          theme={currentTheme}
+          loggedInUser={loggedInUser}
+          onBackToGames={() => setCurrentPage("start")}
+          onPlayGame={(gameId) => setCurrentPage(gameId as AppPage)}
+        />
+      )}
+
+      {/* ============================================================ */}
       {/* PAGE: LET'S START - ARCADE GAMES HUB SELECTOR                 */}
       {/* ============================================================ */}
       {currentPage === "start" && (
         <GamesHub
           theme={currentTheme}
           onSelectGame={(gameId) => setCurrentPage(gameId as AppPage)}
+          onOpenDashboard={() => setCurrentPage("dashboard")}
         />
       )}
 
