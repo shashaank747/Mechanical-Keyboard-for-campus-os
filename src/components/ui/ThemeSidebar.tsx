@@ -96,20 +96,8 @@ export function ThemeSidebar({
             {/* ======================================================== */}
             {view === "menu" ? (
               <div className="flex flex-col h-full">
-                {/* Header */}
-                <div className="px-3.5 py-3 border-b border-slate-200 flex items-center justify-between bg-slate-50/90 pl-13">
-                  <div>
-                    <h2 className="text-sm font-black tracking-tight text-slate-900">
-                      Menu
-                    </h2>
-                    <p className="text-[11px] text-slate-500">
-                      Navigation & Settings
-                    </p>
-                  </div>
-                </div>
-
-                {/* Navigation Menu List */}
-                <div className="flex-1 p-3 space-y-2.5 overflow-y-auto">
+                {/* Navigation Menu List (Header completely removed) */}
+                <div className="flex-1 p-3 pt-16 space-y-2.5 overflow-y-auto">
 
                   {/* 1. Let's Play Button */}
                   <motion.button
