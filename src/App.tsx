@@ -271,14 +271,18 @@ export default function KeyboardLandingPage() {
     >
 
 
-      {/* Floating Hamburger Icon for Settings (Top Left) */}
+      {/* Floating Hamburger Icon for Settings (Top Left) - Toggles Sidebar Open / Close */}
       <button
-        onClick={() => setIsThemeSidebarOpen(true)}
-        className="fixed top-4 left-4 z-40 p-2.5 rounded-2xl bg-white/95 hover:bg-white text-slate-700 hover:text-orange-500 border border-slate-200/90 shadow-md backdrop-blur-md transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center group"
-        aria-label="Settings"
-        title="Settings"
+        onClick={() => setIsThemeSidebarOpen((prev) => !prev)}
+        className="fixed top-3.5 left-3.5 z-[60] p-2 rounded-xl bg-white/95 hover:bg-white text-slate-700 hover:text-orange-500 border border-slate-200/90 shadow-md backdrop-blur-md transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center group"
+        aria-label={isThemeSidebarOpen ? "Close Sidebar" : "Open Sidebar"}
+        title={isThemeSidebarOpen ? "Close Menu" : "Menu & Settings"}
       >
-        <Menu className="w-5 h-5 text-orange-500 transition-transform group-hover:scale-110" />
+        {isThemeSidebarOpen ? (
+          <X className="w-5 h-5 text-slate-700 group-hover:text-orange-500 transition-transform group-hover:scale-110" />
+        ) : (
+          <Menu className="w-5 h-5 text-orange-500 transition-transform group-hover:scale-110" />
+        )}
       </button>
 
       {/* ============================================================ */}

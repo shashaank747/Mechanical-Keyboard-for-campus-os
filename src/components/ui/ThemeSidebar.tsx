@@ -97,7 +97,7 @@ export function ThemeSidebar({
             {view === "menu" ? (
               <div className="flex flex-col h-full">
                 {/* Header */}
-                <div className="px-4 py-3.5 border-b border-slate-200 flex items-center justify-between bg-slate-50/90">
+                <div className="px-3.5 py-3 border-b border-slate-200 flex items-center justify-between bg-slate-50/90 pl-13">
                   <div>
                     <h2 className="text-sm font-black tracking-tight text-slate-900">
                       Menu
@@ -106,14 +106,6 @@ export function ThemeSidebar({
                       Navigation & Settings
                     </p>
                   </div>
-
-                  <button
-                    onClick={handleClose}
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors cursor-pointer"
-                    title="Close Drawer"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
                 </div>
 
                 {/* Navigation Menu List */}
@@ -186,7 +178,7 @@ export function ThemeSidebar({
               /* ======================================================== */
               <div className="flex flex-col h-full">
                 {/* Header with Back Button */}
-                <div className="px-3.5 py-3 border-b border-slate-200 flex items-center justify-between bg-slate-50/90">
+                <div className="px-3.5 py-3 border-b border-slate-200 flex items-center justify-between bg-slate-50/90 pl-13">
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setView("menu")}
@@ -211,14 +203,6 @@ export function ThemeSidebar({
                       </div>
                     </div>
                   </div>
-
-                  <button
-                    onClick={handleClose}
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors cursor-pointer"
-                    title="Close Drawer"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
                 </div>
 
                 {/* Finger Color Zones Toggle Bar */}
