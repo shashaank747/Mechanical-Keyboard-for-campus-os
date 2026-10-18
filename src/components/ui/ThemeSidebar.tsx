@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { KEYBOARD_THEMES, type KeyboardTheme } from "@/lib/themes";
 import { 
-  X, Palette, Check, Home as HomeIcon, 
+  X, Palette, Check, 
   Gamepad2, Settings, ArrowLeft, ChevronRight,
   Sliders
 } from "lucide-react";
@@ -14,8 +14,8 @@ interface ThemeSidebarProps {
   onClose: () => void;
   currentTheme: KeyboardTheme;
   onSelectTheme: (theme: KeyboardTheme) => void;
-  currentPage?: "home" | "start" | "academy" | "codesprint" | "speedtest" | "fallingwords" | "soundmatrix" | "blindtyping" | "shortcuts";
-  onNavigate?: (page: "home" | "start" | "academy" | "codesprint" | "speedtest" | "fallingwords" | "soundmatrix" | "blindtyping" | "shortcuts") => void;
+  currentPage?: "start" | "academy" | "codesprint" | "speedtest" | "fallingwords" | "soundmatrix" | "blindtyping" | "shortcuts";
+  onNavigate?: (page: "start" | "academy" | "codesprint" | "speedtest" | "fallingwords" | "soundmatrix" | "blindtyping" | "shortcuts") => void;
   colorZones?: boolean;
   onToggleColorZones?: () => void;
 }
@@ -25,7 +25,7 @@ export function ThemeSidebar({
   onClose,
   currentTheme,
   onSelectTheme,
-  currentPage = "home",
+  currentPage = "start",
   onNavigate,
   colorZones = false,
   onToggleColorZones,
@@ -125,31 +125,6 @@ export function ThemeSidebar({
 
                 {/* Navigation Menu List */}
                 <div className="flex-1 p-5 space-y-3 overflow-y-auto">
-                  {/* 1. Home Button */}
-                  <motion.button
-                    whileHover={{ scale: 1.015 }}
-                    whileTap={{ scale: 0.985 }}
-                    onClick={() => {
-                      onNavigate?.("home");
-                      handleClose();
-                    }}
-                    className={`w-full p-4 rounded-2xl border-2 flex items-center justify-between text-left transition-all cursor-pointer ${
-                      currentPage === "home"
-                        ? "border-orange-500 bg-orange-50/50 shadow-md ring-1 ring-orange-200"
-                        : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 shadow-xs"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3.5">
-                      <div className={`p-3 rounded-xl ${currentPage === "home" ? "bg-orange-500 text-white" : "bg-slate-100 text-slate-700"}`}>
-                        <HomeIcon className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <div className="font-extrabold text-sm text-slate-900">Home</div>
-                        <div className="text-xs text-slate-500">3D Mechanical Studio & Workbench</div>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-slate-400" />
-                  </motion.button>
 
                   {/* 2. Let's Play Button */}
                   <motion.button

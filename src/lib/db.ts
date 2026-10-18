@@ -206,24 +206,42 @@ export async function registerUser(params: {
         };
       }
 
-      // Insert directly into Supabase
-      const { error: insertErr } = await supabase.from("students").insert({
+      // Insert directly into Supabase (with schema-adaptive fallback if optional preference columns are absent)
+      const insertPayload: Record<string, any> = {
         user_id: userId,
         username: payload.username,
         email: payload.email,
         password_hash: passwordHash,
         ip_address: ipAddress,
-        theme_id: "studio-light",
-        color_zones: false,
-        preferences_json: { themeId: "studio-light", colorZones: false },
         total_games_played: 0,
         total_levels_mastered: 0,
         last_active_game: "Registered",
-        progress_json: defaultProgress,
+        progress_json: {
+          ...defaultProgress,
+          preferences: { themeId: "studio-light", colorZones: false },
+        },
+      };
+
+      let { error: insertErr } = await supabase.from("students").insert({
+        ...insertPayload,
+        theme_id: "studio-light",
+        color_zones: false,
+        preferences_json: { themeId: "studio-light", colorZones: false },
       });
+
+      if (insertErr && (insertErr.code === "PGRST204" || insertErr.message?.includes("column"))) {
+        const retryResult = await supabase.from("students").insert(insertPayload);
+        insertErr = retryResult.error;
+      }
 
       if (insertErr) {
         console.error("[Supabase Error] Registration insert failed:", insertErr);
+        if (insertErr.code === "23505") {
+          return {
+            success: false,
+            error: "A user with this username or email already exists.",
+          };
+        }
       } else {
         console.log("[Supabase Sync] Successfully registered student in Supabase Cloud:", payload.username);
       }
@@ -312,8 +330,18 @@ export async function loginUser(params: {
           })
           .eq("user_id", supaUser.user_id);
 
-        const savedThemeId = supaUser.theme_id || supaUser.preferences_json?.themeId || "studio-light";
-        const savedColorZones = Boolean(supaUser.color_zones ?? supaUser.preferences_json?.colorZones ?? false);
+        const rawUser = supaUser as any;
+        const savedThemeId =
+          rawUser.theme_id ||
+          rawUser.preferences_json?.themeId ||
+          rawUser.progress_json?.preferences?.themeId ||
+          "studio-light";
+        const savedColorZones = Boolean(
+          rawUser.color_zones ??
+          rawUser.preferences_json?.colorZones ??
+          rawUser.progress_json?.preferences?.colorZones ??
+          false
+        );
 
         const user: UserRecord = {
           userId: supaUser.user_id,
@@ -326,7 +354,7 @@ export async function loginUser(params: {
           progress: supaUser.progress_json || createDefaultProgress(),
           themeId: savedThemeId,
           colorZones: savedColorZones,
-          preferences: supaUser.preferences_json || {
+          preferences: rawUser.preferences_json || rawUser.progress_json?.preferences || {
             themeId: savedThemeId,
             colorZones: savedColorZones,
           },
@@ -416,25 +444,45 @@ export async function loginUser(params: {
 
     // 4. Auto-sync to Supabase Cloud if not yet present
     try {
-      await supabase.from("students").upsert({
+      const upsertPayload: Record<string, any> = {
         user_id: user.userId,
         username: user.username,
         email: user.email,
-        password: user.password,
+        password_hash: user.password,
         ip_address: ipAddress,
+        total_games_played: user.progress.summary.totalGamesPlayed || 0,
+        total_levels_mastered: user.progress.summary.totalLevelsMastered || 0,
+        last_active_game: user.progress.summary.lastActiveGame || "None",
+        progress_json: {
+          ...user.progress,
+          preferences: user.preferences || {
+            themeId: user.themeId || "studio-light",
+            colorZones: user.colorZones ?? false,
+          },
+        },
+        last_login_at: user.lastLoginAt,
+      };
+
+      let { error: upsertErr } = await supabase.from("students").upsert({
+        ...upsertPayload,
         theme_id: user.themeId || "studio-light",
         color_zones: user.colorZones ?? false,
         preferences_json: user.preferences || {
           themeId: user.themeId || "studio-light",
           colorZones: user.colorZones ?? false,
         },
-        total_games_played: user.progress.summary.totalGamesPlayed || 0,
-        total_levels_mastered: user.progress.summary.totalLevelsMastered || 0,
-        last_active_game: user.progress.summary.lastActiveGame || "None",
-        progress_json: user.progress,
-        last_login_at: user.lastLoginAt,
       }, { onConflict: "user_id" });
-      console.log("[Supabase Sync] Synced student to Supabase Cloud on login:", user.username);
+
+      if (upsertErr && (upsertErr.code === "PGRST204" || upsertErr.message?.includes("column"))) {
+        const retryResult = await supabase.from("students").upsert(upsertPayload, { onConflict: "user_id" });
+        upsertErr = retryResult.error;
+      }
+
+      if (upsertErr) {
+        console.warn("[Supabase Sync Error] Upsert failed:", upsertErr);
+      } else {
+        console.log("[Supabase Sync] Synced student to Supabase Cloud on login:", user.username);
+      }
     } catch (supaErr) {
       console.warn("[Supabase Warning] Could not sync user to Supabase on login:", supaErr);
     }
@@ -727,7 +775,7 @@ export async function updateUserTheme(params: {
 
   // 3. Sync to Supabase Cloud in Real-time
   try {
-    await supabase
+    let { error: updateErr } = await supabase
       .from("students")
       .update({
         theme_id: themeId,
@@ -740,6 +788,30 @@ export async function updateUserTheme(params: {
         last_activity_at: nowIso,
       })
       .or(`username.ilike.${activeUser},email.ilike.${activeUser}`);
+
+    if (updateErr && (updateErr.code === "PGRST204" || updateErr.message?.includes("column"))) {
+      const { data: existing } = await supabase
+        .from("students")
+        .select("progress_json")
+        .or(`username.ilike.${activeUser},email.ilike.${activeUser}`)
+        .maybeSingle();
+
+      const existingProgress =
+        existing?.progress_json && typeof existing.progress_json === "object"
+          ? existing.progress_json
+          : {};
+
+      await supabase
+        .from("students")
+        .update({
+          progress_json: {
+            ...existingProgress,
+            preferences: { themeId, colorZones, lastUpdated: nowIso },
+          },
+          last_activity_at: nowIso,
+        })
+        .or(`username.ilike.${activeUser},email.ilike.${activeUser}`);
+    }
     console.log("[Supabase Sync] Synced theme & palette preference to Supabase Cloud for:", activeUser, { themeId, colorZones });
   } catch (supaErr) {
     console.warn("[Supabase Warning] Could not sync theme preference to Supabase:", supaErr);
@@ -755,15 +827,25 @@ export async function getUserPreferences(
 
   // Try Supabase first
   try {
-    const { data: supaUser } = await supabase
+    const { data: supaUser, error } = await supabase
       .from("students")
-      .select("theme_id, color_zones, preferences_json")
+      .select("*")
       .or(`username.ilike.${target},email.ilike.${target}`)
       .maybeSingle();
 
-    if (supaUser) {
-      const themeId = supaUser.theme_id || supaUser.preferences_json?.themeId || "studio-light";
-      const colorZones = Boolean(supaUser.color_zones ?? supaUser.preferences_json?.colorZones ?? false);
+    if (supaUser && !error) {
+      const rawUser = supaUser as any;
+      const themeId =
+        rawUser.theme_id ||
+        rawUser.preferences_json?.themeId ||
+        rawUser.progress_json?.preferences?.themeId ||
+        "studio-light";
+      const colorZones = Boolean(
+        rawUser.color_zones ??
+        rawUser.preferences_json?.colorZones ??
+        rawUser.progress_json?.preferences?.colorZones ??
+        false
+      );
       return { themeId, colorZones };
     }
   } catch {

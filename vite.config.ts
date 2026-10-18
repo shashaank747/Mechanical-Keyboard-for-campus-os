@@ -130,6 +130,22 @@ function getDefaultProgress(): StudentProgress {
   };
 }
 
+function normalizeProgress(progress?: any): StudentProgress {
+  const def = getDefaultProgress();
+  if (!progress || typeof progress !== 'object') return def;
+  return {
+    ...def,
+    ...progress,
+    codeSprint: { ...def.codeSprint, ...(progress.codeSprint || {}) },
+    academy: { ...def.academy, ...(progress.academy || {}) },
+    speedTest: { ...def.speedTest, ...(progress.speedTest || {}) },
+    meteorDefense: { ...def.meteorDefense, ...(progress.meteorDefense || {}) },
+    blindTyping: { ...def.blindTyping, ...(progress.blindTyping || {}) },
+    shortcutsDojo: { ...def.shortcutsDojo, ...(progress.shortcutsDojo || {}) },
+    summary: { ...def.summary, ...(progress.summary || {}) },
+  };
+}
+
 // User Database API Plugin for Vite dev server
 function userDatabasePlugin(): Plugin {
   const rootDir = fileURLToPath(new URL('.', import.meta.url));
@@ -166,7 +182,7 @@ function userDatabasePlugin(): Plugin {
       ];
 
       const rows = users.map((u) => {
-        const p = u.progress || getDefaultProgress();
+        const p = normalizeProgress(u.progress);
         const codeSprintDetails = Object.entries(p.codeSprint.completedLevels || {})
           .map(([lvl, data]) => `${lvl} (${data.wpm} WPM, ${data.timeSecs}s)`)
           .join('; ');
@@ -612,8 +628,8 @@ function userDatabasePlugin(): Plugin {
       // Ensure all users have a progress structure and encrypted password
       let mutated = false;
       users.forEach((u) => {
-        if (!u.progress) {
-          u.progress = getDefaultProgress();
+        if (!u.progress || !u.progress.codeSprint) {
+          u.progress = normalizeProgress(u.progress);
           mutated = true;
         }
         if (!u.password.startsWith('pbkdf2$')) {

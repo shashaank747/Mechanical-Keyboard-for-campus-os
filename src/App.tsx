@@ -4,10 +4,6 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Keyboard from "@/components/ui/keyboard";
 import { ThemeSidebar } from "@/components/ui/ThemeSidebar";
-import { MotionBackground } from "@/components/ui/MotionBackground";
-import { ParallaxFloatingElements } from "@/components/ui/ParallaxFloatingElements";
-import { SwitchShowcase } from "@/components/ui/SwitchShowcase";
-import { ExplodedKeyboardScroll } from "@/components/ui/ExplodedKeyboardScroll";
 import { KeyboardGame } from "@/components/ui/KeyboardGame";
 import { GamesHub } from "@/components/ui/GamesHub";
 import { FallingWordsGame } from "@/components/ui/FallingWordsGame";
@@ -19,26 +15,23 @@ import { registerUser, loginUser, resetPassword, validateUserExists, updateStude
 import { 
   Keyboard as KeyboardIcon, Sparkles, 
   Check, RotateCcw, Flame, Palette,
-  Play, ArrowLeft, ArrowDown, BookOpen, Layers, Menu,
-  Volume2, Gamepad2, ShieldCheck, LogIn, User, X, AlertTriangle, UserPlus,
-  Eye, EyeOff, LogOut, ChevronDown, KeyRound, CheckCircle2
+  Menu, Gamepad2, ShieldCheck, LogIn, User, X, AlertTriangle, UserPlus,
+  Eye, EyeOff, LogOut, ChevronDown, KeyRound, CheckCircle2, ArrowLeft
 } from "lucide-react";
 import confetti from "canvas-confetti";
-import { MusicPlayer } from "@/components/ui/MusicPlayer";
-import { bgMusic } from "@/lib/bgMusic";
+// import { MusicPlayer } from "@/components/ui/MusicPlayer";
+// import { bgMusic } from "@/lib/bgMusic";
 import { soundEngine } from "@/lib/sound";
 
-export type AppPage = "home" | "start" | "academy" | "codesprint" | "speedtest" | "fallingwords" | "soundmatrix" | "blindtyping" | "shortcuts";
+export type AppPage = "start" | "academy" | "codesprint" | "speedtest" | "fallingwords" | "soundmatrix" | "blindtyping" | "shortcuts";
 
 export default function KeyboardLandingPage() {
-  const [currentPage, setCurrentPage] = useState<AppPage>("home");
+  const [currentPage, setCurrentPage] = useState<AppPage>("start");
   const [currentTheme, setCurrentTheme] = useState<KeyboardTheme>(KEYBOARD_THEMES[0]);
   const [isThemeSidebarOpen, setIsThemeSidebarOpen] = useState(false);
   
-  // Authentication & Arcade Access Gating
+  // Authentication & Session
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const userMenuRef = useRef<HTMLDivElement | null>(null);
   const [authMode, setAuthMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showSignupPassword, setShowSignupPassword] = useState(false);
@@ -63,7 +56,6 @@ export default function KeyboardLandingPage() {
   const [colorZones, setColorZones] = useState<boolean>(false);
   const [testedKeys, setTestedKeys] = useState<Set<string>>(new Set());
   const [lastTriggeredKey, setLastTriggeredKey] = useState<{ key: string; code: string; time: number } | null>(null);
-  const [totalKeyHits, setTotalKeyHits] = useState<number>(0);
 
   // Validate active session against Supabase on startup / mount & restore user's saved theme
   useEffect(() => {
@@ -89,29 +81,10 @@ export default function KeyboardLandingPage() {
     }
   }, [loggedInUser]);
 
-  // Close User Menu on click outside
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
-        setIsUserMenuOpen(false);
-      }
-    }
-    if (isUserMenuOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-    }
-  }, [isUserMenuOpen]);
-
-  // Gated Navigation: Strictly requires login before accessing "Let's Play" or Games
+  // Navigation: Directly opens Arcade & Games
   const handleLaunchArcade = useCallback((targetPage: AppPage = "start") => {
-    if (!loggedInUser) {
-      setLoginWarningMessage("⚠️ Please login or create an account first to enter the Arcade & Games Hub!");
-      setAuthMode("signin");
-      setIsLoginModalOpen(true);
-      return;
-    }
     setCurrentPage(targetPage);
-  }, [loggedInUser]);
+  }, []);
 
   // Lock scroll when login modal is open
   useEffect(() => {
@@ -139,7 +112,6 @@ export default function KeyboardLandingPage() {
   const [wpm, setWpm] = useState<number | null>(null);
   const [accuracy, setAccuracy] = useState<number>(100);
   const autoNextTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const keyboardSectionRef = useRef<HTMLDivElement | null>(null);
 
   // Shortcuts Dojo state
   const [testedShortcuts, setTestedShortcuts] = useState<Set<string>>(new Set());
@@ -209,14 +181,10 @@ export default function KeyboardLandingPage() {
     return () => window.removeEventListener("keydown", handleShortcutsKeyDown, { capture: true });
   }, [currentPage]);
 
-  // Auto-play chill BGM only when user is in the "Let's Play" / games views, and pause on home
-  useEffect(() => {
-    if (currentPage !== "home") {
-      bgMusic.play();
-    } else {
-      bgMusic.pause();
-    }
-  }, [currentPage]);
+  // Background music (temporarily commented out for website integration)
+  // useEffect(() => {
+  //   bgMusic.play();
+  // }, []);
 
   // Cleanup pending timer on unmount
   useEffect(() => {
@@ -231,7 +199,6 @@ export default function KeyboardLandingPage() {
 
   const handleKeyTriggered = (key: string, code: string) => {
     setLastTriggeredKey({ key, code, time: Date.now() });
-    setTotalKeyHits((prev) => prev + 1);
   };
 
   const handleTestTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -295,325 +262,14 @@ export default function KeyboardLandingPage() {
     setCurrentPhraseIndex((prev) => (prev + 1) % testPhrases.length);
   };
 
-  const scrollToKeyboard = () => {
-    keyboardSectionRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
 
   const isDark = currentTheme.isDark || currentTheme.category === "Dark";
 
   return (
     <div
-      className={`min-h-screen ${currentTheme.appBg} ${currentTheme.appText} flex flex-col items-center justify-start selection:bg-orange-500 selection:text-white relative overflow-x-clip transition-colors duration-300`}
+      className="min-h-screen bg-[#f8f9fa] text-slate-800 flex flex-col items-center justify-start selection:bg-orange-500 selection:text-white relative overflow-x-clip"
     >
-      {/* Dynamic Cybernetic Aurora & Constellation Motion Background (Shared Across All Pages) */}
-      <MotionBackground theme={currentTheme} />
 
-      {/* Floating 3D Parallax Keycap Elements (Home Hero Page Only) */}
-      {currentPage === "home" && <ParallaxFloatingElements />}
-
-      {/* Hidden Apple Liquid Glass SVG Filter Definition */}
-      <svg className="hidden" aria-hidden="true">
-        <filter id="lg-dist" x="0%" y="0%" width="100%" height="100%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.008 0.008" numOctaves="2" seed="92" result="noise" />
-          <feGaussianBlur in="noise" stdDeviation="2" result="blurred" />
-          <feDisplacementMap in="SourceGraphic" in2="blurred" scale="40" xChannelSelector="R" yChannelSelector="G" />
-        </filter>
-      </svg>
-
-      {/* Floating Apple Liquid Glass Top Navigation */}
-      <header className="sticky top-0 z-40 w-full px-3 sm:px-6 pt-3 pb-2 transition-all">
-        <div className="max-w-6xl mx-auto relative">
-          {/* Main Navbar Liquid Glass Pill Bar */}
-          <div
-            className={`w-full rounded-2xl sm:rounded-full px-3 sm:px-5 py-2 sm:py-2.5 flex items-center justify-between gap-3 apple-liquid-glass ${
-              isDark ? "apple-liquid-glass-dark text-white" : "apple-liquid-glass-light text-slate-900"
-            }`}
-          >
-            {/* Left Side: Theme Menu + Navigation Buttons + Branding */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              {/* Theme Palette Menu Button */}
-              <button
-                onClick={() => setIsThemeSidebarOpen(true)}
-                className={`p-2 sm:p-2.5 rounded-xl sm:rounded-full apple-glass-pill transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center ${
-                  isDark ? "apple-glass-pill-dark text-slate-200" : "apple-glass-pill-light text-slate-700"
-                }`}
-                aria-label="Keyboard Theme Palette"
-                title="Keyboard Theme Palette"
-              >
-                <Menu className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-orange-500" />
-              </button>
-
-              {currentPage !== "home" && (
-                <button
-                  onClick={() => setCurrentPage("home")}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white text-xs font-bold shadow-md shadow-orange-500/20 hover:scale-105 active:scale-95 transition-all cursor-pointer ring-1 ring-white/30"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Home</span>
-                </button>
-              )}
-
-              {currentPage !== "home" && currentPage !== "start" && (
-                <button
-                  onClick={() => setCurrentPage("start")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all apple-glass-pill hover:scale-105 active:scale-95 cursor-pointer ${
-                    isDark ? "apple-glass-pill-dark text-slate-200" : "apple-glass-pill-light text-slate-700"
-                  }`}
-                >
-                  <Gamepad2 className="w-3.5 h-3.5 text-orange-500" />
-                  <span className="hidden sm:inline">Games Hub</span>
-                </button>
-              )}
-
-              {/* Brand Pill Badge with Logo */}
-              <button
-                onClick={() => setCurrentPage("home")}
-                className={`hidden sm:flex items-center gap-2.5 px-3 py-1 rounded-full apple-glass-pill hover:scale-102 active:scale-98 transition-all cursor-pointer ${
-                  isDark ? "apple-glass-pill-dark" : "apple-glass-pill-light"
-                }`}
-                title="Return to Home Studio"
-              >
-                <img
-                  src="/icon_logo.png"
-                  alt="Website Logo"
-                  className="w-6 h-6 rounded-full object-cover shadow-sm ring-1 ring-orange-500/40"
-                />
-                <div className="flex items-center gap-1.5">
-                  <span className="font-mono text-xs font-black tracking-widest uppercase bg-gradient-to-r from-orange-500 via-rose-500 to-amber-400 bg-clip-text text-transparent">
-                    SETU
-                  </span>
-                  <span className={isDark ? "text-slate-600" : "text-slate-300"}>/</span>
-                  <span className={`text-xs sm:text-sm font-black tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>
-                    3D Mechanical Keyboard
-                  </span>
-                </div>
-              </button>
-            </div>
-
-            {/* Center Badges: Keystroke Hits Counter */}
-            <div className="hidden lg:flex items-center gap-2.5">
-              <div
-                className={`flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-mono font-bold apple-glass-pill ${
-                  isDark ? "apple-glass-pill-dark text-slate-300" : "apple-glass-pill-light text-slate-700"
-                }`}
-                title="Keystrokes pressed in this session"
-              >
-                <Flame className="w-3.5 h-3.5 text-orange-500 animate-pulse" />
-                <span>{totalKeyHits} Hits</span>
-              </div>
-            </div>
-
-            {/* Right Side Actions: Let's Play CTA + User Profile Pill + Music Player */}
-            <div className="flex items-center gap-2 sm:gap-2.5">
-              {currentPage === "home" && (
-                <button
-                  onClick={() => setCurrentPage("start")}
-                  className="flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-1.5 rounded-full bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white font-black text-xs tracking-wider uppercase shadow-md shadow-orange-500/25 hover:scale-105 active:scale-95 transition-all cursor-pointer ring-1 ring-white/30"
-                >
-                  <Gamepad2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  <span>Let's Play</span>
-                </button>
-              )}
-
-              {/* Login Button / User Profile Dropdown Pill */}
-              {loggedInUser ? (
-                <div className="relative inline-flex items-center" ref={userMenuRef}>
-                  <button
-                    onClick={() => setIsUserMenuOpen((prev) => !prev)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all apple-glass-pill hover:scale-105 active:scale-95 cursor-pointer ${
-                      isDark ? "apple-glass-pill-dark text-slate-200" : "apple-glass-pill-light text-slate-700"
-                    }`}
-                    title="User Profile & Settings"
-                  >
-                    <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center text-white text-[10px] font-black uppercase shadow-xs">
-                      {loggedInUser.charAt(0)}
-                    </div>
-                    <span className="max-w-[85px] sm:max-w-[120px] truncate">{loggedInUser}</span>
-                    <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${isUserMenuOpen ? "rotate-180 text-orange-500" : ""}`} />
-                  </button>
-
-                  {/* Dropdown Popover Anchored Directly Under User Profile Pill */}
-                  <AnimatePresence>
-                    {isUserMenuOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: -4 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: -4 }}
-                        transition={{ duration: 0.15 }}
-                        className={`absolute right-0 top-full mt-2 w-56 rounded-3xl border shadow-2xl p-2 z-50 apple-liquid-glass ${
-                          isDark ? "apple-liquid-glass-dark text-slate-200 bg-slate-900/95" : "apple-liquid-glass-light text-slate-800 bg-white/95"
-                        }`}
-                      >
-                        <div className="px-3.5 py-2.5 border-b border-black/5 dark:border-white/10 mb-1.5">
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Signed in as</p>
-                          <p className="text-sm font-black text-orange-500 truncate">{loggedInUser}</p>
-                          <div className="flex items-center gap-1.5 mt-1.5">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                            <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-wide">
-                              Cloud Synced • Active
-                            </span>
-                          </div>
-                        </div>
-
-                        <button
-                          onClick={() => {
-                            setLoggedInUser(null);
-                            if (typeof window !== "undefined") {
-                              localStorage.removeItem("setu_active_user");
-                            }
-                            setIsUserMenuOpen(false);
-                          }}
-                          className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-red-500 hover:bg-red-500/10 active:scale-98 transition-all cursor-pointer text-left"
-                        >
-                          <LogOut className="w-4 h-4 text-red-500" />
-                          <span>Log Out</span>
-                        </button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ) : (
-                <button
-                  onClick={() => setIsLoginModalOpen(true)}
-                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all apple-glass-pill hover:scale-105 active:scale-95 cursor-pointer ${
-                    isDark ? "apple-glass-pill-dark text-slate-200" : "apple-glass-pill-light text-slate-700"
-                  }`}
-                >
-                  <LogIn className="w-3.5 h-3.5 text-orange-500" />
-                  <span>Login</span>
-                </button>
-              )}
-
-              {currentPage !== "home" && <MusicPlayer isDark={isDark} />}
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* ============================================================ */}
-      {/* PAGE 1: HOMEPAGE (HERO + TEST YOUR KEYBOARD HERE + SHOWCASE) */}
-      {/* ============================================================ */}
-      {currentPage === "home" && (
-        <>
-          {/* Cinematic Hero Section */}
-          <section className="relative z-10 w-full max-w-5xl pt-12 sm:pt-20 pb-8 px-4 flex flex-col items-center text-center">
-            {/* Powered By SETU Glowing Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full border shadow-lg backdrop-blur-md mb-6 hover:scale-105 transition-transform ${
-                isDark
-                  ? "bg-slate-900/90 border-slate-700/80 shadow-[0_4px_20px_rgba(234,88,12,0.2)] text-white"
-                  : "bg-white/90 border-slate-200/90 shadow-[0_4px_20px_rgba(234,88,12,0.12)] text-slate-800"
-              }`}
-            >
-              <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-              </span>
-              <span className={`text-xs font-black uppercase tracking-widest ${isDark ? "text-slate-100" : "text-slate-800"}`}>
-                Powered by <span className="text-orange-500 font-extrabold">SETU</span>
-              </span>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-orange-500/20 text-orange-400 text-[10px] border border-orange-500/30">
-                NEXT-GEN WEB 3D
-              </span>
-            </motion.div>
-
-            {/* Big Bold Headline: 3D MECHANICAL KEYBOARD */}
-            <motion.h1
-              initial={{ opacity: 0, scale: 0.9, y: 30 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className={`text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.95] uppercase max-w-4xl ${
-                isDark ? "text-white" : "text-slate-900"
-              }`}
-            >
-              <span className="block drop-shadow-sm">3D Mechanical</span>
-              <span className="bg-gradient-to-r from-orange-500 via-rose-500 to-indigo-500 bg-clip-text text-transparent drop-shadow-sm">
-                Keyboard
-              </span>
-            </motion.h1>
-
-            {/* Subtitle */}
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.35, ease: "easeOut" }}
-              className={`mt-6 text-sm sm:text-base md:text-lg max-w-2xl leading-relaxed font-medium ${
-                isDark ? "text-slate-300" : "text-slate-600"
-              }`}
-            >
-              Zero-latency mechanical switch acoustics, adaptive per-key RGB matrices, and realistic touch-typing contact kinematics rendered in pure React & Tailwind.
-            </motion.p>
-
-            {/* Hero CTA Action Row - Apple Liquid Glass Pills */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.45, ease: "easeOut" }}
-              className="mt-8 flex flex-wrap items-center justify-center gap-3.5"
-            >
-              <button
-                onClick={() => handleLaunchArcade("start")}
-                className="apple-glass-btn apple-glass-btn-primary flex items-center gap-2.5 px-7 py-3.5 font-bold text-sm cursor-pointer group"
-              >
-                <Sparkles className="w-4 h-4 text-white fill-white group-hover:rotate-12 transition-transform drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]" />
-                <span className="tracking-wide text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">Let's Start Training</span>
-              </button>
-
-              <button
-                onClick={scrollToKeyboard}
-                className={`apple-glass-btn flex items-center gap-2.5 px-6 py-3.5 font-bold text-sm cursor-pointer ${
-                  isDark ? "apple-glass-btn-dark" : "apple-glass-btn-light"
-                }`}
-              >
-                <Play className="w-4 h-4 text-orange-500 fill-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.4)]" />
-                <span>Test Workbench</span>
-                <ArrowDown className="w-4 h-4 ml-0.5 opacity-60" />
-              </button>
-
-              <button
-                onClick={() => handleLaunchArcade("speedtest")}
-                className={`apple-glass-btn flex items-center gap-2.5 px-6 py-3.5 font-bold text-sm cursor-pointer ${
-                  isDark ? "apple-glass-btn-dark" : "apple-glass-btn-light"
-                }`}
-              >
-                <Flame className="w-4 h-4 text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.4)]" />
-                <span>Speed Arena</span>
-              </button>
-
-              <button
-                onClick={() => setIsThemeSidebarOpen(true)}
-                className={`apple-glass-btn flex items-center gap-2.5 px-5 py-3.5 font-bold text-sm cursor-pointer ${
-                  isDark ? "apple-glass-btn-dark text-slate-200" : "apple-glass-btn-light text-slate-800"
-                }`}
-              >
-                <Palette className="w-4 h-4 text-indigo-400 drop-shadow-[0_0_8px_rgba(129,140,248,0.4)]" />
-                <span>Themes</span>
-              </button>
-            </motion.div>
-          </section>
-
-          {/* Scroll-Driven 3D Keyboard Exploded Assembly & Interactive Test Workbench */}
-          <div ref={keyboardSectionRef} id="studio" className="w-full">
-            <ExplodedKeyboardScroll
-              theme={currentTheme}
-              colorZones={colorZones}
-              testedKeys={testedKeys}
-              onTestedKeysChange={setTestedKeys}
-              onOpenThemeSidebar={() => setIsThemeSidebarOpen(true)}
-            />
-          </div>
-
-          {/* Switch Anatomy & Technical Showcase */}
-          <SwitchShowcase
-            theme={currentTheme}
-            onNavigateToArcade={() => handleLaunchArcade("start")}
-            onOpenThemes={() => setIsThemeSidebarOpen(true)}
-          />
-        </>
-      )}
 
       {/* ============================================================ */}
       {/* PAGE: LET'S START - ARCADE GAMES HUB SELECTOR                 */}
@@ -622,6 +278,7 @@ export default function KeyboardLandingPage() {
         <GamesHub
           theme={currentTheme}
           onSelectGame={(gameId) => setCurrentPage(gameId as AppPage)}
+          onOpenSettings={() => setIsThemeSidebarOpen(true)}
         />
       )}
 
@@ -957,28 +614,6 @@ export default function KeyboardLandingPage() {
         </section>
       )}
 
-      {/* Footer (Hidden during interactive gameplay views for zero-scroll viewport) */}
-      {currentPage !== "academy" && currentPage !== "fallingwords" && currentPage !== "soundmatrix" && currentPage !== "blindtyping" && (
-        <footer
-          className={`relative z-10 w-full border-t ${currentTheme.headerBorder} py-8 px-6 mt-12 bg-white/40 backdrop-blur-md transition-colors`}
-        >
-          <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs opacity-75">
-            <div className="flex items-center gap-2.5">
-              <img
-                src="/icon_logo.png"
-                alt="Website Logo"
-                className="w-5 h-5 rounded-full object-cover shadow-xs"
-              />
-              <span className="font-mono font-black text-orange-600">SETU</span>
-              <span>•</span>
-              <span className="font-semibold">3D Mechanical Keyboard Engine</span>
-            </div>
-            <div>
-              <span>Made by Shashaank Sajjanar and Antigravity</span>
-            </div>
-          </div>
-        </footer>
-      )}
 
       {/* Slide-over Theme Sidebar Drawer */}
       <ThemeSidebar
@@ -995,11 +630,7 @@ export default function KeyboardLandingPage() {
         }}
         currentPage={currentPage}
         onNavigate={(page) => {
-          if (page === "home") {
-            setCurrentPage("home");
-          } else {
-            handleLaunchArcade(page);
-          }
+          handleLaunchArcade(page);
         }}
         colorZones={colorZones}
         onToggleColorZones={() => {
