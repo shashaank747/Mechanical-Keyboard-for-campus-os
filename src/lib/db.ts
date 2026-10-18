@@ -190,63 +190,65 @@ export async function registerUser(params: {
     const userId = generateUserId();
     const defaultProgress = createDefaultProgress();
 
-    // 1. Attempt Supabase Cloud Registration
-    try {
-      // Check existing in Supabase
-      const { data: existingSupa } = await supabase
-        .from("students")
-        .select("id, username, email")
-        .or(`username.ilike.${payload.username},email.ilike.${payload.email}`)
-        .limit(1);
+    // 1. Attempt Supabase Cloud Registration (if connected)
+    if (supabase) {
+      try {
+        // Check existing in Supabase
+        const { data: existingSupa } = await supabase
+          .from("students")
+          .select("id, username, email")
+          .or(`username.ilike.${payload.username},email.ilike.${payload.email}`)
+          .limit(1);
 
-      if (existingSupa && existingSupa.length > 0) {
-        return {
-          success: false,
-          error: "A user with this username or email already exists.",
-        };
-      }
-
-      // Insert directly into Supabase (with schema-adaptive fallback if optional preference columns are absent)
-      const insertPayload: Record<string, any> = {
-        user_id: userId,
-        username: payload.username,
-        email: payload.email,
-        password_hash: passwordHash,
-        ip_address: ipAddress,
-        total_games_played: 0,
-        total_levels_mastered: 0,
-        last_active_game: "Registered",
-        progress_json: {
-          ...defaultProgress,
-          preferences: { themeId: "studio-light", colorZones: false },
-        },
-      };
-
-      let { error: insertErr } = await supabase.from("students").insert({
-        ...insertPayload,
-        theme_id: "studio-light",
-        color_zones: false,
-        preferences_json: { themeId: "studio-light", colorZones: false },
-      });
-
-      if (insertErr && (insertErr.code === "PGRST204" || insertErr.message?.includes("column"))) {
-        const retryResult = await supabase.from("students").insert(insertPayload);
-        insertErr = retryResult.error;
-      }
-
-      if (insertErr) {
-        console.error("[Supabase Error] Registration insert failed:", insertErr);
-        if (insertErr.code === "23505") {
+        if (existingSupa && existingSupa.length > 0) {
           return {
             success: false,
             error: "A user with this username or email already exists.",
           };
         }
-      } else {
-        console.log("[Supabase Sync] Successfully registered student in Supabase Cloud:", payload.username);
+
+        // Insert directly into Supabase (with schema-adaptive fallback if optional preference columns are absent)
+        const insertPayload: Record<string, any> = {
+          user_id: userId,
+          username: payload.username,
+          email: payload.email,
+          password_hash: passwordHash,
+          ip_address: ipAddress,
+          total_games_played: 0,
+          total_levels_mastered: 0,
+          last_active_game: "Registered",
+          progress_json: {
+            ...defaultProgress,
+            preferences: { themeId: "studio-light", colorZones: false },
+          },
+        };
+
+        let { error: insertErr } = await supabase.from("students").insert({
+          ...insertPayload,
+          theme_id: "studio-light",
+          color_zones: false,
+          preferences_json: { themeId: "studio-light", colorZones: false },
+        });
+
+        if (insertErr && (insertErr.code === "PGRST204" || insertErr.message?.includes("column"))) {
+          const retryResult = await supabase.from("students").insert(insertPayload);
+          insertErr = retryResult.error;
+        }
+
+        if (insertErr) {
+          console.error("[Supabase Error] Registration insert failed:", insertErr);
+          if (insertErr.code === "23505") {
+            return {
+              success: false,
+              error: "A user with this username or email already exists.",
+            };
+          }
+        } else {
+          console.log("[Supabase Sync] Successfully registered student in Supabase Cloud:", payload.username);
+        }
+      } catch (supaErr) {
+        console.warn("[Supabase Warning] Could not reach Supabase:", supaErr);
       }
-    } catch (supaErr) {
-      console.warn("[Supabase Warning] Could not reach Supabase:", supaErr);
     }
 
     // 2. Try server API / local DB sync
@@ -307,70 +309,72 @@ export async function loginUser(params: {
     const ipAddress = await fetchClientIp();
     const identifier = params.loginIdentifier.trim().toLowerCase();
 
-    // 1. Try Supabase Cloud Login first
-    try {
-      const { data: supaUser } = await supabase
-        .from("students")
-        .select("*")
-        .or(`email.ilike.${identifier},username.ilike.${identifier}`)
-        .maybeSingle();
-
-      if (supaUser) {
-        const isValid = await verifyClientPassword(params.password, supaUser.password_hash);
-        if (!isValid) {
-          return { success: false, error: "Incorrect password. Please verify your credentials." };
-        }
-
-        // Update login timestamp & IP in Supabase
-        await supabase
+    // 1. Try Supabase Cloud Login first (if connected)
+    if (supabase) {
+      try {
+        const { data: supaUser } = await supabase
           .from("students")
-          .update({
-            last_login_at: new Date().toISOString(),
-            ip_address: ipAddress,
-          })
-          .eq("user_id", supaUser.user_id);
+          .select("*")
+          .or(`email.ilike.${identifier},username.ilike.${identifier}`)
+          .maybeSingle();
 
-        const rawUser = supaUser as any;
-        const savedThemeId =
-          rawUser.theme_id ||
-          rawUser.preferences_json?.themeId ||
-          rawUser.progress_json?.preferences?.themeId ||
-          "studio-light";
-        const savedColorZones = Boolean(
-          rawUser.color_zones ??
-          rawUser.preferences_json?.colorZones ??
-          rawUser.progress_json?.preferences?.colorZones ??
-          false
-        );
+        if (supaUser) {
+          const isValid = await verifyClientPassword(params.password, supaUser.password_hash);
+          if (!isValid) {
+            return { success: false, error: "Incorrect password. Please verify your credentials." };
+          }
 
-        const user: UserRecord = {
-          userId: supaUser.user_id,
-          username: supaUser.username,
-          email: supaUser.email,
-          password: supaUser.password_hash,
-          ipAddress,
-          createdAt: supaUser.created_at || new Date().toISOString(),
-          lastLoginAt: new Date().toISOString(),
-          progress: supaUser.progress_json || createDefaultProgress(),
-          themeId: savedThemeId,
-          colorZones: savedColorZones,
-          preferences: rawUser.preferences_json || rawUser.progress_json?.preferences || {
+          // Update login timestamp & IP in Supabase
+          await supabase
+            .from("students")
+            .update({
+              last_login_at: new Date().toISOString(),
+              ip_address: ipAddress,
+            })
+            .eq("user_id", supaUser.user_id);
+
+          const rawUser = supaUser as any;
+          const savedThemeId =
+            rawUser.theme_id ||
+            rawUser.preferences_json?.themeId ||
+            rawUser.progress_json?.preferences?.themeId ||
+            "studio-light";
+          const savedColorZones = Boolean(
+            rawUser.color_zones ??
+            rawUser.preferences_json?.colorZones ??
+            rawUser.progress_json?.preferences?.colorZones ??
+            false
+          );
+
+          const user: UserRecord = {
+            userId: supaUser.user_id,
+            username: supaUser.username,
+            email: supaUser.email,
+            password: supaUser.password_hash,
+            ipAddress,
+            createdAt: supaUser.created_at || new Date().toISOString(),
+            lastLoginAt: new Date().toISOString(),
+            progress: supaUser.progress_json || createDefaultProgress(),
             themeId: savedThemeId,
             colorZones: savedColorZones,
-          },
-        };
+            preferences: rawUser.preferences_json || rawUser.progress_json?.preferences || {
+              themeId: savedThemeId,
+              colorZones: savedColorZones,
+            },
+          };
 
-        // Cache in local
-        const local = getLocalUsers();
-        const idx = local.findIndex((u) => u.userId === user.userId);
-        if (idx >= 0) local[idx] = user;
-        else local.push(user);
-        saveLocalUsers(local);
+          // Cache in local
+          const local = getLocalUsers();
+          const idx = local.findIndex((u) => u.userId === user.userId);
+          if (idx >= 0) local[idx] = user;
+          else local.push(user);
+          saveLocalUsers(local);
 
-        return { success: true, user };
+          return { success: true, user };
+        }
+      } catch {
+        // Supabase check failed, continue to API / local
       }
-    } catch {
-      // Supabase check failed, continue to API / local
     }
 
     // 2. Try server API
@@ -442,49 +446,51 @@ export async function loginUser(params: {
     user.lastLoginAt = new Date().toISOString();
     saveLocalUsers(users);
 
-    // 4. Auto-sync to Supabase Cloud if not yet present
-    try {
-      const upsertPayload: Record<string, any> = {
-        user_id: user.userId,
-        username: user.username,
-        email: user.email,
-        password_hash: user.password,
-        ip_address: ipAddress,
-        total_games_played: user.progress.summary.totalGamesPlayed || 0,
-        total_levels_mastered: user.progress.summary.totalLevelsMastered || 0,
-        last_active_game: user.progress.summary.lastActiveGame || "None",
-        progress_json: {
-          ...user.progress,
-          preferences: user.preferences || {
+    // 4. Auto-sync to Supabase Cloud if configured
+    if (supabase) {
+      try {
+        const upsertPayload: Record<string, any> = {
+          user_id: user.userId,
+          username: user.username,
+          email: user.email,
+          password_hash: user.password,
+          ip_address: ipAddress,
+          total_games_played: user.progress.summary.totalGamesPlayed || 0,
+          total_levels_mastered: user.progress.summary.totalLevelsMastered || 0,
+          last_active_game: user.progress.summary.lastActiveGame || "None",
+          progress_json: {
+            ...user.progress,
+            preferences: user.preferences || {
+              themeId: user.themeId || "studio-light",
+              colorZones: user.colorZones ?? false,
+            },
+          },
+          last_login_at: user.lastLoginAt,
+        };
+
+        let { error: upsertErr } = await supabase.from("students").upsert({
+          ...upsertPayload,
+          theme_id: user.themeId || "studio-light",
+          color_zones: user.colorZones ?? false,
+          preferences_json: user.preferences || {
             themeId: user.themeId || "studio-light",
             colorZones: user.colorZones ?? false,
           },
-        },
-        last_login_at: user.lastLoginAt,
-      };
+        }, { onConflict: "user_id" });
 
-      let { error: upsertErr } = await supabase.from("students").upsert({
-        ...upsertPayload,
-        theme_id: user.themeId || "studio-light",
-        color_zones: user.colorZones ?? false,
-        preferences_json: user.preferences || {
-          themeId: user.themeId || "studio-light",
-          colorZones: user.colorZones ?? false,
-        },
-      }, { onConflict: "user_id" });
+        if (upsertErr && (upsertErr.code === "PGRST204" || upsertErr.message?.includes("column"))) {
+          const retryResult = await supabase.from("students").upsert(upsertPayload, { onConflict: "user_id" });
+          upsertErr = retryResult.error;
+        }
 
-      if (upsertErr && (upsertErr.code === "PGRST204" || upsertErr.message?.includes("column"))) {
-        const retryResult = await supabase.from("students").upsert(upsertPayload, { onConflict: "user_id" });
-        upsertErr = retryResult.error;
+        if (upsertErr) {
+          console.warn("[Supabase Sync Error] Upsert failed:", upsertErr);
+        } else {
+          console.log("[Supabase Sync] Synced student to Supabase Cloud on login:", user.username);
+        }
+      } catch (supaErr) {
+        console.warn("[Supabase Warning] Could not sync user to Supabase on login:", supaErr);
       }
-
-      if (upsertErr) {
-        console.warn("[Supabase Sync Error] Upsert failed:", upsertErr);
-      } else {
-        console.log("[Supabase Sync] Synced student to Supabase Cloud on login:", user.username);
-      }
-    } catch (supaErr) {
-      console.warn("[Supabase Warning] Could not sync user to Supabase on login:", supaErr);
     }
 
     return { success: true, user };
@@ -499,6 +505,7 @@ export async function loginUser(params: {
 // VALIDATE ACTIVE USER SESSION (CHECKS SUPABASE)
 export async function validateUserExists(username: string): Promise<boolean> {
   if (!username) return false;
+  if (!supabase) return true; // Local/offline session valid
   const target = username.trim().toLowerCase();
 
   try {
@@ -530,19 +537,21 @@ export async function resetPassword(params: {
 
     let updated = false;
 
-    // 1. Update in Supabase Cloud
-    try {
-      const { data } = await supabase
-        .from("students")
-        .update({ password_hash: newHash })
-        .or(`email.ilike.${identifier},username.ilike.${identifier}`)
-        .select();
+    // 1. Update in Supabase Cloud (if configured)
+    if (supabase) {
+      try {
+        const { data } = await supabase
+          .from("students")
+          .update({ password_hash: newHash })
+          .or(`email.ilike.${identifier},username.ilike.${identifier}`)
+          .select();
 
-      if (data && data.length > 0) {
-        updated = true;
+        if (data && data.length > 0) {
+          updated = true;
+        }
+      } catch {
+        // ignore
       }
-    } catch {
-      // ignore
     }
 
     // 2. Update in server API
@@ -689,32 +698,34 @@ export async function updateStudentProgress(params: {
     user.progress.summary.lastActivityTime = nowIso;
     saveLocalUsers(users);
 
-    // 3. Sync to Supabase Cloud in Real-time
-    try {
-      await supabase
-        .from("students")
-        .update({
-          total_games_played: user.progress.summary.totalGamesPlayed,
-          total_levels_mastered: user.progress.summary.totalLevelsMastered,
-          code_sprint_solved: user.progress.codeSprint.totalSolved,
-          code_sprint_best_wpm: user.progress.codeSprint.bestWpm,
-          code_sprint_langs: user.progress.codeSprint.languagesPracticed,
-          code_sprint_data: user.progress.codeSprint.completedLevels,
-          academy_highest_level: user.progress.academy.highestLevel,
-          academy_completed_levels: user.progress.academy.completedLevels,
-          speed_best_wpm: user.progress.speedTest.bestWpm,
-          speed_tests_taken: user.progress.speedTest.testsTaken,
-          meteor_high_score: user.progress.meteorDefense.highScore,
-          meteor_highest_wave: user.progress.meteorDefense.highestWave,
-          blind_completed_lines: user.progress.blindTyping.completedLines,
-          shortcuts_mastered: user.progress.shortcutsDojo.shortcutsMastered,
-          last_active_game: user.progress.summary.lastActiveGame,
-          last_activity_at: nowIso,
-          progress_json: user.progress,
-        })
-        .or(`username.ilike.${activeUser},email.ilike.${activeUser}`);
-    } catch {
-      // ignore
+    // 3. Sync to Supabase Cloud in Real-time (if configured)
+    if (supabase) {
+      try {
+        await supabase
+          .from("students")
+          .update({
+            total_games_played: user.progress.summary.totalGamesPlayed,
+            total_levels_mastered: user.progress.summary.totalLevelsMastered,
+            code_sprint_solved: user.progress.codeSprint.totalSolved,
+            code_sprint_best_wpm: user.progress.codeSprint.bestWpm,
+            code_sprint_langs: user.progress.codeSprint.languagesPracticed,
+            code_sprint_data: user.progress.codeSprint.completedLevels,
+            academy_highest_level: user.progress.academy.highestLevel,
+            academy_completed_levels: user.progress.academy.completedLevels,
+            speed_best_wpm: user.progress.speedTest.bestWpm,
+            speed_tests_taken: user.progress.speedTest.testsTaken,
+            meteor_high_score: user.progress.meteorDefense.highScore,
+            meteor_highest_wave: user.progress.meteorDefense.highestWave,
+            blind_completed_lines: user.progress.blindTyping.completedLines,
+            shortcuts_mastered: user.progress.shortcutsDojo.shortcutsMastered,
+            last_active_game: user.progress.summary.lastActiveGame,
+            last_activity_at: nowIso,
+            progress_json: user.progress,
+          })
+          .or(`username.ilike.${activeUser},email.ilike.${activeUser}`);
+      } catch {
+        // ignore
+      }
     }
   }
 }
@@ -773,48 +784,50 @@ export async function updateUserTheme(params: {
     localStorage.setItem(`setu_colorzones_${activeUser.toLowerCase()}`, String(colorZones));
   }
 
-  // 3. Sync to Supabase Cloud in Real-time
-  try {
-    let { error: updateErr } = await supabase
-      .from("students")
-      .update({
-        theme_id: themeId,
-        color_zones: colorZones,
-        preferences_json: {
-          themeId,
-          colorZones,
-          lastUpdated: nowIso,
-        },
-        last_activity_at: nowIso,
-      })
-      .or(`username.ilike.${activeUser},email.ilike.${activeUser}`);
-
-    if (updateErr && (updateErr.code === "PGRST204" || updateErr.message?.includes("column"))) {
-      const { data: existing } = await supabase
-        .from("students")
-        .select("progress_json")
-        .or(`username.ilike.${activeUser},email.ilike.${activeUser}`)
-        .maybeSingle();
-
-      const existingProgress =
-        existing?.progress_json && typeof existing.progress_json === "object"
-          ? existing.progress_json
-          : {};
-
-      await supabase
+  // 3. Sync to Supabase Cloud in Real-time (if configured)
+  if (supabase) {
+    try {
+      let { error: updateErr } = await supabase
         .from("students")
         .update({
-          progress_json: {
-            ...existingProgress,
-            preferences: { themeId, colorZones, lastUpdated: nowIso },
+          theme_id: themeId,
+          color_zones: colorZones,
+          preferences_json: {
+            themeId,
+            colorZones,
+            lastUpdated: nowIso,
           },
           last_activity_at: nowIso,
         })
         .or(`username.ilike.${activeUser},email.ilike.${activeUser}`);
+
+      if (updateErr && (updateErr.code === "PGRST204" || updateErr.message?.includes("column"))) {
+        const { data: existing } = await supabase
+          .from("students")
+          .select("progress_json")
+          .or(`username.ilike.${activeUser},email.ilike.${activeUser}`)
+          .maybeSingle();
+
+        const existingProgress =
+          existing?.progress_json && typeof existing.progress_json === "object"
+            ? existing.progress_json
+            : {};
+
+        await supabase
+          .from("students")
+          .update({
+            progress_json: {
+              ...existingProgress,
+              preferences: { themeId, colorZones, lastUpdated: nowIso },
+            },
+            last_activity_at: nowIso,
+          })
+          .or(`username.ilike.${activeUser},email.ilike.${activeUser}`);
+      }
+      console.log("[Supabase Sync] Synced theme & palette preference to Supabase Cloud for:", activeUser, { themeId, colorZones });
+    } catch (supaErr) {
+      console.warn("[Supabase Warning] Could not sync theme preference to Supabase:", supaErr);
     }
-    console.log("[Supabase Sync] Synced theme & palette preference to Supabase Cloud for:", activeUser, { themeId, colorZones });
-  } catch (supaErr) {
-    console.warn("[Supabase Warning] Could not sync theme preference to Supabase:", supaErr);
   }
 }
 
@@ -825,31 +838,33 @@ export async function getUserPreferences(
   if (!username) return null;
   const target = username.trim().toLowerCase();
 
-  // Try Supabase first
-  try {
-    const { data: supaUser, error } = await supabase
-      .from("students")
-      .select("*")
-      .or(`username.ilike.${target},email.ilike.${target}`)
-      .maybeSingle();
+  // Try Supabase first (if configured)
+  if (supabase) {
+    try {
+      const { data: supaUser, error } = await supabase
+        .from("students")
+        .select("*")
+        .or(`username.ilike.${target},email.ilike.${target}`)
+        .maybeSingle();
 
-    if (supaUser && !error) {
-      const rawUser = supaUser as any;
-      const themeId =
-        rawUser.theme_id ||
-        rawUser.preferences_json?.themeId ||
-        rawUser.progress_json?.preferences?.themeId ||
-        "studio-light";
-      const colorZones = Boolean(
-        rawUser.color_zones ??
-        rawUser.preferences_json?.colorZones ??
-        rawUser.progress_json?.preferences?.colorZones ??
-        false
-      );
-      return { themeId, colorZones };
+      if (supaUser && !error) {
+        const rawUser = supaUser as any;
+        const themeId =
+          rawUser.theme_id ||
+          rawUser.preferences_json?.themeId ||
+          rawUser.progress_json?.preferences?.themeId ||
+          "studio-light";
+        const colorZones = Boolean(
+          rawUser.color_zones ??
+          rawUser.preferences_json?.colorZones ??
+          rawUser.progress_json?.preferences?.colorZones ??
+          false
+        );
+        return { themeId, colorZones };
+      }
+    } catch {
+      // fallback
     }
-  } catch {
-    // fallback
   }
 
   // Try local users

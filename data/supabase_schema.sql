@@ -1,6 +1,6 @@
 -- ==============================================================================
 -- 🚀 STUDENT PROGRESS & ANALYTICS DATABASE SCHEMA FOR SUPABASE
--- Run this in your Supabase SQL Editor: https://supabase.com/dashboard/project/tbwklqcundyvnnrwidmn/sql/new
+-- Run this in your Supabase SQL Editor: https://supabase.com/dashboard/project/_/sql/new
 -- ==============================================================================
 
 CREATE TABLE IF NOT EXISTS public.students (

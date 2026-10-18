@@ -1,19 +1,27 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-const supabaseUrl =
-  import.meta.env.VITE_SUPABASE_URL ||
-  "https://tbwklqcundyvnnrwidmn.supabase.co";
+// Supabase credentials are read strictly from environment variables
+// Leave empty or unconfigured to operate in offline / local-storage mode
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 
-const supabaseAnonKey =
-  import.meta.env.VITE_SUPABASE_ANON_KEY ||
-  "sb_publishable_YKWeDIVSbs4MZrgcqHwlaw_TbV2BAeE";
+export const isSupabaseConfigured = Boolean(
+  supabaseUrl &&
+  supabaseAnonKey &&
+  supabaseUrl.startsWith("http") &&
+  !supabaseUrl.includes("placeholder") &&
+  !supabaseUrl.includes("your-project-id")
+);
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-  },
-});
+// Only initialize if valid external Supabase URL and Key are provided
+export const supabase: SupabaseClient | null = isSupabaseConfigured
+  ? createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+      },
+    })
+  : null;
 
 export interface SupabaseStudentRow {
   user_id: string;

@@ -14,23 +14,23 @@
     <img src="https://img.shields.io/badge/Vite-6.0-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
     <img src="https://img.shields.io/badge/Tailwind_CSS-v4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
     <img src="https://img.shields.io/badge/Framer_Motion-12.0-FF0055?style=for-the-badge&logo=framer&logoColor=white" alt="Framer Motion" />
-    <img src="https://img.shields.io/badge/Supabase-Cloud_Sync-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase" />
+    <img src="https://img.shields.io/badge/Architecture-Local--First_&_Cloud--Ready-blue?style=for-the-badge" alt="Local First" />
   </p>
 </div>
 
 ---
 
-## 📖 What is this Website About?
+## 📖 What is this Platform About?
 
 The **3D Mechanical Keyboard for Campus OS** is a browser-based, high-performance web platform designed to transform how students, software developers, and keyboard enthusiasts learn, practice, and master touch-typing. 
 
-Unlike traditional barebones typing tutors, this application bridges **physical tactile simulation**, **low-latency synthesized switch acoustics**, **gamified arcade training**, and **rich data visualization**:
+Unlike traditional barebones typing tutors, this application bridges **physical tactile simulation**, **low-latency procedural switch acoustics**, **gamified arcade training**, and **rich data visualization**:
 
 1. **Interactive 3D Mechanical Simulation**: Experience realistic physical key-travel kinematics (4px vertical travel, spring compression, bottom-out shadow physics) paired with zero-latency synthesized sound profiles (Linear Thock, Clicky Crisp, Tactile Bump).
 2. **7 Comprehensive Arcade Training Games**: Tackle structured curricula ranging from 10-finger muscle memory in Touch Typing Academy to real multi-language IDE code completion in Code Sprint.
-3. **User Analytics Dashboard**: A built-in personal telemetry hub featuring interactive **Bar Graphs** (visualizing what games are played and how many times each has been played) and **Line Graphs** (plotting speed progression in WPM and accuracy trajectories over time).
+3. **User Activity Analytics Dashboard**: A built-in personal telemetry hub featuring interactive **Bar Graphs** (visualizing what games are played and how many times each has been played) and **Line Graphs** (plotting speed progression in WPM and accuracy trajectories over time).
 4. **Customization & Aesthetics**: Switch seamlessly across 7 curated theme palettes, toggle touch-typing finger color zones, and enjoy an intuitive, compact navigation drawer accessible via the top-left toggle button.
-5. **Student Authentication & Persistence**: Seamless sync with Supabase PostgreSQL and instant local storage fallback to preserve user themes, scores, and practice records across sessions.
+5. **Local-First, Cloud-Ready Architecture**: Runs 100% out-of-the-box in local offline mode with zero required external database dependencies. Ready to connect to any team Supabase project at any time with a single `.env` update.
 
 ---
 
@@ -65,7 +65,7 @@ Accessed directly from the sidebar navigation or the Arcade Hub header, the **Da
   - Visual animated vertical bars displaying every game in the arcade.
   - Highlights how many times each specific game has been played with hover tooltips and proportional height calculation.
 - **Interactive Line Graph (WPM & Accuracy Trajectory)**:
-  - SVG curve plotting speed (WPM) and accuracy progression across sessions and days.
+  - SVG curve plotting speed (WPM) and accuracy progression across practice sessions.
   - Interactive nodes with hover tooltips showing session dates, WPM records, and precision benchmarks.
 - **Gameplay History Log**:
   - Chronological history of completed rounds with timestamps, scores, and WPM details.
@@ -95,18 +95,9 @@ The slide-over drawer (accessible via the top-left hamburger toggle) houses comp
 
 ### 🔊 4. Low-Latency Acoustic Sound Synthesis
 
-- Procedural Web Audio API sound generator producing realistic mechanical switch feedback without static audio file lag.
+- Procedural Web Audio API sound generator producing authentic mechanical switch feedback without static audio file lag.
 - Switch types modeled: **Linear Thock** (smooth bottom-out), **Clicky Crisp** (tactile reset click), and **Tactile Bump** (subtle resistance drop).
 - Audio assets for Lo-Fi background soundtracks are retained in `public/` and `src/lib/bgMusic.ts` for future player activation.
-
----
-
-### 🔐 5. Database, Cloud Sync & Security
-
-- **Dual-Storage Engine**:
-  - **Supabase PostgreSQL**: Live cloud sync of user metrics, level completions, best WPMs, and theme preferences.
-  - **Local Storage Fallback**: Seamless, fully functional offline mode when cloud credentials are not supplied.
-- **PBKDF2-SHA512 Password Encryption**: Salted client-side hashing ensuring zero plaintext credential transmission.
 
 ---
 
@@ -129,6 +120,171 @@ We are currently developing a comprehensive gamified **XP & Progression System**
 
 ---
 
+## 🛠️ Senior Developer & Backend Integration Guide
+
+> [!IMPORTANT]
+> **Current Status**: All external Supabase cloud connections have been decoupled. The codebase currently operates in a **100% self-contained, local-first mode**. There are zero hardcoded remote API keys or active database connections in the repository.
+
+This section provides senior backend developers, team leads, and DevOps engineers with an exact roadmap of **what needs to be connected, where it is wired, and how data flows**.
+
+```
++-----------------------------------------------------------------------------------+
+|                                CLIENT APPLICATION                                 |
+|                                                                                   |
+|  [Games / Typing Drills]      [Theme & Palette]       [Dashboard / Telemetry]     |
+|          |                            |                          |                |
+|          v                            v                          v                |
+|  recordGamePlay()             updateUserTheme()       getUserStats()              |
+|  (src/lib/userStats.ts)       (src/lib/db.ts)         (src/lib/userStats.ts)      |
++---------------------------------------+-------------------------------------------+
+                                        |
+                                        v
++-----------------------------------------------------------------------------------+
+|                        STORAGE ABSTRACTION & FALLBACK LAYER                       |
+|                                                                                   |
+|  Does .env have VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY?                     |
+|                                                                                   |
+|           [ YES ]                                            [ NO ]               |
+|              |                                                  |                 |
+|              v                                                  v                 |
+|    +--------------------+                             +--------------------+      |
+|    |   Supabase Cloud   |                             | Local / Dev Mode   |      |
+|    |   (src/lib/        |                             | (localStorage &    |      |
+|    |    supabase.ts)    |                             |  data/users.json)  |      |
+|    |                    |                             |                    |      |
+|    | Table: students    |                             | Fully offline,     |      |
+|    | RLS: Enabled       |                             | zero network calls |      |
+|    +--------------------+                             +--------------------+      |
++-----------------------------------------------------------------------------------+
+```
+
+---
+
+### 1. Where Environment Variables Live
+
+All backend connection credentials are kept in the root `.env` file (copied from `.env.example`).
+
+```bash
+# .env (in project root)
+
+# 1. Your Supabase Project HTTPS URL
+VITE_SUPABASE_URL=https://<your-project-ref>.supabase.co
+
+# 2. Your Supabase Project Public/Anon Key (safe for client bundling)
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+# 3. (Optional) Secret Service Role Key (for administrative Node scripts / backend workers only)
+SUPABASE_SECRET_KEY=sb_secret_...
+```
+
+- When `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are **empty or unset**:
+  - `src/lib/supabase.ts` exports `supabase = null` and `isSupabaseConfigured = false`.
+  - The application automatically switches to offline mode with zero network errors.
+- When `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are **provided**:
+  - The client initializes authenticated Supabase calls for registration, login, progress sync, and theme storage.
+
+---
+
+### 2. Database Schema & Migration File
+
+The complete PostgreSQL migration script is located at:
+📁 **[`data/supabase_schema.sql`](data/supabase_schema.sql)**
+
+#### Target Table: `public.students`
+```sql
+CREATE TABLE IF NOT EXISTS public.students (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id TEXT UNIQUE NOT NULL,                       -- Unique identifier e.g. "USR-174829"
+  username TEXT NOT NULL,                             -- Unique student handle
+  email TEXT NOT NULL,                                -- Student email address
+  password_hash TEXT NOT NULL,                        -- PBKDF2-SHA512 salted client hash
+  ip_address TEXT DEFAULT '127.0.0.1',                -- Client audit IP
+  theme_id TEXT DEFAULT 'studio-light',               -- Selected keyboard palette ID
+  color_zones BOOLEAN DEFAULT false,                  -- Touch-typing finger color RGB mode
+  preferences_json JSONB DEFAULT '{}'::jsonb,         -- Palette & accessibility preferences
+  total_games_played INT DEFAULT 0,                   -- Aggregated round count
+  total_levels_mastered INT DEFAULT 0,                -- Completed academy + code levels
+  code_sprint_solved INT DEFAULT 0,                   -- Count of code templates solved
+  code_sprint_best_wpm INT DEFAULT 0,                 -- Peak code completion WPM
+  code_sprint_langs JSONB DEFAULT '[]'::jsonb,        -- Array of languages practiced
+  code_sprint_data JSONB DEFAULT '{}'::jsonb,         -- Level breakdown by language
+  academy_highest_level INT DEFAULT 0,                -- Highest level reached (1-16)
+  academy_completed_levels JSONB DEFAULT '[]'::jsonb, -- Array of completed level IDs
+  speed_best_wpm INT DEFAULT 0,                       -- Peak Speed Arena WPM
+  speed_tests_taken INT DEFAULT 0,                    -- Total speed tests completed
+  meteor_high_score INT DEFAULT 0,                    -- High score in Key Meteor Defense
+  meteor_highest_wave INT DEFAULT 0,                  -- Highest wave survived
+  blind_completed_lines INT DEFAULT 0,                -- Lines mastered in Blind Typing
+  shortcuts_mastered INT DEFAULT 0,                   -- Developer hotkeys verified
+  last_active_game TEXT DEFAULT 'None',               -- Last game title played
+  progress_json JSONB DEFAULT '{}'::jsonb,            -- Nested progress state snapshot
+  created_at TIMESTAMPTZ DEFAULT now(),
+  last_login_at TIMESTAMPTZ DEFAULT now(),
+  last_activity_at TIMESTAMPTZ DEFAULT now()
+);
+```
+
+#### Row Level Security (RLS)
+The script configures open public read/write policies:
+```sql
+ALTER TABLE public.students ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow all public operations on students" ON public.students
+  FOR ALL USING (true) WITH CHECK (true);
+```
+
+---
+
+### 3. File Map: Where Data Code Lives & What Connects Where
+
+| File Path | Role & Connection Responsibility |
+| :--- | :--- |
+| **[`src/lib/supabase.ts`](src/lib/supabase.ts)** | **Supabase Client Initializer**: Reads `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. Exports `supabase` (or `null` if unconfigured) and `isSupabaseConfigured` flag. |
+| **[`src/lib/db.ts`](src/lib/db.ts)** | **Core Database & Session Layer**: Handles student registration, login verification, password reset, active session validation, level completion tracking, and theme persistence. Wrapped with `if (supabase)` guards with automatic local storage fallback. |
+| **[`src/lib/userStats.ts`](src/lib/userStats.ts)** | **User Telemetry & Chart Engine**: Tracks game play counts (powers the **Bar Graph**) and WPM / accuracy trajectories (powers the **Line Graph**). Persists sessions in `localStorage` under `setu_user_game_stats_v1`. |
+| **[`src/components/ui/Dashboard.tsx`](src/components/ui/Dashboard.tsx)** | **Analytics Visualization UI**: Consumes data from `getUserStats()` to render the interactive Bar Graph and SVG Line Graph with hover tooltips and session history. |
+| **[`vite.config.ts`](vite.config.ts)** | **Development Mock REST Server**: Provides local Express-like routes (`/api/register`, `/api/login`, `/api/progress`, `/api/theme`, `/api/reset-password`) that read and write directly to `data/users.json` during local development when no database is linked. |
+| **[`data/students_progress_table.html`](data/students_progress_table.html)** | **Standalone Progress Audit Table**: A single-file developer portal to inspect, search, filter, and export student performance records as CSV. |
+
+---
+
+### 4. Step-by-Step Instructions to Connect a New Backend / Supabase Project
+
+When your team is ready to connect a live Supabase project:
+
+1. **Create Project**: Sign in to [supabase.com](https://supabase.com) and create a new project.
+2. **Execute Database Migration**:
+   - Open your project dashboard ➡️ **SQL Editor**.
+   - Copy the entire contents of [`data/supabase_schema.sql`](data/supabase_schema.sql) and paste them into the SQL editor.
+   - Click **Run** to generate the `students` table, columns, indexes, and RLS policies.
+3. **Configure Environment Variables**:
+   - In Supabase, navigate to **Project Settings** ➡️ **API**.
+   - Copy the **Project URL** and the **anon/public key**.
+   - Paste them into your `.env` file:
+     ```env
+     VITE_SUPABASE_URL=https://your-project-id.supabase.co
+     VITE_SUPABASE_ANON_KEY=your-actual-anon-key-here
+     ```
+4. **Restart Vite Server**:
+   ```bash
+   npm run dev
+   ```
+   The client will automatically detect the configuration and begin synchronizing student accounts, themes, and game progress to your live Supabase cloud database.
+
+---
+
+### 5. Password Encryption & Security Standard
+
+- Passwords are **never stored in plaintext** and **never sent over the wire unhashed**.
+- In [`src/lib/db.ts`](src/lib/db.ts), passwords undergo client-side **PBKDF2 key derivation using SHA-512** with 10,000 iterations and a unique salt before transmission or storage:
+  ```ts
+  // Hash format stored in database:
+  // "salt_hex:hash_hex"
+  const passwordHash = await hashClientPassword(rawPassword);
+  ```
+
+---
+
 ## 🛠️ Tech Stack
 
 | Technology | Purpose |
@@ -139,9 +295,9 @@ We are currently developing a comprehensive gamified **XP & Progression System**
 | **Tailwind CSS v4** | Modern utility-first styling and CSS variable integration |
 | **Framer Motion 12** | Smooth spring drawer physics, micro-animations, and page transitions |
 | **Web Audio API** | Real-time procedural mechanical switch sound synthesis |
-| **Supabase (PostgreSQL)** | Cloud database, student progression tracking, and session sync |
+| **Supabase (PostgreSQL)** | Cloud-ready database for student progression and session sync |
 | **Canvas Confetti** | Celebratory particle animations on game completions |
-| **Lucide React** | Consistent, modern iconography |
+| **Lucide React** | Consistent, modern iconography set |
 
 ---
 
@@ -158,6 +314,7 @@ Mechanical-Keyboard-for-campus-os/
 │   └── The_Last_Keystroke.mp3
 ├── data/                         # Schema and analytics exports
 │   ├── supabase_schema.sql       # PostgreSQL schema & security policies
+│   ├── users.json                # Local development database fallback
 │   ├── students_progress_table.html # Live HTML progress audit table
 │   └── students_summary.csv      # Exported CSV analytics spreadsheet
 ├── src/
@@ -173,17 +330,18 @@ Mechanical-Keyboard-for-campus-os/
 │   │   └── SoundMatrixGame.tsx   # Echo matrix synthesizer
 │   ├── lib/
 │   │   ├── userStats.ts          # Analytics tracking engine (local & cloud storage)
-│   │   ├── db.ts                 # Supabase client & progress synchronizer
-│   │   ├── supabase.ts           # Supabase client initialization
+│   │   ├── db.ts                 # Database abstraction & progress synchronizer
+│   │   ├── supabase.ts           # Supabase client initialization (guarded)
 │   │   ├── sound.ts              # Procedural Web Audio API sound engine
 │   │   ├── bgMusic.ts            # Lo-Fi soundtrack playlist manager
 │   │   └── themes.ts             # 7 curated mechanical keyboard themes
 │   ├── App.tsx                   # Main application router and state coordinator
 │   ├── index.css                 # Global CSS and layout tokens
 │   └── main.tsx                  # React application entry point
+├── .env.example                  # Environment template for senior developers
 ├── vite.config.ts                # Vite dev server and API configuration
 ├── package.json                  # Dependencies and scripts
-└── README.md                     # Comprehensive project documentation
+└── README.md                     # Comprehensive project documentation & senior dev guide
 ```
 
 ---
@@ -203,23 +361,13 @@ cd Mechanical-Keyboard-for-campus-os
 npm install
 ```
 
-### 3. Environment Setup (Optional)
-To link your Supabase cloud database, create a `.env` file in the root folder:
-
-```env
-VITE_SUPABASE_URL=your_supabase_project_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-```
-
-*(If omitted, the application runs in local fallback mode using browser storage).*
-
-### 4. Run Development Server
+### 3. Run in Local Mode (No Database Needed)
 ```bash
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) (or the displayed port) in your browser.
+Open [http://localhost:3000](http://localhost:3000) (or the displayed port) in your browser. All features, games, and the Dashboard will work immediately using browser storage.
 
-### 5. Build for Production
+### 4. Build for Production
 ```bash
 npm run build
 npm run preview
