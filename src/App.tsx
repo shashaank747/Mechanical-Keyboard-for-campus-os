@@ -271,6 +271,16 @@ export default function KeyboardLandingPage() {
     >
 
 
+      {/* Floating Hamburger Icon for Settings (Top Left) */}
+      <button
+        onClick={() => setIsThemeSidebarOpen(true)}
+        className="fixed top-4 left-4 z-40 p-2.5 rounded-2xl bg-white/95 hover:bg-white text-slate-700 hover:text-orange-500 border border-slate-200/90 shadow-md backdrop-blur-md transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center group"
+        aria-label="Settings"
+        title="Settings"
+      >
+        <Menu className="w-5 h-5 text-orange-500 transition-transform group-hover:scale-110" />
+      </button>
+
       {/* ============================================================ */}
       {/* PAGE: LET'S START - ARCADE GAMES HUB SELECTOR                 */}
       {/* ============================================================ */}
@@ -278,7 +288,6 @@ export default function KeyboardLandingPage() {
         <GamesHub
           theme={currentTheme}
           onSelectGame={(gameId) => setCurrentPage(gameId as AppPage)}
-          onOpenSettings={() => setIsThemeSidebarOpen(true)}
         />
       )}
 

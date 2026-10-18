@@ -129,11 +129,9 @@ const ARCADE_GAMES: GameCardInfo[] = [
 export function GamesHub({
   theme,
   onSelectGame,
-  onOpenSettings,
 }: {
   theme: KeyboardTheme;
   onSelectGame: (gameId: GameId) => void;
-  onOpenSettings?: () => void;
 }) {
   const isDark = theme.isDark || theme.category === "Dark";
 
@@ -154,32 +152,17 @@ export function GamesHub({
           </p>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
-          {onOpenSettings && (
-            <button
-              onClick={onOpenSettings}
-              className={`flex items-center gap-2 px-4 py-3 rounded-2xl border font-bold text-xs transition-all hover:scale-105 active:scale-95 cursor-pointer ${
-                isDark ? "bg-slate-900 border-slate-700 text-slate-200 hover:bg-slate-800" : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-xs"
-              }`}
-              title="Keyboard Themes & Settings"
-            >
-              <Settings className="w-4 h-4 text-orange-500" />
-              <span>Settings</span>
-            </button>
-          )}
-
-          <div className={`flex items-center gap-3 p-3.5 rounded-2xl border shrink-0 ${
-            isDark ? "bg-slate-900/90 border-slate-800" : "bg-white/90 border-slate-200 shadow-xs"
-          }`}>
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 text-white shadow-md">
-              <Trophy className="w-5 h-5" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Available Modes</span>
-              <span className="text-sm font-black font-mono text-orange-500">
-                7 Interactive Games
-              </span>
-            </div>
+        <div className={`flex items-center gap-3 p-3.5 rounded-2xl border shrink-0 ${
+          isDark ? "bg-slate-900/90 border-slate-800" : "bg-white/90 border-slate-200 shadow-xs"
+        }`}>
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 text-white shadow-md">
+            <Trophy className="w-5 h-5" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Available Modes</span>
+            <span className="text-sm font-black font-mono text-orange-500">
+              7 Interactive Games
+            </span>
           </div>
         </div>
       </div>

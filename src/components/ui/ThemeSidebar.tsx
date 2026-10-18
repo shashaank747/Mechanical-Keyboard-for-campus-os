@@ -30,7 +30,7 @@ export function ThemeSidebar({
   colorZones = false,
   onToggleColorZones,
 }: ThemeSidebarProps) {
-  const [view, setView] = useState<"menu" | "settings">("menu");
+  const [view, setView] = useState<"menu" | "settings">("settings");
   const [activeCategory, setActiveCategory] = useState<string>("All");
 
   const categories = ["All", "Light", "Pastel", "Retro", "Dark"];
@@ -54,8 +54,8 @@ export function ThemeSidebar({
         document.documentElement.style.overflow = originalHtmlOverflow;
       };
     } else {
-      // Reset to main navigation view when closed
-      setView("menu");
+      // Reset to settings view when closed
+      setView("settings");
     }
   }, [isOpen]);
 
