@@ -11,6 +11,7 @@ import { FallingWordsGame } from "@/components/ui/FallingWordsGame";
 import { SoundMatrixGame } from "@/components/ui/SoundMatrixGame";
 import { BlindTypingGame } from "@/components/ui/BlindTypingGame";
 import { CodeSprintGame } from "@/components/ui/CodeSprintGame";
+import { ShortcutsGame } from "@/components/ui/ShortcutsGame";
 import { KEYBOARD_THEMES, type KeyboardTheme } from "@/lib/themes";
 import { registerUser, loginUser, resetPassword, validateUserExists, updateStudentProgress, updateUserTheme, getUserPreferences, type UserRecord } from "@/lib/db";
 import { recordGamePlay, setLatestPlayedGameId } from "@/lib/userStats";
@@ -122,79 +123,6 @@ export default function KeyboardLandingPage() {
   const [wpm, setWpm] = useState<number | null>(null);
   const [accuracy, setAccuracy] = useState<number>(100);
   const autoNextTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Shortcuts Dojo state
-  const [testedShortcuts, setTestedShortcuts] = useState<Set<string>>(new Set());
-  const [activeShortcutCombo, setActiveShortcutCombo] = useState<string | null>(null);
-
-  // Intercept & Disable Browser Default Shortcuts specifically when Shortcuts Dojo is Active
-  useEffect(() => {
-    if (currentPage !== "shortcuts") return;
-
-    const handleShortcutsKeyDown = (e: KeyboardEvent) => {
-      // Modifiers and combinations that normally trigger browser dialogs (e.g. Ctrl+P, Ctrl+S, Ctrl+F, Ctrl+O, etc.)
-      const isModifierCombo = e.ctrlKey || e.altKey || e.metaKey;
-      const isFunctionKey = e.key.startsWith("F") && e.key.length <= 3;
-
-      if (isModifierCombo || isFunctionKey) {
-        // PREVENT BROWSER DEFAULT ACTIONS (Print dialog, Save dialog, Page search, etc.)
-        e.preventDefault();
-        e.stopPropagation();
-      }
-
-      // Format pressed combination
-      const parts: string[] = [];
-      if (e.ctrlKey) parts.push("Ctrl");
-      if (e.altKey) parts.push("Alt");
-      if (e.shiftKey) parts.push("Shift");
-      if (e.metaKey) parts.push("Windows");
-
-      let mainKey = e.key.toUpperCase();
-      if (e.code === "Space") mainKey = "Space";
-      if (e.code === "Tab") mainKey = "Tab";
-      if (e.code === "Escape") mainKey = "Esc";
-      if (e.code === "Period") mainKey = ".";
-      if (e.code === "Slash") mainKey = "/";
-
-      // Exclude modifier-only key presses
-      const modifierKeys = ["CONTROL", "ALT", "SHIFT", "META"];
-      if (!modifierKeys.includes(mainKey)) {
-        parts.push(mainKey);
-      }
-
-      if (parts.length > 0) {
-        const comboStr = parts.join(" + ");
-        setActiveShortcutCombo(comboStr);
-
-        // Normalize match against shortcut list
-        const SHORTCUTS_REF = [
-          "Ctrl + C", "Ctrl + V", "Ctrl + Z", "Ctrl + P", "Ctrl + S", "Ctrl + F",
-          "Ctrl + Shift + P", "Ctrl + A", "Ctrl + Shift + T", "Alt + Tab", "Windows + .", "Ctrl + K"
-        ];
-
-        const matched = SHORTCUTS_REF.find((s) => {
-          const sNormalized = s.toLowerCase().replace(/\s+/g, "");
-          const comboNormalized = comboStr.toLowerCase().replace(/\s+/g, "");
-          return sNormalized === comboNormalized;
-        });
-
-        if (matched) {
-          setTestedShortcuts((prev) => new Set(prev).add(matched));
-          soundEngine.playKeySound(mainKey);
-        }
-
-        handleKeyTriggered(mainKey, e.code);
-      }
-    };
-
-    window.addEventListener("keydown", handleShortcutsKeyDown, { capture: true });
-    return () => window.removeEventListener("keydown", handleShortcutsKeyDown, { capture: true });
-  }, [currentPage]);
-
-  // Background music (temporarily commented out for website integration)
-  // useEffect(() => {
-  //   bgMusic.play();
-  // }, []);
 
   // Cleanup pending timer on unmount
   useEffect(() => {
@@ -504,147 +432,14 @@ export default function KeyboardLandingPage() {
       )}
 
       {/* ============================================================ */}
-      {/* GAME 5: SHORTCUTS GUIDE PAGE                                 */}
+      {/* GAME 5: KEYBOARD SHORTCUTS DOJO                              */}
       {/* ============================================================ */}
       {currentPage === "shortcuts" && (
-        <section className="relative z-10 w-full max-w-5xl px-4 py-8 flex flex-col items-center gap-6 animate-in fade-in duration-300">
-          {/* Top Header Navigation Bar (Standardized Suite Header) */}
-          <div className="w-full flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-blue-200">
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <button
-                onClick={() => setCurrentPage("start")}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-blue-200 bg-white text-slate-800 hover:bg-blue-50 hover:text-blue-600 text-xs font-bold transition-all shadow-xs cursor-pointer"
-                title="Back to Games Hub"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Games Hub</span>
-              </button>
-
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-blue-200 shadow-xs">
-                <Sparkles className="w-5 h-5 text-blue-600" />
-                <span className="text-sm sm:text-base font-black tracking-tight text-slate-950">
-                  Keyboard Shortcuts Dojo
-                </span>
-              </div>
-
-              <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
-                Shortcut Reference Matrix
-              </span>
-            </div>
-          </div>
-
-          <div className="w-full p-6 sm:p-8 border border-slate-200/90 rounded-3xl shadow-[0_16px_40px_-8px_rgba(15,23,42,0.1),0_4px_14px_-2px_rgba(15,23,42,0.04),inset_0_1px_0_rgba(255,255,255,1)] flex flex-col gap-6 bg-white text-slate-900 ring-1 ring-black/[0.03]">
-            {/* Safe Sandbox Active Status Banner */}
-            <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
-              isDark ? "bg-emerald-950/40 border-emerald-800/60 text-emerald-300" : "bg-emerald-50 border-emerald-200 text-emerald-900"
-            }`}>
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 shrink-0">
-                  <ShieldCheck className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className="text-xs font-black uppercase tracking-wider block">
-                    Browser Shortcut Override Enabled
-                  </span>
-                  <p className="text-xs opacity-85">
-                    Browser hotkeys (such as <strong>Ctrl + P</strong> for print, <strong>Ctrl + S</strong> for save, and <strong>Ctrl + F</strong> for find) are intercepted safely inside the dojo.
-                  </p>
-                </div>
-              </div>
-
-              {/* Live Practiced Counter */}
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-xs font-mono font-bold px-3 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400">
-                  {testedShortcuts.size} / 12 Practiced
-                </span>
-                {testedShortcuts.size > 0 && (
-                  <button
-                    onClick={() => setTestedShortcuts(new Set())}
-                    className="p-1.5 rounded-lg hover:bg-emerald-500/20 text-emerald-400 transition-colors cursor-pointer"
-                    title="Reset Practice"
-                  >
-                    <RotateCcw className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Live Pressed Hotkey HUD */}
-            <div className="p-4 rounded-2xl border flex items-center justify-between gap-4 bg-blue-50/60 border-blue-200">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Live Hotkey Input:</span>
-                {activeShortcutCombo ? (
-                  <span className="font-mono text-sm font-black px-3 py-1 rounded-xl bg-blue-600 text-white shadow-sm animate-pulse">
-                    {activeShortcutCombo}
-                  </span>
-                ) : (
-                  <span className="text-xs text-slate-500 italic">Press any shortcut keys on your keyboard...</span>
-                )}
-              </div>
-              <span className="text-[10px] font-mono text-slate-500 hidden sm:inline">Tactile feedback active</span>
-            </div>
-
-            {/* Shortcuts Practice Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
-              {[
-                { key: "Ctrl + C", desc: "Copy Selection" },
-                { key: "Ctrl + V", desc: "Paste Clipboard" },
-                { key: "Ctrl + Z", desc: "Undo Action" },
-                { key: "Ctrl + P", desc: "Quick Print / File Open (Safe)" },
-                { key: "Ctrl + S", desc: "Save File / Commit (Safe)" },
-                { key: "Ctrl + F", desc: "Find in Page (Safe)" },
-                { key: "Ctrl + Shift + P", desc: "Command Palette" },
-                { key: "Ctrl + A", desc: "Select All" },
-                { key: "Ctrl + Shift + T", desc: "Reopen Closed Tab" },
-                { key: "Alt + Tab", desc: "Switch Applications" },
-                { key: "Windows + .", desc: "Emoji Picker" },
-                { key: "Ctrl + K", desc: "Quick Search / Command" },
-              ].map((sc, i) => {
-                const isPracticed = testedShortcuts.has(sc.key);
-                return (
-                  <div
-                    key={i}
-                    className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all ${
-                      isPracticed
-                        ? "bg-emerald-50 border-emerald-400 shadow-sm text-slate-900"
-                        : "bg-white border-blue-200 hover:border-blue-400 text-slate-900 shadow-sm"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <span className={`px-2.5 py-1 rounded-xl border font-mono text-xs font-bold shadow-xs ${
-                        isPracticed
-                          ? "bg-emerald-500 text-white border-emerald-400"
-                          : "bg-blue-50 border-blue-200 text-blue-700"
-                      }`}>
-                        {sc.key}
-                      </span>
-                      <span className="text-xs font-semibold text-slate-700">
-                        {sc.desc}
-                      </span>
-                    </div>
-
-                    {isPracticed && (
-                      <span className="p-1 rounded-full bg-emerald-100 text-emerald-600 shrink-0">
-                        <Check className="w-3.5 h-3.5" />
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Interactive Keyboard in Shortcuts Page */}
-          <div className="flex w-full items-center justify-center p-2 sm:p-4 mt-2">
-            <Keyboard
-              className="mx-auto"
-              theme={currentTheme}
-              colorZones={colorZones}
-              onKeyPress={handleKeyTriggered}
-              onOpenThemeSidebar={() => setIsThemeSidebarOpen(true)}
-            />
-          </div>
-        </section>
+        <ShortcutsGame
+          theme={currentTheme}
+          colorZones={colorZones}
+          onBackToHome={() => setCurrentPage("start")}
+        />
       )}
 
 

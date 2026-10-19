@@ -76,6 +76,16 @@ function MeteorDefenseIcon({ className }: { className?: string }) {
   );
 }
 
+function ShortcutsDojoIcon({ className }: { className?: string }) {
+  return (
+    <img
+      src="/shortcutsdojoemblem.png"
+      alt="Keyboard Shortcuts Dojo"
+      className={`object-contain rounded-xs ${className || "w-4 h-4"}`}
+    />
+  );
+}
+
 const GAME_META: Record<
   string,
   { title: string; category: string; icon: React.ElementType; color: string; barGradient: string }
@@ -116,9 +126,9 @@ const GAME_META: Record<
     barGradient: "from-blue-600 to-indigo-500",
   },
   shortcuts: {
-    title: "Shortcuts Dojo",
+    title: "Keyboard Shortcuts Dojo",
     category: "Productivity",
-    icon: BookOpen,
+    icon: ShortcutsDojoIcon,
     color: "#6366f1",
     barGradient: "from-indigo-500 to-blue-500",
   },

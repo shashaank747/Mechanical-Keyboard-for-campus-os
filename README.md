@@ -51,7 +51,7 @@ Each game is carefully calibrated to train a distinct facet of keyboard mastery:
 | **☄️ Key Meteor Defense** | Arcade Survival | Retro arcade shooter with launch duration options (**2 Min**, **5 Min**, or **Unlimited**). Features real-time `MM:SS:ms` millisecond countdown or count-up timers, lives tracking, wave scaling, and a post-mission debrief card with exact timer-referenced WPM. | Score, Wave, WPM |
 | **🔥 Speed Typing Arena** | Speed & Reflexes | Dynamic real-time pangram typing benchmark. Delivers instantaneous WPM calculation, streak tracking, accuracy meter, and celebratory particle confetti upon round completion. | Peak WPM & Net Speed |
 | **🙈 Blind Typing Dojo** | Pure Muscle Memory | Pure auditory and muscle memory training with hardcoded punctuation where character prompts are spoken aloud or kept hidden. Students build unbreakable tactile reflexes. | Lines Dictated & Recall |
-| **🥋 Keyboard Shortcuts Dojo** | Productivity | Interactive developer hotkey trainer that safely intercepts and tests key combinations (`Ctrl+C`, `Ctrl+V`, `Ctrl+Shift+P`, `Alt+Tab`, `Windows+.`, `Ctrl+F`, etc.) without triggering browser default dialogs. | Hotkeys Mastered |
+| **🥋 Keyboard Shortcuts Dojo** | Productivity & Environments | Multi-environment hotkey training across **Basic Computer/Windows, Microsoft Excel, Python & VS Code, Web Browsers, and Text Editing**. Features full meaning and action explanations, live hardware key interception, and real-time key-lighting on the virtual 3D mechanical keyboard. | Hotkeys Mastered & Matrix |
 | **🎵 Echo Matrix Voice Dictation** | Auditory Training | Text-to-speech audio dictation where the engine speaks letters, spaces, and complete vocabulary words for synchronized rhythmic typing. | Rhythmic Accuracy |
 
 ---
@@ -351,6 +351,7 @@ Mechanical-Keyboard-for-campus-os/
 │   ├── speedtypingemblem.png     # Full squircle Speed Typing Arena app icon
 │   ├── touchtypingemblem.png     # Full squircle Touch Typing Academy app icon
 │   ├── meteordefenseemblem.png   # Full squircle Key Meteor Defense app icon
+│   ├── shortcutsdojoemblem.png   # Full squircle Keyboard Shortcuts Dojo app icon
 │   ├── Afternoon_on_the_Sill.mp3 # Lo-Fi soundtrack tracks
 │   ├── Notes_on_the_Glass.mp3
 │   ├── Steaming_Mug_Grey_Skies.mp3
@@ -371,6 +372,7 @@ Mechanical-Keyboard-for-campus-os/
 │   │   ├── CodeSprintGame.tsx    # Multi-language IDE compiler game (8 languages)
 │   │   ├── FallingWordsGame.tsx  # Key Meteor Defense arcade shooter (Timed & Survival)
 │   │   ├── BlindTypingGame.tsx   # Auditory blind typing challenge
+│   │   ├── ShortcutsGame.tsx     # Categorized hotkey trainer with 3D keyboard visualizer
 │   │   └── SoundMatrixGame.tsx   # Echo matrix synthesizer
 │   ├── lib/
 │   │   ├── userStats.ts          # Analytics tracking engine (local & cloud storage)

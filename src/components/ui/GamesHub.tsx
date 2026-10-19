@@ -89,6 +89,16 @@ export function MeteorDefenseIcon({ className }: { className?: string }) {
   );
 }
 
+export function ShortcutsDojoIcon({ className }: { className?: string }) {
+  return (
+    <img
+      src="/shortcutsdojoemblem.png"
+      alt="Keyboard Shortcuts Dojo"
+      className={`object-contain rounded-xl shadow-2xs transition-transform duration-300 ease-out hover:scale-120 ${className || "w-9 h-9"}`}
+    />
+  );
+}
+
 const ARCADE_GAMES: GameCardInfo[] = [
   {
     id: "codesprint",
@@ -169,8 +179,8 @@ const ARCADE_GAMES: GameCardInfo[] = [
     title: "Keyboard Shortcuts Dojo",
     tagline: "Power User & Developer Hotkeys",
     category: "Productivity",
-    description: "Master essential multi-key hotkeys, window management shortcuts, developer command palettes, and navigation combinations on your 3D mechanical keyboard.",
-    icon: BookOpen,
+    description: "Master essential multi-key hotkeys across Excel, Python, Browsers, and OS navigation with live meaning guides and 3D mechanical keyboard visualizers.",
+    icon: ShortcutsDojoIcon,
     badgeColor: "bg-indigo-500 text-white",
     gradient: "from-indigo-500/20 via-blue-500/10 to-transparent",
     metrics: ["Developer Hotkeys", "OS Commands", "Interactive Reference", "Fast Recall"],
