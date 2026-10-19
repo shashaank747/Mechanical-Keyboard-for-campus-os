@@ -26,6 +26,16 @@ import {
 import { getUserStats, type UserStatsData, type GamePlayRecord } from "@/lib/userStats";
 import { type KeyboardTheme } from "@/lib/themes";
 
+function BlindTypingIcon({ className }: { className?: string }) {
+  return (
+    <img
+      src="/blindtypingicon.png"
+      alt="Blind Typing Dojo"
+      className={`object-contain rounded-xs ${className || "w-4 h-4"}`}
+    />
+  );
+}
+
 const GAME_META: Record<
   string,
   { title: string; category: string; icon: React.ElementType; color: string; barGradient: string }
@@ -61,9 +71,9 @@ const GAME_META: Record<
   blindtyping: {
     title: "Blind Typing Dojo",
     category: "Muscle Memory",
-    icon: Headphones,
-    color: "#d946ef",
-    barGradient: "from-fuchsia-500 to-pink-500",
+    icon: BlindTypingIcon,
+    color: "#2563eb",
+    barGradient: "from-blue-600 to-indigo-500",
   },
   shortcuts: {
     title: "Shortcuts Dojo",

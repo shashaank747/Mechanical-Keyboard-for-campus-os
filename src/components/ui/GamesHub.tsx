@@ -39,6 +39,16 @@ export interface GameCardInfo {
   lockedLabel?: string;
 }
 
+export function BlindTypingIcon({ className }: { className?: string }) {
+  return (
+    <img
+      src="/blindtypingicon.png"
+      alt="Blind Typing Dojo"
+      className={`object-contain rounded-md ${className || "w-6 h-6"}`}
+    />
+  );
+}
+
 const ARCADE_GAMES: GameCardInfo[] = [
   {
     id: "codesprint",
@@ -70,9 +80,9 @@ const ARCADE_GAMES: GameCardInfo[] = [
     tagline: "Pure Audio Dictation • Words Hidden",
     category: "Pure Muscle Memory",
     description: "Lines of easy, generally used words are spoken aloud without showing any text on screen. Listen carefully and type blind directly on your 3D mechanical keyboard.",
-    icon: Headphones,
-    badgeColor: "bg-fuchsia-500 text-white",
-    gradient: "from-fuchsia-500/20 via-purple-500/10 to-transparent",
+    icon: BlindTypingIcon,
+    badgeColor: "bg-blue-600 text-white",
+    gradient: "from-blue-600/20 via-indigo-500/10 to-transparent",
     metrics: ["Hidden Words", "Spoken Easy Lines", "100% Muscle Memory", "Instant Reveal"],
     buttonText: "PLAY BLIND TYPING",
   },

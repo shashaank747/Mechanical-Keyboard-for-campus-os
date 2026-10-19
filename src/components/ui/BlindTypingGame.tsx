@@ -593,9 +593,9 @@ export function BlindTypingGame({
             <span>Games Hub</span>
           </button>
 
-          <div className="flex items-center gap-1.5">
-            <span className="p-1.5 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/30">
-              <EyeOff className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-2">
+            <span className="p-1 rounded-xl bg-white border border-blue-200 shadow-xs flex items-center justify-center">
+              <img src="/blindtypingicon.png" alt="Blind Typing" className="w-5 h-5 object-contain rounded-md" />
             </span>
             <span className={`text-sm font-black tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>
               Blind Typing
