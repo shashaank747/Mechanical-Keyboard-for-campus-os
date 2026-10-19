@@ -61,12 +61,12 @@ export default function KeyboardLandingPage() {
   const [testedKeys, setTestedKeys] = useState<Set<string>>(new Set());
   const [lastTriggeredKey, setLastTriggeredKey] = useState<{ key: string; code: string; time: number } | null>(null);
 
-  // Validate active session against Supabase on startup / mount & restore user's saved theme
+  // Validate active session against database on startup / mount & restore user's saved theme
   useEffect(() => {
     if (loggedInUser) {
       validateUserExists(loggedInUser).then((exists) => {
         if (!exists) {
-          console.warn("[Session] Active user was removed from Supabase. Resetting session.");
+          console.warn("[Session] Active user does not exist in local database. Resetting session.");
           setLoggedInUser(null);
           if (typeof window !== "undefined") {
             localStorage.removeItem("setu_active_user");

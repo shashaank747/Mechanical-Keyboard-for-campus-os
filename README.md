@@ -33,8 +33,8 @@ Unlike traditional barebones typing tutors, this application bridges **physical 
 4. **Precision Mission Timers & Performance Debrief**: Timed arcade modes featuring high-precision millisecond countdown timers (`MM:SS:ms`), live survival count-up timers, and post-game telemetry screens showing exact timer-referenced WPM calculations, total keys typed, and word counts.
 5. **Interactive UI & Hover Magnification**: Modern squircle app icons with interactive hover magnification (`scale-135` hover pop effect), fluid animations, and rich tactile feedback.
 6. **User Activity Analytics Dashboard**: A built-in personal telemetry hub featuring interactive **Bar Graphs** (visualizing game frequencies) and **Line Graphs** (plotting speed progression in WPM and accuracy trajectories over time).
-7. **Customization & Aesthetics**: Switch seamlessly across 8 curated theme palettes, toggle touch-typing finger color zones, and enjoy an intuitive, compact navigation drawer.
-8. **Local-First, Cloud-Ready Architecture**: Runs 100% out-of-the-box in local offline mode with zero required external database dependencies, with one-click Supabase cloud sync ready at any time.
+7. **Customization & Aesthetics**: Switch seamlessly between **2 curated themes** (**Studio Light** and **Cyberpunk Neon**), toggle touch-typing finger color zones, and enjoy an intuitive, compact navigation drawer.
+8. **100% Local-First Architecture**: Runs 100% out-of-the-box with zero external database dependencies or cloud lock-in. Student accounts, hashed passwords, game telemetry, and keyboard preferences persist reliably in high-speed client storage.
 
 ---
 
@@ -121,14 +121,8 @@ The slide-over drawer (accessible via the top-left toggle) houses complete keybo
   - 📊 **Dashboard**: Open the user data analytics and charts view.
   - 🎨 **Keyboard Settings**: Enter the theme and color customization panel.
 - **Curated Theme Palettes**:
-  - 🏙️ **Studio Light**: Clean architectural slate with solar orange accents.
-  - 🌆 **Cyberpunk Neon**: Obsidian chassis with electric magenta & laser cyan backlights.
-  - 🥷 **Carbon Stealth Dark**: Matte graphite with safety orange indicators.
-  - 💾 **Retro Classic 90s**: Vintage IBM Model M industrial beige with red ESC accents.
-  - 🍵 **Matcha & Cream**: Soothing earthy sage, ivory keycaps, and emerald modifiers.
-  - ❄️ **Nordic Polar Frost**: Glacial Arctic cyan and iced ocean blue.
-  - 🌸 **Sakura Blossom**: Cherry petal pastel with gold escape accents.
-  - 🔮 **Lavender Mist**: Lilac chassis with royal purple and milk alphas.
+  - 🏙️ **Studio Light**: Clean architectural slate chassis (`#ffffff` / `#f1f5f9`), crisp keycaps, and solar orange accent keys (`#f97316`).
+  - 🌆 **Cyberpunk Neon**: High-contrast obsidian dark chassis (`#0f172a`), laser cyan alphas (`#06b6d4`), and vibrant electric magenta modifiers (`#ec4899`).
 - **Finger Color Zones**: Optional visual RGB backlight mode highlighting keys according to standard 10-finger touch-typing assignments.
 
 ---
@@ -159,12 +153,9 @@ We are currently developing a comprehensive gamified **XP & Progression System**
 
 ---
 
-## 🛠️ Senior Developer & Backend Integration Guide
+## 🛠️ 100% Local-First Architecture & Data Persistence
 
-> [!IMPORTANT]
-> **Current Status**: All external Supabase cloud connections have been decoupled. The codebase currently operates in a **100% self-contained, local-first mode**. There are zero hardcoded remote API keys or active database connections in the repository.
-
-This section provides senior backend developers, team leads, and DevOps engineers with an exact roadmap of **what needs to be connected, where it is wired, and how data flows**.
+The application operates in a **100% self-contained, local-first mode**. There are zero external cloud database dependencies, zero third-party remote API keys, and zero required external configuration.
 
 ```
 +-----------------------------------------------------------------------------------+
@@ -179,146 +170,35 @@ This section provides senior backend developers, team leads, and DevOps engineer
                                         |
                                         v
 +-----------------------------------------------------------------------------------+
-|                        STORAGE ABSTRACTION & FALLBACK LAYER                       |
+|                         LOCAL STORAGE & CACHING LAYER                             |
 |                                                                                   |
-|  Does .env have VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY?                     |
-|                                                                                   |
-|           [ YES ]                                            [ NO ]               |
-|              |                                                  |                 |
-|              v                                                  v                 |
-|    +--------------------+                             +--------------------+      |
-|    |   Supabase Cloud   |                             | Local / Dev Mode   |      |
-|    |   (src/lib/        |                             | (localStorage &    |      |
-|    |    supabase.ts)    |                             |  data/users.json)  |      |
-|    |                    |                             |                    |      |
-|    | Table: students    |                             | Fully offline,     |      |
-|    | RLS: Enabled       |                             | zero network calls |      |
-|    +--------------------+                             +--------------------+      |
+|  - Instant, synchronous client-side persistence via browser LocalStorage          |
+|  - Standalone development API routes (/api/register, /api/login, /api/progress)   |
+|  - 100% offline-ready with zero network latency or remote dependencies            |
 +-----------------------------------------------------------------------------------+
 ```
 
 ---
 
-### 1. Where Environment Variables Live
+### 1. File Map: Where Data Code Lives & What Connects Where
 
-All backend connection credentials are kept in the root `.env` file (copied from `.env.example`).
-
-```bash
-# .env (in project root)
-
-# 1. Your Supabase Project HTTPS URL
-VITE_SUPABASE_URL=https://<your-project-ref>.supabase.co
-
-# 2. Your Supabase Project Public/Anon Key (safe for client bundling)
-VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-
-# 3. (Optional) Secret Service Role Key (for administrative Node scripts / backend workers only)
-SUPABASE_SECRET_KEY=sb_secret_...
-```
-
-- When `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are **empty or unset**:
-  - `src/lib/supabase.ts` exports `supabase = null` and `isSupabaseConfigured = false`.
-  - The application automatically switches to offline mode with zero network errors.
-- When `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are **provided**:
-  - The client initializes authenticated Supabase calls for registration, login, progress sync, and theme storage.
-
----
-
-### 2. Database Schema & Migration File
-
-The complete PostgreSQL migration script is located at:
-📁 **[`data/supabase_schema.sql`](data/supabase_schema.sql)**
-
-#### Target Table: `public.students`
-```sql
-CREATE TABLE IF NOT EXISTS public.students (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id TEXT UNIQUE NOT NULL,                       -- Unique identifier e.g. "USR-174829"
-  username TEXT NOT NULL,                             -- Unique student handle
-  email TEXT NOT NULL,                                -- Student email address
-  password_hash TEXT NOT NULL,                        -- PBKDF2-SHA512 salted client hash
-  ip_address TEXT DEFAULT '127.0.0.1',                -- Client audit IP
-  theme_id TEXT DEFAULT 'studio-light',               -- Selected keyboard palette ID
-  color_zones BOOLEAN DEFAULT false,                  -- Touch-typing finger color RGB mode
-  preferences_json JSONB DEFAULT '{}'::jsonb,         -- Palette & accessibility preferences
-  total_games_played INT DEFAULT 0,                   -- Aggregated round count
-  total_levels_mastered INT DEFAULT 0,                -- Completed academy + code levels
-  code_sprint_solved INT DEFAULT 0,                   -- Count of code templates solved
-  code_sprint_best_wpm INT DEFAULT 0,                 -- Peak code completion WPM
-  code_sprint_langs JSONB DEFAULT '[]'::jsonb,        -- Array of languages practiced
-  code_sprint_data JSONB DEFAULT '{}'::jsonb,         -- Level breakdown by language
-  academy_highest_level INT DEFAULT 0,                -- Highest level reached (1-16)
-  academy_completed_levels JSONB DEFAULT '[]'::jsonb, -- Array of completed level IDs
-  speed_best_wpm INT DEFAULT 0,                       -- Peak Speed Arena WPM
-  speed_tests_taken INT DEFAULT 0,                    -- Total speed tests completed
-  meteor_high_score INT DEFAULT 0,                    -- High score in Key Meteor Defense
-  meteor_highest_wave INT DEFAULT 0,                  -- Highest wave survived
-  blind_completed_lines INT DEFAULT 0,                -- Lines mastered in Blind Typing
-  shortcuts_mastered INT DEFAULT 0,                   -- Developer hotkeys verified
-  last_active_game TEXT DEFAULT 'None',               -- Last game title played
-  progress_json JSONB DEFAULT '{}'::jsonb,            -- Nested progress state snapshot
-  created_at TIMESTAMPTZ DEFAULT now(),
-  last_login_at TIMESTAMPTZ DEFAULT now(),
-  last_activity_at TIMESTAMPTZ DEFAULT now()
-);
-```
-
-#### Row Level Security (RLS)
-The script configures open public read/write policies:
-```sql
-ALTER TABLE public.students ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Allow all public operations on students" ON public.students
-  FOR ALL USING (true) WITH CHECK (true);
-```
-
----
-
-### 3. File Map: Where Data Code Lives & What Connects Where
-
-| File Path | Role & Connection Responsibility |
+| File Path | Role & Architecture Responsibility |
 | :--- | :--- |
-| **[`src/lib/supabase.ts`](src/lib/supabase.ts)** | **Supabase Client Initializer**: Reads `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. Exports `supabase` (or `null` if unconfigured) and `isSupabaseConfigured` flag. |
-| **[`src/lib/db.ts`](src/lib/db.ts)** | **Core Database & Session Layer**: Handles student registration, login verification, password reset, active session validation, level completion tracking, and theme persistence. Wrapped with `if (supabase)` guards with automatic local storage fallback. |
-| **[`src/lib/userStats.ts`](src/lib/userStats.ts)** | **User Telemetry & Chart Engine**: Tracks game play counts (powers the **Bar Graph**) and WPM / accuracy trajectories (powers the **Line Graph**). Persists sessions in `localStorage` under `setu_user_game_stats_v1`. |
+| **[`src/lib/db.ts`](src/lib/db.ts)** | **Core Database & Session Layer**: Manages local student registrations, secure password verification, level progress tracking, and theme persistence. Fully offline and self-contained. |
+| **[`src/lib/userStats.ts`](src/lib/userStats.ts)** | **User Telemetry & Chart Engine**: Tracks game play counts (powers the **Bar Graph**) and WPM / accuracy trajectories (powers the **Line Graph**). Persists sessions in `localStorage`. |
 | **[`src/components/ui/Dashboard.tsx`](src/components/ui/Dashboard.tsx)** | **Analytics Visualization UI**: Consumes data from `getUserStats()` to render the interactive Bar Graph and SVG Line Graph with hover tooltips and session history. |
-| **[`vite.config.ts`](vite.config.ts)** | **Development Mock REST Server**: Provides local Express-like routes (`/api/register`, `/api/login`, `/api/progress`, `/api/theme`, `/api/reset-password`) that read and write directly to `data/users.json` during local development when no database is linked. |
+| **[`vite.config.ts`](vite.config.ts)** | **Development Mock REST Server**: Provides local Express-like routes (`/api/register`, `/api/login`, `/api/progress`, `/api/theme`, `/api/reset-password`) that persist directly to `data/users.json` during local development. |
 | **[`data/students_progress_table.html`](data/students_progress_table.html)** | **Standalone Progress Audit Table**: A single-file developer portal to inspect, search, filter, and export student performance records as CSV. |
 
 ---
 
-### 4. Step-by-Step Instructions to Connect a New Backend / Supabase Project
-
-When your team is ready to connect a live Supabase project:
-
-1. **Create Project**: Sign in to [supabase.com](https://supabase.com) and create a new project.
-2. **Execute Database Migration**:
-   - Open your project dashboard ➡️ **SQL Editor**.
-   - Copy the entire contents of [`data/supabase_schema.sql`](data/supabase_schema.sql) and paste them into the SQL editor.
-   - Click **Run** to generate the `students` table, columns, indexes, and RLS policies.
-3. **Configure Environment Variables**:
-   - In Supabase, navigate to **Project Settings** ➡️ **API**.
-   - Copy the **Project URL** and the **anon/public key**.
-   - Paste them into your `.env` file:
-     ```env
-     VITE_SUPABASE_URL=https://your-project-id.supabase.co
-     VITE_SUPABASE_ANON_KEY=your-actual-anon-key-here
-     ```
-4. **Restart Vite Server**:
-   ```bash
-   npm run dev
-   ```
-   The client will automatically detect the configuration and begin synchronizing student accounts, themes, and game progress to your live Supabase cloud database.
-
----
-
-### 5. Password Encryption & Security Standard
+### 2. Password Encryption & Security Standard
 
 - Passwords are **never stored in plaintext** and **never sent over the wire unhashed**.
-- In [`src/lib/db.ts`](src/lib/db.ts), passwords undergo client-side **PBKDF2 key derivation using SHA-512** with 10,000 iterations and a unique salt before transmission or storage:
+- In [`src/lib/db.ts`](src/lib/db.ts), passwords undergo client-side **SHA-256 cryptographic hashing** with salt before storage:
   ```ts
   // Hash format stored in database:
-  // "salt_hex:hash_hex"
+  // "sha256$<hash_hex>"
   const passwordHash = await hashClientPassword(rawPassword);
   ```
 
@@ -334,7 +214,7 @@ When your team is ready to connect a live Supabase project:
 | **Tailwind CSS v4** | Modern utility-first styling and CSS variable integration |
 | **Framer Motion 12** | Smooth spring drawer physics, micro-animations, and page transitions |
 | **Web Audio API** | Real-time procedural mechanical switch sound synthesis |
-| **Supabase (PostgreSQL)** | Cloud-ready database for student progression and session sync |
+| **LocalStorage & JSON DB** | High-speed, 100% offline-ready student progression and session storage |
 | **Canvas Confetti** | Celebratory particle animations on game completions |
 | **Lucide React** | Consistent, modern iconography set |
 
@@ -358,8 +238,7 @@ Mechanical-Keyboard-for-campus-os/
 │   ├── Sunlight_on_the_Desk.mp3
 │   └── The_Last_Keystroke.mp3
 ├── data/                         # Schema and analytics exports
-│   ├── supabase_schema.sql       # PostgreSQL schema & security policies
-│   ├── users.json                # Local development database fallback
+│   ├── users.json                # Local development database
 │   ├── students_progress_table.html # Live HTML progress audit table
 │   └── students_summary.csv      # Exported CSV analytics spreadsheet
 ├── src/
@@ -375,19 +254,17 @@ Mechanical-Keyboard-for-campus-os/
 │   │   ├── ShortcutsGame.tsx     # Categorized hotkey trainer with 3D keyboard visualizer
 │   │   └── SoundMatrixGame.tsx   # Echo matrix synthesizer
 │   ├── lib/
-│   │   ├── userStats.ts          # Analytics tracking engine (local & cloud storage)
-│   │   ├── db.ts                 # Database abstraction & progress synchronizer
-│   │   ├── supabase.ts           # Supabase client initialization (guarded)
+│   │   ├── userStats.ts          # Analytics tracking engine (local client storage)
+│   │   ├── db.ts                 # Local database abstraction & progress engine
 │   │   ├── sound.ts              # Procedural Web Audio API sound engine
 │   │   ├── bgMusic.ts            # Lo-Fi soundtrack playlist manager
-│   │   └── themes.ts             # 8 curated mechanical keyboard themes
+│   │   └── themes.ts             # 2 curated mechanical keyboard themes (Studio Light & Cyberpunk Neon)
 │   ├── App.tsx                   # Main application router and state coordinator
 │   ├── index.css                 # Global CSS and layout tokens
 │   └── main.tsx                  # React application entry point
-├── .env.example                  # Environment template for senior developers
 ├── vite.config.ts                # Vite dev server and API configuration
 ├── package.json                  # Dependencies and scripts
-└── README.md                     # Comprehensive project documentation & senior dev guide
+└── README.md                     # Comprehensive project documentation
 ```
 
 ---
