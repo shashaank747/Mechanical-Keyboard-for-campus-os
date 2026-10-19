@@ -59,6 +59,16 @@ export function BlindTypingIcon({ className }: { className?: string }) {
   );
 }
 
+export function SpeedTypingIcon({ className }: { className?: string }) {
+  return (
+    <img
+      src="/speedtypingemblem.png"
+      alt="Speed Typing Arena"
+      className={`object-contain rounded-xl shadow-2xs transition-transform duration-300 ease-out hover:scale-120 ${className || "w-9 h-9"}`}
+    />
+  );
+}
+
 const ARCADE_GAMES: GameCardInfo[] = [
   {
     id: "codesprint",
@@ -102,8 +112,8 @@ const ARCADE_GAMES: GameCardInfo[] = [
     tagline: "Live Words-Per-Minute & Accuracy Benchmark",
     category: "Speed & Reflexes",
     description: "Test your raw typing speed across real-time dynamic sentences. Includes instantaneous WPM calculation, streak tracking, and celebratory confetti effects.",
-    icon: Flame,
-    badgeColor: "bg-rose-500 text-white",
+    icon: SpeedTypingIcon,
+    badgeColor: "bg-blue-600 text-white",
     gradient: "from-blue-600/20 via-indigo-500/10 to-transparent",
     metrics: ["Live WPM Meter", "Real-Time Accuracy", "Instant Acoustics", "Streak Tracker"],
     buttonText: "ENTER SPEED ARENA",

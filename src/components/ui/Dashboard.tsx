@@ -46,6 +46,16 @@ function BlindTypingIcon({ className }: { className?: string }) {
   );
 }
 
+function SpeedTypingIcon({ className }: { className?: string }) {
+  return (
+    <img
+      src="/speedtypingemblem.png"
+      alt="Speed Typing Arena"
+      className={`object-contain rounded-xs ${className || "w-4 h-4"}`}
+    />
+  );
+}
+
 const GAME_META: Record<
   string,
   { title: string; category: string; icon: React.ElementType; color: string; barGradient: string }
@@ -53,7 +63,7 @@ const GAME_META: Record<
   speedtest: {
     title: "Speed Typing Arena",
     category: "Speed & Reflexes",
-    icon: Flame,
+    icon: SpeedTypingIcon,
     color: "#2563eb",
     barGradient: "from-blue-600 to-indigo-500",
   },

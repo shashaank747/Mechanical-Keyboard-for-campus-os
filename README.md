@@ -347,6 +347,7 @@ Mechanical-Keyboard-for-campus-os/
 │   ├── icon_logo.png             # Official brand logo & favicon
 │   ├── codesprintemblem.png      # Full squircle Code Sprint app icon
 │   ├── blindtypingicon.png       # Full squircle Blind Typing app icon
+│   ├── speedtypingemblem.png     # Full squircle Speed Typing Arena app icon
 │   ├── Afternoon_on_the_Sill.mp3 # Lo-Fi soundtrack tracks
 │   ├── Notes_on_the_Glass.mp3
 │   ├── Steaming_Mug_Grey_Skies.mp3
