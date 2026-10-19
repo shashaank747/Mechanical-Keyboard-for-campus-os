@@ -26,6 +26,7 @@ import {
   ArrowRight,
   BookOpen,
 } from "lucide-react";
+import { recordShortcutCommandPracticed } from "@/lib/userStats";
 
 export interface ShortcutItem {
   id: string;
@@ -517,6 +518,13 @@ export function ShortcutsGame({
   const [masteredShortcuts, setMasteredShortcuts] = useState<Set<string>>(() => {
     if (typeof window !== "undefined") {
       try {
+        const today = new Date().toISOString().slice(0, 10);
+        const savedDate = localStorage.getItem("setu_shortcuts_date");
+        if (savedDate !== today) {
+          localStorage.setItem("setu_shortcuts_date", today);
+          localStorage.removeItem("setu_mastered_shortcuts");
+          return new Set();
+        }
         const saved = localStorage.getItem("setu_mastered_shortcuts");
         if (saved) return new Set(JSON.parse(saved));
       } catch {}
@@ -616,6 +624,11 @@ export function ShortcutsGame({
   const triggerSuccess = (shortcut: ShortcutItem) => {
     setMasteredShortcuts((prev) => new Set(prev).add(shortcut.id));
     setLastSuccessId(shortcut.id);
+
+    // Award +0.25 XP for practicing this shortcut command
+    try {
+      recordShortcutCommandPracticed();
+    } catch {}
 
     try {
       confetti({

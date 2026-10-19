@@ -314,8 +314,8 @@ export function GamesHub({
               </div>
 
               <div className="flex items-center gap-3.5">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-[0_4px_16px_rgba(37,99,235,0.35),inset_0_1px_0_rgba(255,255,255,0.3)] transition-all duration-300 ease-out hover:scale-135 hover:shadow-[0_16px_36px_rgba(37,99,235,0.45)] hover:z-30 flex items-center justify-center p-2 shrink-0 cursor-pointer">
-                  <Icon className="w-11 h-11 transition-transform duration-300 ease-out hover:scale-115" />
+                <div className="w-16 h-16 rounded-2xl bg-white border-2 border-slate-200/90 shadow-[0_4px_16px_rgba(15,23,42,0.06),0_2px_6px_rgba(15,23,42,0.04)] transition-all duration-300 ease-out hover:scale-135 hover:shadow-[0_16px_36px_rgba(37,99,235,0.2)] hover:border-blue-400 hover:z-30 flex items-center justify-center p-2 shrink-0 cursor-pointer">
+                  <Icon className="w-12 h-12 transition-transform duration-300 ease-out hover:scale-115" />
                 </div>
                 <div>
                   <h3 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors">
@@ -404,10 +404,10 @@ export function GamesHub({
                 </div>
 
                 <div className="flex items-center gap-3.5">
-                  <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center p-2 shrink-0 relative transition-all duration-300 ease-out hover:scale-135 hover:shadow-[0_12px_28px_rgba(37,99,235,0.35)] hover:z-30 cursor-pointer ${
+                  <div className={`w-14 h-14 rounded-2xl border-2 flex items-center justify-center p-2 shrink-0 relative transition-all duration-300 ease-out hover:scale-135 hover:shadow-[0_12px_28px_rgba(37,99,235,0.2)] hover:z-30 cursor-pointer ${
                     isLocked
                       ? "bg-slate-100 border-slate-200 text-slate-400"
-                      : "bg-gradient-to-b from-blue-50 to-blue-100/70 border-blue-200 text-blue-600 shadow-[0_2px_6px_rgba(37,99,235,0.08),inset_0_1px_0_rgba(255,255,255,0.8)] group-hover:scale-105"
+                      : "bg-white border-slate-200/90 text-slate-900 shadow-[0_2px_8px_rgba(15,23,42,0.05)] hover:border-blue-400 group-hover:scale-105"
                   } transition-all duration-200`}>
                     <Icon className="w-10 h-10 transition-transform duration-300 ease-out hover:scale-115" />
                   </div>

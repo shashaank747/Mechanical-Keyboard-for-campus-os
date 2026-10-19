@@ -17,9 +17,10 @@ export interface KeyItem {
 
 export interface KeyboardProps {
   className?: string;
-  onKeyPress?: (key: string, code: string) => void;
+  onKeyPress?: (key: string, code: string, isVirtual?: boolean) => void;
   interactive?: boolean;
   allowMouseClick?: boolean;
+  onlyVirtualKeyPress?: boolean;
   theme?: KeyboardTheme;
   colorZones?: boolean;
   onOpenThemeSidebar?: () => void;
@@ -251,6 +252,7 @@ export function Keyboard({
   onKeyPress,
   interactive = true,
   allowMouseClick = false,
+  onlyVirtualKeyPress = false,
   theme = KEYBOARD_THEMES[0],
   colorZones = false,
   onOpenThemeSidebar,
@@ -280,7 +282,7 @@ export function Keyboard({
 
   // Press a key (Physical or Virtual Click / Hold)
   const pressKey = useCallback(
-    (code: string, label: string) => {
+    (code: string, label: string, isVirtual: boolean = false) => {
       // Play audio switch click
       soundEngine.playKeySound(label);
 
@@ -299,9 +301,11 @@ export function Keyboard({
         onTestedKeysChangeRef.current(next);
       }
 
-      // Notify parent onKeyPress
+      // Notify parent onKeyPress (suppress physical events if onlyVirtualKeyPress is true)
       if (onKeyPressRef.current) {
-        onKeyPressRef.current(label, code);
+        if (!onlyVirtualKeyPress || isVirtual) {
+          onKeyPressRef.current(label, code, isVirtual);
+        }
       }
 
       // Attach finger to key
@@ -405,7 +409,7 @@ export function Keyboard({
         if (e.code === "Space") label = "SPACE";
         if (e.code === "Enter") label = "ENTER";
         if (e.code === "Backspace") label = "BACKSPACE";
-        pressKey(e.code, label);
+        pressKey(e.code, label, false);
       }
     };
 
@@ -449,7 +453,7 @@ export function Keyboard({
     if (key.code === "CapsLock") {
       setCapsLock((prev) => !prev);
     }
-    pressKey(key.code, key.label);
+    pressKey(key.code, key.label, true);
   };
 
   const handleVirtualKeyUp = (key: KeyItem) => {

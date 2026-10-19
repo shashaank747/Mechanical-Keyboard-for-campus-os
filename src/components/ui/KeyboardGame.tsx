@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { updateStudentProgress } from "@/lib/db";
+import { recordAcademyLevelCompleted } from "@/lib/userStats";
 
 export interface GameStep {
   code: string;
@@ -1016,6 +1017,11 @@ export function KeyboardGame({
         maxStreak: finalMaxStreak,
       },
     });
+
+    // Award +2 XP for completing this Academy level
+    try {
+      recordAcademyLevelCompleted(activeLevel.id);
+    } catch {}
 
     // Unlock next level upon completing this one!
     if (currentLevelIndex + 1 < GAME_LEVELS.length) {

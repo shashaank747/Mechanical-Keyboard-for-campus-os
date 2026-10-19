@@ -3,7 +3,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Keyboard from "@/components/ui/keyboard";
-import { ThemeSidebar } from "@/components/ui/ThemeSidebar";
 import { KeyboardGame } from "@/components/ui/KeyboardGame";
 import { GamesHub } from "@/components/ui/GamesHub";
 import { Dashboard } from "@/components/ui/Dashboard";
@@ -18,7 +17,7 @@ import { recordGamePlay, setLatestPlayedGameId } from "@/lib/userStats";
 import { 
   Keyboard as KeyboardIcon, Sparkles, 
   Check, RotateCcw, Flame, Palette,
-  Menu, Gamepad2, ShieldCheck, LogIn, User, X, AlertTriangle, UserPlus,
+  Gamepad2, ShieldCheck, LogIn, User, X, AlertTriangle, UserPlus,
   Eye, EyeOff, LogOut, ChevronDown, KeyRound, CheckCircle2, ArrowLeft,
   BarChart3
 } from "lucide-react";
@@ -32,7 +31,6 @@ export type AppPage = "start" | "academy" | "codesprint" | "speedtest" | "fallin
 export default function KeyboardLandingPage() {
   const [currentPage, setCurrentPage] = useState<AppPage>("start");
   const [currentTheme, setCurrentTheme] = useState<KeyboardTheme>(KEYBOARD_THEMES[0]);
-  const [isThemeSidebarOpen, setIsThemeSidebarOpen] = useState(false);
   
   // Authentication & Session
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -217,22 +215,6 @@ export default function KeyboardLandingPage() {
     <div
       className="min-h-screen bg-[#f1f5f9] text-slate-900 flex flex-col items-center justify-start selection:bg-blue-600 selection:text-white relative overflow-x-clip"
     >
-
-
-      {/* Floating Hamburger Icon for Settings (Top Left) - Toggles Sidebar Open / Close */}
-      <button
-        onClick={() => setIsThemeSidebarOpen((prev) => !prev)}
-        className="fixed top-3.5 left-3.5 z-[60] p-2 rounded-xl bg-white hover:bg-slate-50 text-slate-900 hover:text-blue-600 border border-blue-200 shadow-md backdrop-blur-md transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center group"
-        aria-label={isThemeSidebarOpen ? "Close Sidebar" : "Open Sidebar"}
-        title={isThemeSidebarOpen ? "Close Menu" : "Menu & Settings"}
-      >
-        {isThemeSidebarOpen ? (
-          <X className="w-5 h-5 text-slate-900 group-hover:text-blue-600 transition-transform group-hover:scale-110" />
-        ) : (
-          <Menu className="w-5 h-5 text-slate-900 group-hover:text-blue-600 transition-transform group-hover:scale-110" />
-        )}
-      </button>
-
       {/* ============================================================ */}
       {/* PAGE: USER ACTIVITY DASHBOARD (BAR & LINE GRAPHS)             */}
       {/* ============================================================ */}
@@ -276,7 +258,6 @@ export default function KeyboardLandingPage() {
         <KeyboardGame
           theme={currentTheme}
           colorZones={colorZones}
-          onOpenThemeSidebar={() => setIsThemeSidebarOpen(true)}
           onBackToHome={() => setCurrentPage("start")}
         />
       )}
@@ -288,7 +269,6 @@ export default function KeyboardLandingPage() {
         <FallingWordsGame
           theme={currentTheme}
           colorZones={colorZones}
-          onOpenThemeSidebar={() => setIsThemeSidebarOpen(true)}
           onBackToHub={() => setCurrentPage("start")}
         />
       )}
@@ -300,7 +280,6 @@ export default function KeyboardLandingPage() {
         <SoundMatrixGame
           theme={currentTheme}
           colorZones={colorZones}
-          onOpenThemeSidebar={() => setIsThemeSidebarOpen(true)}
           onBackToHub={() => setCurrentPage("start")}
         />
       )}
@@ -312,7 +291,6 @@ export default function KeyboardLandingPage() {
         <BlindTypingGame
           theme={currentTheme}
           colorZones={colorZones}
-          onOpenThemeSidebar={() => setIsThemeSidebarOpen(true)}
           onBackToHub={() => setCurrentPage("start")}
         />
       )}
@@ -425,7 +403,6 @@ export default function KeyboardLandingPage() {
               theme={currentTheme}
               colorZones={colorZones}
               onKeyPress={handleKeyTriggered}
-              onOpenThemeSidebar={() => setIsThemeSidebarOpen(true)}
             />
           </div>
         </section>
@@ -441,36 +418,6 @@ export default function KeyboardLandingPage() {
           onBackToHome={() => setCurrentPage("start")}
         />
       )}
-
-
-      {/* Slide-over Theme Sidebar Drawer */}
-      <ThemeSidebar
-        isOpen={isThemeSidebarOpen}
-        onClose={() => setIsThemeSidebarOpen(false)}
-        currentTheme={currentTheme}
-        onSelectTheme={(theme) => {
-          setCurrentTheme(theme);
-          updateUserTheme({
-            username: loggedInUser || undefined,
-            themeId: theme.id,
-            colorZones,
-          });
-        }}
-        currentPage={currentPage}
-        onNavigate={(page) => {
-          handleLaunchArcade(page);
-        }}
-        colorZones={colorZones}
-        onToggleColorZones={() => {
-          const nextZones = !colorZones;
-          setColorZones(nextZones);
-          updateUserTheme({
-            username: loggedInUser || undefined,
-            themeId: currentTheme.id,
-            colorZones: nextZones,
-          });
-        }}
-      />
 
       {/* ============================================================ */}
       {/* TOP-CENTER WING AUTHENTICATION MODAL WITH LIVE 3D KEYBOARD   */}
@@ -949,7 +896,6 @@ export default function KeyboardLandingPage() {
                 colorZones={colorZones}
                 allowMouseClick={true}
                 onKeyPress={handleKeyTriggered}
-                onOpenThemeSidebar={() => setIsThemeSidebarOpen(true)}
               />
             </motion.div>
           </div>

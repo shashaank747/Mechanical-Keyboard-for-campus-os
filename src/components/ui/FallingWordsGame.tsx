@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { updateStudentProgress } from "@/lib/db";
+import { recordMeteorDefenseResult } from "@/lib/userStats";
 
 export type DurationOption = "2min" | "5min" | "unlimited";
 export type EndReason = "time_up" | "lives_depleted";
@@ -148,6 +149,7 @@ export function FallingWordsGame({
   const [finalDurationSecs, setFinalDurationSecs] = useState<number>(0);
   const [finalWpm, setFinalWpm] = useState<number>(0);
   const [finalAccuracy, setFinalAccuracy] = useState<number>(100);
+  const [earnedXp, setEarnedXp] = useState<number>(0);
 
   const [activeWords, setActiveWords] = useState<FallingWord[]>([]);
   const [targetWordId, setTargetWordId] = useState<string | null>(null);
@@ -155,6 +157,8 @@ export function FallingWordsGame({
   const startTimeRef = useRef<number>(0);
   const durationModeRef = useRef<DurationOption>("2min");
   const paceRef = useRef<SpeedPace>("balanced");
+  const livesRef = useRef<number>(3);
+  livesRef.current = lives;
   const totalKeysTypedRef = useRef<number>(0);
   const totalErrorsRef = useRef<number>(0);
   const wordsDestroyedRef = useRef<number>(0);
@@ -240,6 +244,19 @@ export function FallingWordsGame({
       },
     });
 
+    const remainingHearts = reason === "lives_depleted" ? 0 : livesRef.current;
+    try {
+      const res = recordMeteorDefenseResult({
+        duration: durationModeRef.current,
+        heartsRemaining: remainingHearts,
+        elapsedSecs,
+        score: scoreRef.current,
+        wpm: calculatedWpm,
+        accuracy: acc,
+      });
+      setEarnedXp(res.xpGained);
+    } catch {}
+
     if (reason === "time_up") {
       confetti({
         particleCount: 120,
@@ -260,6 +277,8 @@ export function FallingWordsGame({
     paceRef.current = pace;
     setScore(0);
     setLives(3);
+    livesRef.current = 3;
+    setEarnedXp(0);
     setWave(1);
     waveRef.current = 1;
     setStreak(0);
@@ -362,6 +381,7 @@ export function FallingWordsGame({
         if (hitCount > 0) {
           setLives((l) => {
             const nextL = l - hitCount;
+            livesRef.current = Math.max(0, nextL);
             if (nextL <= 0) {
               handleEndGame("lives_depleted");
             }
@@ -722,6 +742,10 @@ export function FallingWordsGame({
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-slate-500">Accuracy:</span>
                 <span className="text-sm font-black font-mono text-emerald-600">{finalAccuracy}%</span>
+              </div>
+              <div className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-amber-50 border border-amber-200">
+                <span className="text-xs font-bold text-amber-700">XP Earned:</span>
+                <span className="text-sm font-black font-mono text-amber-600">+{earnedXp} XP</span>
               </div>
             </div>
 
