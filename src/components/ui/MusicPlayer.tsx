@@ -58,14 +58,10 @@ export function MusicPlayer({ isDark }: MusicPlayerProps) {
     <div className="relative flex items-center" ref={volumeContainerRef}>
       {/* Pill Container */}
       <div
-        className={`flex items-center gap-2 px-3 py-1.5 rounded-full apple-glass-pill transition-all ${
+        className={`flex items-center gap-2 px-3 py-1.5 rounded-full border-2 transition-all ${
           isPlaying
-            ? isDark
-              ? "apple-glass-pill-dark border-orange-500/50 text-orange-300 shadow-[0_0_18px_rgba(249,115,22,0.25)]"
-              : "apple-glass-pill-light border-orange-400 text-orange-950 shadow-[0_0_18px_rgba(249,115,22,0.2)]"
-            : isDark
-            ? "apple-glass-pill-dark text-slate-400 hover:text-slate-200"
-            : "apple-glass-pill-light text-slate-600 hover:text-slate-900"
+            ? "bg-white border-blue-400 text-slate-900 shadow-md shadow-blue-500/10"
+            : "bg-white border-blue-200 text-slate-700 hover:border-blue-300 shadow-xs"
         }`}
       >
         {/* Animated Soundwave Visualizer Bars */}
@@ -80,9 +76,7 @@ export function MusicPlayer({ isDark }: MusicPlayerProps) {
               key={idx}
               className={`w-0.5 rounded-full transition-all duration-300 ${
                 isPlaying
-                  ? "bg-orange-500 animate-pulse"
-                  : isDark
-                  ? "bg-slate-700 h-1"
+                  ? "bg-blue-600 animate-pulse"
                   : "bg-slate-300 h-1"
               } ${isPlaying ? bar.height : "h-1"}`}
               style={{
@@ -98,7 +92,7 @@ export function MusicPlayer({ isDark }: MusicPlayerProps) {
           className="flex items-center gap-1.5 select-none"
           title={`Now Playing: ${currentTrack.title}`}
         >
-          <span className="text-[11px] font-bold tracking-tight truncate max-w-[130px] sm:max-w-[170px]">
+          <span className="text-[11px] font-bold tracking-tight truncate max-w-[130px] sm:max-w-[170px] text-slate-800">
             {currentTrack.title}
           </span>
         </div>
@@ -108,11 +102,11 @@ export function MusicPlayer({ isDark }: MusicPlayerProps) {
           <button
             onClick={() => setShowVolumeSlider((prev) => !prev)}
             onDoubleClick={handleToggleMute}
-            className="p-1 rounded-full text-slate-400 hover:text-orange-500 transition-colors cursor-pointer"
+            className="p-1 rounded-full text-slate-500 hover:text-blue-600 transition-colors cursor-pointer"
             title="Volume / Mute"
           >
             {isMuted || volume === 0 ? (
-              <VolumeX className="w-3.5 h-3.5 text-rose-400" />
+              <VolumeX className="w-3.5 h-3.5 text-rose-500" />
             ) : (
               <Volume2 className="w-3.5 h-3.5" />
             )}
@@ -126,15 +120,11 @@ export function MusicPlayer({ isDark }: MusicPlayerProps) {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: -6 }}
                 transition={{ duration: 0.15 }}
-                className={`absolute top-full right-0 mt-2 p-2.5 rounded-2xl border shadow-2xl backdrop-blur-xl flex flex-col items-center gap-2 z-50 ${
-                  isDark
-                    ? "bg-slate-900/95 border-slate-700/80 text-white shadow-[0_10px_30px_rgba(0,0,0,0.6)]"
-                    : "bg-white/95 border-slate-200 text-slate-900 shadow-[0_10px_30px_rgba(0,0,0,0.15)]"
-                }`}
+                className="absolute top-full right-0 mt-2 p-2.5 rounded-2xl border-2 border-blue-200 bg-white text-slate-900 shadow-xl backdrop-blur-xl flex flex-col items-center gap-2 z-50"
               >
                 <div className="flex items-center justify-between gap-3 w-28 text-[10px] font-mono font-bold">
                   <span className="text-slate-400">BGM Volume</span>
-                  <span className="text-orange-500 font-extrabold">{Math.round((isMuted ? 0 : volume) * 100)}%</span>
+                  <span className="text-blue-400 font-extrabold">{Math.round((isMuted ? 0 : volume) * 100)}%</span>
                 </div>
                 <input
                   type="range"
@@ -143,7 +133,7 @@ export function MusicPlayer({ isDark }: MusicPlayerProps) {
                   step="0.05"
                   value={isMuted ? 0 : volume}
                   onChange={handleVolumeChange}
-                  className="w-28 accent-orange-500 cursor-pointer h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg"
+                  className="w-28 accent-blue-500 cursor-pointer h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg"
                 />
               </motion.div>
             )}

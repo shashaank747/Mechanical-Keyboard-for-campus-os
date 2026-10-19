@@ -117,7 +117,8 @@ export function SoundMatrixGame({
   onOpenThemeSidebar?: () => void;
   onBackToHub: () => void;
 }) {
-  const isDark = theme.isDark || theme.category === "Dark";
+  // Website and games remain on the sleek White, Blue, and Black palette
+  const isDark = true;
 
   // Game Settings
   const [dictationMode, setDictationMode] = useState<DictationMode>("spell"); // 'spell' or 'words'
@@ -464,8 +465,8 @@ export function SoundMatrixGame({
             <span>{accuracy}%</span>
           </div>
 
-          <div className="px-2.5 py-0.5 rounded-lg bg-orange-500/15 border border-orange-500/30 text-orange-400 font-mono text-xs font-black flex items-center gap-1">
-            <Flame className="w-3 h-3 text-orange-500 fill-orange-500" />
+          <div className="px-2.5 py-0.5 rounded-lg bg-blue-500/15 border border-blue-500/30 text-blue-400 font-mono text-xs font-black flex items-center gap-1">
+            <Flame className="w-3 h-3 text-blue-400 fill-blue-400" />
             <span>{streak}x</span>
           </div>
         </div>
@@ -530,7 +531,7 @@ export function SoundMatrixGame({
           ) : (
             <button
               onClick={pauseSession}
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white text-xs font-black shadow-md shadow-orange-500/20 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-black shadow-md shadow-blue-500/20 hover:scale-105 active:scale-95 transition-all cursor-pointer"
             >
               <Pause className="w-3.5 h-3.5 fill-white" />
               <span>Pause Continuous Reading</span>
@@ -659,8 +660,8 @@ export function SoundMatrixGame({
                             ? "text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 drop-shadow-[0_0_8px_rgba(52,211,153,0.3)]"
                             : isTargetToType
                             ? isDark
-                              ? "text-amber-400 bg-amber-500/25 ring-2 ring-amber-400 scale-105 shadow-md"
-                              : "text-orange-600 bg-orange-100 ring-2 ring-orange-500 scale-105 shadow-md"
+                              ? "text-blue-300 bg-blue-500/25 ring-2 ring-blue-400 scale-105 shadow-md"
+                              : "text-blue-600 bg-blue-100 ring-2 ring-blue-500 scale-105 shadow-md"
                             : isSpokenLetter
                             ? "text-cyan-300 bg-cyan-500/25 ring-2 ring-cyan-400 animate-pulse scale-105"
                             : isDark
@@ -672,7 +673,7 @@ export function SoundMatrixGame({
 
                         {/* Visual cursor below the active letter user needs to type */}
                         {isTargetToType && (
-                          <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-1 bg-amber-400 rounded-full animate-bounce" />
+                          <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-1 bg-blue-400 rounded-full animate-bounce" />
                         )}
 
                         {/* Speaker beacon icon above the currently spoken letter */}
@@ -697,8 +698,8 @@ export function SoundMatrixGame({
                             ? "text-emerald-400 bg-emerald-500/15 border border-emerald-500/30"
                             : isTargetSpace
                             ? isDark
-                              ? "text-amber-400 bg-amber-500/25 ring-2 ring-amber-400"
-                              : "text-orange-600 bg-orange-100 ring-2 ring-orange-500"
+                              ? "text-blue-300 bg-blue-500/25 ring-2 ring-blue-400"
+                              : "text-blue-600 bg-blue-100 ring-2 ring-blue-500"
                             : isSpokenSpace
                             ? "text-cyan-300 bg-cyan-500/30 ring-2 ring-cyan-400 animate-pulse"
                             : isDark
@@ -708,7 +709,7 @@ export function SoundMatrixGame({
                       >
                         [SPACE]
                         {isTargetSpace && (
-                          <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-1 bg-amber-400 rounded-full animate-bounce" />
+                          <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-1 bg-blue-400 rounded-full animate-bounce" />
                         )}
                       </span>
                     );
@@ -788,7 +789,7 @@ export function SoundMatrixGame({
                 </div>
                 <div className={`p-3 rounded-2xl border ${isDark ? "bg-slate-950 border-slate-800" : "bg-slate-50 border-slate-200"}`}>
                   <span className="text-[10px] text-slate-400 uppercase font-bold block mb-0.5">Max Streak</span>
-                  <span className="text-lg font-black font-mono text-orange-500">{maxStreak}x</span>
+                  <span className="text-lg font-black font-mono text-blue-400">{maxStreak}x</span>
                 </div>
                 <div className={`p-3 rounded-2xl border ${isDark ? "bg-slate-950 border-slate-800" : "bg-slate-50 border-slate-200"}`}>
                   <span className="text-[10px] text-slate-400 uppercase font-bold block mb-0.5">Speed</span>

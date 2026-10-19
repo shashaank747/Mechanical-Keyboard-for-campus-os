@@ -246,7 +246,7 @@ export function FallingWordsGame({
             <span>Games Hub</span>
           </button>
 
-          <span className="text-xs font-black px-2.5 py-0.5 rounded-lg bg-gradient-to-r from-rose-500 to-orange-500 text-white shadow-2xs uppercase tracking-wider flex items-center gap-1">
+          <span className="text-xs font-black px-2.5 py-0.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-2xs uppercase tracking-wider flex items-center gap-1">
             <Crosshair className="w-3.5 h-3.5" />
             <span>Meteor Defense</span>
           </span>
@@ -276,7 +276,7 @@ export function FallingWordsGame({
           </span>
 
           {/* Score */}
-          <span className="px-3 py-0.5 rounded-lg bg-orange-500 text-white font-mono text-xs font-black shadow-xs">
+          <span className="px-3 py-0.5 rounded-lg bg-blue-600 text-white font-mono text-xs font-black shadow-xs">
             {score} PTS
           </span>
         </div>
@@ -334,7 +334,7 @@ export function FallingWordsGame({
                         isTyped
                           ? "text-emerald-400 underline font-extrabold drop-shadow-[0_0_8px_#10b981]"
                           : isTargeted && cIdx === item.matchedChars
-                          ? "text-orange-400 font-extrabold animate-pulse"
+                          ? "text-blue-400 font-extrabold animate-pulse"
                           : "opacity-80"
                       }
                     >
@@ -350,7 +350,7 @@ export function FallingWordsGame({
         {/* READY SCREEN OVERLAY */}
         {gameState === "ready" && (
           <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xs flex flex-col items-center justify-center gap-4 text-center p-6 z-30">
-            <div className="p-3.5 rounded-2xl bg-gradient-to-br from-rose-500 to-orange-500 text-white shadow-xl shadow-orange-500/25">
+            <div className="p-3.5 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-xl shadow-blue-500/25">
               <Crosshair className="w-8 h-8" />
             </div>
             <div>
@@ -363,7 +363,7 @@ export function FallingWordsGame({
             </div>
             <button
               onClick={startGame}
-              className="px-6 py-3 rounded-2xl bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white font-black text-xs tracking-wider uppercase flex items-center gap-2 shadow-xl shadow-orange-500/30 cursor-pointer hover:scale-105 active:scale-95 transition-all"
+              className="px-6 py-3 rounded-2xl bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs tracking-wider uppercase flex items-center gap-2 shadow-xl shadow-blue-500/30 cursor-pointer hover:scale-105 active:scale-95 transition-all"
             >
               <Play className="w-4 h-4 fill-white" />
               <span>START DEFENSE MISSION</span>
@@ -383,13 +383,13 @@ export function FallingWordsGame({
               </span>
               <h3 className="text-2xl font-black text-white">Mission Over</h3>
               <p className="text-xs text-slate-400 mt-0.5">
-                Final Score: <span className="font-mono font-bold text-orange-400">{score} PTS</span> • Wave {wave}
+                Final Score: <span className="font-mono font-bold text-blue-400">{score} PTS</span> • Wave {wave}
               </p>
             </div>
             <div className="flex items-center gap-3 mt-2">
               <button
                 onClick={startGame}
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-amber-500 text-white font-black text-xs tracking-wider uppercase flex items-center gap-1.5 shadow-lg cursor-pointer hover:scale-105 transition-all"
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-xs tracking-wider uppercase flex items-center gap-1.5 shadow-lg cursor-pointer hover:scale-105 transition-all"
               >
                 <RotateCcw className="w-4 h-4" />
                 <span>Play Again</span>

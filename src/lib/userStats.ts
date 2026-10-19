@@ -186,6 +186,8 @@ export function recordGamePlay(record: {
   if (typeof window !== "undefined") {
     try {
       localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(updated));
+      localStorage.setItem(LATEST_PLAYED_GAME_KEY, record.gameId);
+      window.dispatchEvent(new CustomEvent("setu_latest_game_changed", { detail: { gameId: record.gameId } }));
     } catch {
       // ignore
     }
@@ -193,3 +195,31 @@ export function recordGamePlay(record: {
 
   return updated;
 }
+
+export const LATEST_PLAYED_GAME_KEY = "setu_latest_played_game";
+
+export function getLatestPlayedGameId(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const saved = localStorage.getItem(LATEST_PLAYED_GAME_KEY);
+    if (saved) return saved;
+    const stats = getUserStats();
+    if (stats.history && stats.history.length > 0) {
+      return stats.history[0].gameId;
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+export function setLatestPlayedGameId(gameId: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(LATEST_PLAYED_GAME_KEY, gameId);
+    window.dispatchEvent(new CustomEvent("setu_latest_game_changed", { detail: { gameId } }));
+  } catch {
+    // ignore
+  }
+}
+

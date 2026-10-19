@@ -2269,7 +2269,8 @@ export function CodeSprintGame({
   theme: KeyboardTheme;
   onBackToHub: () => void;
 }) {
-  const isDark = theme.isDark || theme.category === "Dark";
+  // Website and games remain on the sleek White, Blue, and Black palette
+  const isDark = true;
 
   // Navigation / Selection State
   const [selectedLanguageId, setSelectedLanguageId] = useState<CodeLanguage>("python");
@@ -2519,7 +2520,7 @@ export function CodeSprintGame({
         isDark ? "border-slate-800" : "border-slate-200"
       }`}>
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-orange-500/15 text-orange-500 border border-orange-500/20 shadow-xs">
+          <div className="p-2.5 rounded-2xl bg-blue-500/15 text-blue-400 border border-blue-500/30 shadow-xs">
             <Code2 className="w-6 h-6" />
           </div>
           <div>
@@ -2527,7 +2528,7 @@ export function CodeSprintGame({
               <h1 className={`text-xl sm:text-2xl font-black tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>
                 Code Sprint & Dev Syntax
               </h1>
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-orange-500/20 text-orange-400 border border-orange-500/30">
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">
                 Basics ➔ Loops ➔ Functions
               </span>
             </div>
@@ -2623,12 +2624,12 @@ export function CodeSprintGame({
 
             <div className="flex items-center gap-3">
               <div className="flex flex-col items-end">
-                <span className="text-xs font-bold text-orange-400">
+                <span className="text-xs font-bold text-blue-400">
                   {completedCountForLang} of {currentLanguage.levels.length} Solved
                 </span>
                 <div className="w-32 h-2 rounded-full bg-slate-700/40 overflow-hidden mt-1">
                   <div
-                    className="h-full bg-gradient-to-r from-orange-500 to-amber-400 transition-all duration-500"
+                    className="h-full bg-gradient-to-r from-blue-600 to-indigo-500 transition-all duration-500"
                     style={{
                       width: `${(completedCountForLang / currentLanguage.levels.length) * 100}%`
                     }}
@@ -2656,13 +2657,13 @@ export function CodeSprintGame({
                   onClick={() => setCurrentLevelIndex(idx)}
                   className={`group relative p-5 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col justify-between gap-4 hover:-translate-y-1 ${
                     isDark
-                      ? "bg-slate-900/90 hover:bg-slate-800/90 border-slate-800 hover:border-orange-500/40 shadow-lg"
-                      : "bg-white hover:bg-slate-50 border-slate-200 hover:border-orange-500/40 shadow-sm hover:shadow-md"
+                      ? "bg-slate-900/90 hover:bg-slate-800/90 border-slate-800 hover:border-blue-500/40 shadow-lg"
+                      : "bg-white hover:bg-slate-50 border-slate-200 hover:border-blue-500/40 shadow-sm hover:shadow-md"
                   }`}
                 >
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-black uppercase tracking-wider text-orange-500 flex items-center gap-1.5">
+                      <span className="text-[11px] font-black uppercase tracking-wider text-blue-400 flex items-center gap-1.5">
                         <FileCode className="w-3.5 h-3.5" />
                         Level {level.id}
                       </span>
@@ -2679,7 +2680,7 @@ export function CodeSprintGame({
                     </div>
 
                     <h3 className={`text-base font-extrabold transition-colors ${
-                      isDark ? "text-white group-hover:text-orange-400" : "text-slate-900 group-hover:text-orange-600"
+                      isDark ? "text-white group-hover:text-blue-400" : "text-slate-900 group-hover:text-blue-600"
                     }`}>
                       {level.title}
                     </h3>
@@ -2693,7 +2694,7 @@ export function CodeSprintGame({
                     <span className={`text-[11px] font-semibold ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                       {level.category}
                     </span>
-                    <span className="inline-flex items-center gap-1 text-xs font-bold text-orange-400 group-hover:translate-x-0.5 transition-transform">
+                    <span className="inline-flex items-center gap-1 text-xs font-bold text-blue-400 group-hover:translate-x-0.5 transition-transform">
                       <span>{isLevelDone ? "Practice" : "Start Level"}</span>
                       <ChevronRight className="w-3.5 h-3.5" />
                     </span>
@@ -2718,7 +2719,7 @@ export function CodeSprintGame({
               <span className="text-2xl">{currentLanguage.icon}</span>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-black text-orange-500 uppercase">
+                  <span className="text-xs font-black text-blue-400 uppercase">
                     Level {currentLevel.id} of {currentLanguage.levels.length}
                   </span>
                   <span className="text-slate-400">•</span>
@@ -2744,7 +2745,7 @@ export function CodeSprintGame({
               </div>
 
               <div className="flex items-center gap-1.5">
-                <Gauge className="w-4 h-4 text-orange-400" />
+                <Gauge className="w-4 h-4 text-blue-400" />
                 <div>
                   <div className="text-[10px] text-slate-400 font-bold uppercase">Speed</div>
                   <div className="font-mono font-bold">{wpm} WPM</div>
@@ -2822,7 +2823,7 @@ export function CodeSprintGame({
                     onClick={() => setIsSolutionPeekOpen(!isSolutionPeekOpen)}
                     className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[11px] font-bold transition-all cursor-pointer ${
                       isSolutionPeekOpen
-                        ? "bg-orange-500/20 text-orange-300 border-orange-500/40"
+                        ? "bg-blue-500/20 text-blue-300 border-blue-500/40"
                         : isDark
                         ? "bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700"
                         : "bg-white hover:bg-slate-50 text-slate-700 border-slate-200"
@@ -2838,7 +2839,7 @@ export function CodeSprintGame({
               <div className="p-5 flex-1 flex flex-col gap-4 overflow-y-auto max-h-[600px]">
                 {/* Description */}
                 <div className="flex flex-col gap-1.5">
-                  <h3 className={`text-sm font-black uppercase tracking-wider ${isDark ? "text-orange-400" : "text-orange-600"}`}>
+                  <h3 className={`text-sm font-black uppercase tracking-wider ${isDark ? "text-blue-400" : "text-blue-600"}`}>
                     🎯 Objective
                   </h3>
                   <p className={`text-sm leading-relaxed ${isDark ? "text-slate-300" : "text-slate-700"}`}>
@@ -2850,7 +2851,7 @@ export function CodeSprintGame({
                 <div className={`p-3.5 rounded-xl border text-xs leading-relaxed ${
                   isDark ? "bg-slate-950/60 border-slate-800 text-slate-300" : "bg-slate-50 border-slate-200 text-slate-600"
                 }`}>
-                  <strong className="text-orange-400">Concept: </strong>
+                  <strong className="text-blue-400">Concept: </strong>
                   {currentLevel.concept}
                 </div>
 
@@ -2886,7 +2887,7 @@ export function CodeSprintGame({
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
-                      className="p-3.5 rounded-xl bg-orange-500/15 border border-orange-500/30 text-orange-300 text-xs font-mono"
+                      className="p-3.5 rounded-xl bg-blue-500/15 border border-blue-500/30 text-blue-300 text-xs font-mono"
                     >
                       <div className="font-bold mb-1 flex items-center justify-between">
                         <span>Full Solution Code:</span>
@@ -2895,7 +2896,7 @@ export function CodeSprintGame({
                             setUserCode(currentLevel.solutionCode);
                             setIsSolutionPeekOpen(false);
                           }}
-                          className="px-2 py-0.5 rounded bg-orange-500 text-white font-sans text-[10px] font-bold hover:bg-orange-600 cursor-pointer"
+                          className="px-2 py-0.5 rounded bg-blue-600 text-white font-sans text-[10px] font-bold hover:bg-blue-500 cursor-pointer"
                         >
                           Auto-Fill
                         </button>
@@ -2959,7 +2960,7 @@ export function CodeSprintGame({
                     className={`flex items-center gap-1.5 px-4 py-1.5 rounded-xl font-bold text-xs transition-all shadow-md cursor-pointer ${
                       isRunningTests || userCode.trim().length === 0
                         ? "bg-slate-700 text-slate-400 opacity-50 cursor-not-allowed"
-                        : "bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-orange-500/20 active:scale-95"
+                        : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-blue-500/20 active:scale-95"
                     }`}
                   >
                     <Play className="w-3.5 h-3.5 fill-current" />
@@ -2993,7 +2994,7 @@ export function CodeSprintGame({
                         }}
                         onKeyDown={handleEditorKeyDown}
                         placeholder={`// Type the clean ${currentLanguage.name} code here...\n// Automatic indentation, brackets & symbols supported`}
-                        className="w-full h-full min-h-[260px] bg-transparent outline-none resize-none font-mono text-xs sm:text-sm leading-6 text-slate-100 placeholder:text-slate-600 caret-orange-400"
+                        className="w-full h-full min-h-[260px] bg-transparent outline-none resize-none font-mono text-xs sm:text-sm leading-6 text-slate-100 placeholder:text-slate-600 caret-blue-400"
                       spellCheck={false}
                       autoCapitalize="off"
                       autoComplete="off"
@@ -3006,7 +3007,7 @@ export function CodeSprintGame({
                 <div className="border-t border-slate-800 bg-slate-950/95 flex flex-col">
                   <div className="px-3 py-1.5 border-b border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400 font-mono font-bold">
                     <div className="flex items-center gap-1.5">
-                      <Terminal className="w-3.5 h-3.5 text-orange-400" />
+                      <Terminal className="w-3.5 h-3.5 text-blue-400" />
                       <span>TERMINAL & COMPILER CONSOLE</span>
                     </div>
                     <span>UTF-8</span>
@@ -3055,7 +3056,7 @@ export function CodeSprintGame({
                       Level {currentLevel.id} Completed! 🎉
                     </h3>
                     <p className={`text-xs ${isDark ? "text-slate-300" : "text-slate-600"}`}>
-                      Speed: <strong className="text-orange-400">{wpm} WPM</strong> • Time: <strong className="text-sky-400">{elapsedSeconds}s</strong> • Keystrokes: <strong className="text-amber-400">{keystrokesCount}</strong>
+                      Speed: <strong className="text-blue-400">{wpm} WPM</strong> • Time: <strong className="text-sky-400">{elapsedSeconds}s</strong> • Keystrokes: <strong className="text-amber-400">{keystrokesCount}</strong>
                     </p>
                   </div>
                 </div>

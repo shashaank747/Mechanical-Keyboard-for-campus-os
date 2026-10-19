@@ -112,13 +112,29 @@ interface BlindTypingGameProps {
   onBackToHub: () => void;
 }
 
+// Website and games remain on the clean White, Blue, and Black palette
+export const isPunctuation = (ch: string): boolean => {
+  if (!ch) return false;
+  return ch !== " " && !/[a-zA-Z0-9]/.test(ch);
+};
+
+export const getInitialTyped = (phrase: string): string => {
+  let init = "";
+  let idx = 0;
+  while (idx < phrase.length && isPunctuation(phrase[idx])) {
+    init += phrase[idx];
+    idx++;
+  }
+  return init;
+};
+
 export function BlindTypingGame({
   theme,
   colorZones,
   onOpenThemeSidebar,
   onBackToHub,
 }: BlindTypingGameProps) {
-  const isDark = theme.isDark || theme.category === "Dark";
+  const isDark = false;
 
   // Indirect Tier Management (5-10 -> 10-15 -> 15-20)
   // NEVER display "Level" anywhere in UI
@@ -137,7 +153,7 @@ export function BlindTypingGame({
     return tierPool[initialIndex] || ALL_BLIND_PHRASES[0];
   });
 
-  const [typedInput, setTypedInput] = useState<string>("");
+  const [typedInput, setTypedInput] = useState<string>(() => getInitialTyped(currentPhraseObj.text));
   const [validationState, setValidationState] = useState<ValidationState>("typing");
   const [activeChunk, setActiveChunk] = useState<1 | 2>(1); // 1 = First 7-8 words, 2 = Remaining words
   const [mistakesCount, setMistakesCount] = useState<number>(0);
@@ -254,7 +270,7 @@ export function BlindTypingGame({
 
   // Reset and speak Part 1 when phrase changes
   useEffect(() => {
-    setTypedInput("");
+    setTypedInput(getInitialTyped(currentPhraseObj.text));
     setValidationState("typing");
     setActiveChunk(1);
     setMistakesCount(0);
@@ -280,7 +296,7 @@ export function BlindTypingGame({
   }, [currentPhraseObj, speakPart]);
 
   const resetCurrentPhrase = useCallback(() => {
-    setTypedInput("");
+    setTypedInput(getInitialTyped(currentPhraseObj.text));
     setValidationState("typing");
     setActiveChunk(1);
     setMistakesCount(0);
@@ -290,7 +306,7 @@ export function BlindTypingGame({
     setEndTime(null);
     speakPart(1);
     inputRef.current?.focus();
-  }, [speakPart]);
+  }, [currentPhraseObj, speakPart]);
 
   // Handle revealing the answer after > 3 failed attempts on the same line
   const triggerRevealAnswer = useCallback(() => {
@@ -329,40 +345,99 @@ export function BlindTypingGame({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [validationState, resetCurrentPhrase, nextRandomPhrase]);
 
-  // Check completion on input change
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Backspace handler: strips trailing hardcoded punctuations + one typed letter/space
+  const handleBackspace = useCallback(() => {
+    if (typedInput.length === 0) return;
+
+    let next = typedInput;
+    // Strip trailing hardcoded punctuation
+    while (next.length > 0 && isPunctuation(next[next.length - 1])) {
+      next = next.slice(0, -1);
+    }
+    // Strip one letter or space
+    if (next.length > 0) {
+      next = next.slice(0, -1);
+    }
+
+    // Keep initial leading punctuation if phrase starts with punctuation
+    const initialLeading = getInitialTyped(currentPhrase);
+    if (next.length < initialLeading.length) {
+      next = initialLeading;
+    }
+
+    setTypedInput(next);
+    soundEngine.playKeySound("Backspace");
+  }, [typedInput, currentPhrase]);
+
+  // Main keystroke handler: automatically inserts and advances hardcoded punctuations
+  const handleCharTyped = useCallback((char: string) => {
     if (validationState !== "typing") return;
+
+    // Punctuations are hardcoded! If the user pressed punctuation directly, ignore it
+    if (isPunctuation(char)) {
+      return;
+    }
 
     if (!startTime) {
       setStartTime(Date.now());
     }
 
-    const val = e.target.value;
-    setTypedInput(val);
+    let current = typedInput;
+
+    if (current.length >= currentPhrase.length) {
+      return;
+    }
+
+    // Pre-fill any punctuation at current index if somehow needed
+    while (current.length < currentPhrase.length && isPunctuation(currentPhrase[current.length])) {
+      current += currentPhrase[current.length];
+    }
+
+    if (current.length >= currentPhrase.length) {
+      return;
+    }
+
+    // Append the typed character (match target case if letters match)
+    const targetExpected = currentPhrase[current.length];
+    if (char.toLowerCase() === targetExpected.toLowerCase()) {
+      current += targetExpected;
+    } else {
+      current += char;
+    }
+
+    // Auto-advance & auto-append all immediately following punctuation marks in the sentence!
+    while (current.length < currentPhrase.length && isPunctuation(currentPhrase[current.length])) {
+      current += currentPhrase[current.length];
+    }
+
+    setTypedInput(current);
+    soundEngine.playKeySound(char === " " ? "Space" : char);
 
     // Multi-part pacing: when user finishes typing Part 1, trigger Part 2 speech!
-    if (isMultiPart && activeChunk === 1 && val.length >= part1EndCharIndex) {
+    if (isMultiPart && activeChunk === 1 && current.length >= part1EndCharIndex) {
       setActiveChunk(2);
-      // Small pause then speak Part 2
       setTimeout(() => {
         speakPart(2);
       }, 250);
     }
 
-    const targetLength = currentPhrase.length;
-
-    // When ALL letters of the full sentence are filled:
-    if (val.length >= targetLength) {
+    // Check completion when sentence length is reached
+    if (current.length >= currentPhrase.length) {
       const end = Date.now();
       setEndTime(end);
 
-      const trimmedVal = val.slice(0, targetLength);
+      const targetLength = currentPhrase.length;
+      const trimmedVal = current.slice(0, targetLength);
       const targetStr = currentPhrase;
 
       let errors = 0;
       const errorIdxSet = new Set<number>();
 
       for (let i = 0; i < targetLength; i++) {
+        // Punctuations are hardcoded and NEVER count as errors!
+        if (isPunctuation(targetStr[i])) {
+          continue;
+        }
         // Case-insensitive letter matching for natural typing
         if (trimmedVal[i].toLowerCase() !== targetStr[i].toLowerCase()) {
           errors++;
@@ -412,10 +487,64 @@ export function BlindTypingGame({
         }
       }
     }
+  }, [
+    validationState,
+    startTime,
+    typedInput,
+    currentPhrase,
+    isMultiPart,
+    activeChunk,
+    part1EndCharIndex,
+    speakPart,
+    lineFailCount,
+    triggerRevealAnswer,
+    speakVoiceRemark,
+    resetCurrentPhrase,
+  ]);
+
+  // KeyDown event listener on input to intercept keystrokes
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (validationState !== "typing") return;
+
+    if (e.key === "Backspace") {
+      e.preventDefault();
+      handleBackspace();
+      return;
+    }
+
+    if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+      handleCharTyped(e.key);
+      return;
+    }
   };
 
-  const handleVirtualKeyPress = () => {
+  // Fallback for IME/paste
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (validationState !== "typing") return;
+    const val = e.target.value;
+    if (val.length > typedInput.length) {
+      const added = val.slice(typedInput.length);
+      for (const ch of added) {
+        handleCharTyped(ch);
+      }
+    } else if (val.length < typedInput.length) {
+      handleBackspace();
+    }
+  };
+
+  // Virtual 3D Mechanical Keyboard click handler
+  const handleVirtualKeyPress = (key?: string, code?: string) => {
     inputRef.current?.focus();
+    if (validationState !== "typing") return;
+
+    if (code === "Backspace") {
+      handleBackspace();
+    } else if (code === "Space") {
+      handleCharTyped(" ");
+    } else if (key && key.length === 1) {
+      handleCharTyped(key);
+    }
   };
 
   // Metrics calculation
@@ -424,8 +553,9 @@ export function BlindTypingGame({
   const durationSec = startTime && endTime ? Math.max(1, (endTime - startTime) / 1000) : 1;
   const wordCount = currentPhrase.split(" ").length;
   const wpm = Math.round((wordCount / durationSec) * 60);
-  const correctCount = Math.max(0, targetChars.length - mistakesCount);
-  const accuracy = Math.round((correctCount / targetChars.length) * 100);
+  const targetLetterCount = targetChars.filter((c) => !isPunctuation(c)).length;
+  const correctCount = Math.max(0, targetLetterCount - mistakesCount);
+  const accuracy = Math.round((correctCount / (targetLetterCount || 1)) * 100);
 
   return (
     <div className="relative z-10 w-full max-w-5xl px-3 sm:px-6 py-2 flex flex-col items-center gap-3 animate-in fade-in duration-300">
@@ -435,6 +565,7 @@ export function BlindTypingGame({
         type="text"
         value={typedInput}
         onChange={handleInputChange}
+        onKeyDown={handleInputKeyDown}
         className="opacity-0 absolute -top-100 pointer-events-none"
         autoFocus
         autoComplete="off"
@@ -481,7 +612,7 @@ export function BlindTypingGame({
                 : "bg-purple-50 border-purple-200 text-purple-900"
             }`}
           >
-            <Flame className="w-3.5 h-3.5 text-orange-500" />
+            <Flame className="w-3.5 h-3.5 text-blue-400 fill-blue-400" />
             <span>Streak: {streak}</span>
           </div>
 
@@ -494,7 +625,7 @@ export function BlindTypingGame({
             }`}
             title="Themes"
           >
-            <Sparkles className="w-4 h-4 text-orange-500" />
+            <Sparkles className="w-4 h-4 text-blue-400" />
           </button>
         </div>
       </div>
@@ -617,11 +748,12 @@ export function BlindTypingGame({
         {/* ============================================================ */}
         {validationState === "typing" && (
           <div className="w-full flex flex-col items-center gap-1.5 pt-1 border-t border-purple-500/10">
-            {/* Masked Dots Progress Bar with Chunk Highlight Boundaries */}
+            {/* Masked Dots Progress Bar with Chunk Highlight Boundaries & Hardcoded Punctuations */}
             <div className="w-full flex flex-wrap items-center justify-center gap-1 p-2 rounded-xl bg-purple-500/5 border border-purple-500/15">
               {targetChars.map((char, idx) => {
                 const isTyped = idx < typedChars.length;
                 const isSpace = char === " ";
+                const isPunc = isPunctuation(char);
                 const isPart1Slot = isMultiPart && idx < part1EndCharIndex;
                 const isCurrentActivePart = isMultiPart
                   ? (activeChunk === 1 && isPart1Slot) || (activeChunk === 2 && !isPart1Slot)
@@ -639,6 +771,22 @@ export function BlindTypingGame({
                       title={idx === part1EndCharIndex && isMultiPart ? "Boundary: Part 1 / Part 2" : undefined}
                     >
                       ␣
+                    </div>
+                  );
+                }
+
+                if (isPunc) {
+                  return (
+                    <div
+                      key={idx}
+                      className={`min-w-4 px-1 h-5 rounded flex items-center justify-center font-mono text-[11px] font-black transition-all ${
+                        isTyped
+                          ? "bg-blue-600 text-white border border-blue-700 shadow-xs"
+                          : "bg-blue-100 text-blue-800 border border-blue-300 shadow-xs"
+                      }`}
+                      title="Punctuation is hardcoded (auto-filled, letters only)"
+                    >
+                      {char}
                     </div>
                   );
                 }
@@ -668,8 +816,11 @@ export function BlindTypingGame({
 
             {/* Bottom Progress & Chunk Indicator */}
             <div className="w-full flex items-center justify-between text-[11px] font-mono px-1">
-              <span className="text-slate-400 flex items-center gap-1.5">
-                <span>Progress: <strong className="text-purple-400">{typedChars.length}</strong> / {targetChars.length} chars</span>
+              <span className="text-slate-500 flex items-center gap-1.5 flex-wrap">
+                <span>Progress: <strong className="text-blue-600">{typedChars.length}</strong> / {targetChars.length} chars</span>
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 shadow-xs">
+                  Punctuations Hardcoded • Letters Only
+                </span>
                 {isMultiPart && (
                   <span className={`px-1.5 py-0.2 rounded text-[9px] font-black uppercase tracking-wider ${
                     activeChunk === 1 ? "bg-purple-500/20 text-purple-300 border border-purple-500/30" : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
@@ -683,7 +834,7 @@ export function BlindTypingGame({
                   e.stopPropagation();
                   setShowHint((prev) => !prev);
                 }}
-                className="text-slate-400 hover:text-purple-400 underline transition-colors cursor-pointer text-[10px]"
+                className="text-slate-400 hover:text-blue-600 underline transition-colors cursor-pointer text-[10px]"
               >
                 {showHint ? "Hide Peek" : "Peek Letters"}
               </button>
@@ -712,7 +863,7 @@ export function BlindTypingGame({
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs font-mono font-bold text-orange-500 px-2 py-0.5 rounded bg-orange-500/10">
+              <span className="text-xs font-mono font-bold text-blue-400 px-2 py-0.5 rounded bg-blue-500/10">
                 {wpm} WPM
               </span>
               <span className="text-xs font-mono font-bold text-emerald-400 px-2 py-0.5 rounded bg-emerald-500/10">

@@ -757,7 +757,7 @@ export function HandsFingerVisualizer({
             compact ? "p-1" : "p-2 rounded-xl"
           } ${
             activeHand === "left"
-              ? "bg-orange-500/10 border border-orange-500/30 ring-1 ring-orange-500/20 rounded-lg"
+              ? "bg-blue-500/10 border border-blue-500/30 ring-1 ring-blue-500/20 rounded-lg"
               : "opacity-50"
           }`}
         >
@@ -816,7 +816,7 @@ export function HandsFingerVisualizer({
             compact ? "p-1" : "p-2 rounded-xl"
           } ${
             activeHand === "right"
-              ? "bg-orange-500/10 border border-orange-500/30 ring-1 ring-orange-500/20 rounded-lg"
+              ? "bg-blue-500/10 border border-blue-500/30 ring-1 ring-blue-500/20 rounded-lg"
               : "opacity-50"
           }`}
         >
@@ -958,7 +958,8 @@ export function KeyboardGame({
   const activeStep = activeLevel.steps[currentStepIndex];
   const targetCode = activeStep?.code;
 
-  const isDark = theme.isDark || theme.category === "Dark";
+  // Website and games remain on the sleek White, Blue, and Black palette
+  const isDark = true;
 
   // Get active finger info from FINGER_MAPPING
   const fingerInfo = targetCode ? FINGER_MAPPING[targetCode] : null;
@@ -1150,7 +1151,7 @@ export function KeyboardGame({
         {/* Campaign Header */}
         <div className="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b pb-6 border-slate-200/80 dark:border-slate-800">
           <div className="flex flex-col gap-1.5">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/15 text-orange-500 text-xs font-black tracking-wider uppercase w-fit border border-orange-500/20">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/15 text-blue-400 text-xs font-black tracking-wider uppercase w-fit border border-blue-500/30">
               <Sparkles className="w-3.5 h-3.5" />
               <span>Touch Typing Academy</span>
             </div>
@@ -1166,12 +1167,12 @@ export function KeyboardGame({
           <div className={`flex items-center gap-3 p-3.5 rounded-2xl border shrink-0 ${
             isDark ? "bg-slate-900/90 border-slate-800" : "bg-white/90 border-slate-200 shadow-xs"
           }`}>
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-md">
+            <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-md">
               <Trophy className="w-5 h-5" />
             </div>
             <div className="flex flex-col">
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Total Progress</span>
-              <span className="text-sm font-black font-mono text-orange-500">
+              <span className="text-sm font-black font-mono text-blue-400">
                 {completedLevels.size} / {GAME_LEVELS.length} Completed
               </span>
             </div>
@@ -1197,7 +1198,7 @@ export function KeyboardGame({
                       ? "bg-emerald-500 text-white border-emerald-500 shadow-md shadow-emerald-500/20"
                       : tab.accent === "purple"
                       ? "bg-purple-600 text-white border-purple-600 shadow-md shadow-purple-600/20"
-                      : "bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/20"
+                      : "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20"
                     : isDark
                     ? "bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-850"
                     : "bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50"
@@ -1260,8 +1261,8 @@ export function KeyboardGame({
                           ? "bg-gradient-to-r from-purple-950/70 via-slate-900 to-slate-900 border-purple-500 ring-2 ring-purple-500/40 shadow-[0_4px_24px_rgba(168,85,247,0.25)]"
                           : "bg-gradient-to-r from-purple-50 via-white to-white border-purple-500 ring-2 ring-purple-300 shadow-[0_4px_24px_rgba(168,85,247,0.15)]"
                         : isDark
-                        ? "bg-gradient-to-r from-orange-950/70 via-slate-900 to-slate-900 border-orange-500 ring-2 ring-orange-500/40 shadow-[0_4px_24px_rgba(234,88,12,0.3)]"
-                        : "bg-gradient-to-r from-orange-50 via-white to-white border-orange-500 ring-2 ring-orange-300 shadow-[0_4px_24px_rgba(234,88,12,0.15)]"
+                        ? "bg-gradient-to-r from-blue-950/70 via-slate-900 to-slate-900 border-blue-500 ring-2 ring-blue-500/40 shadow-[0_4px_24px_rgba(37,99,235,0.3)]"
+                        : "bg-gradient-to-r from-blue-50 via-white to-white border-blue-500 ring-2 ring-blue-300 shadow-[0_4px_24px_rgba(37,99,235,0.15)]"
                       : isDark
                       ? "bg-slate-900/80 hover:bg-slate-850 border-slate-800 hover:border-slate-700 text-slate-300"
                       : "bg-white hover:bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700 shadow-2xs"
@@ -1280,7 +1281,7 @@ export function KeyboardGame({
                               ? "bg-emerald-500 text-white shadow-xs"
                               : isRightOnly
                               ? "bg-purple-600 text-white shadow-xs"
-                              : "bg-orange-500 text-white shadow-xs"
+                              : "bg-blue-600 text-white shadow-xs"
                             : isLeftOnly
                             ? isDark
                               ? "bg-emerald-950/80 text-emerald-400 border border-emerald-800/50"
@@ -1290,8 +1291,8 @@ export function KeyboardGame({
                               ? "bg-purple-950/80 text-purple-400 border border-purple-800/50"
                               : "bg-purple-100 text-purple-700"
                             : isDark
-                            ? "bg-slate-800 text-orange-400"
-                            : "bg-orange-100 text-orange-600"
+                            ? "bg-slate-800 text-blue-400"
+                            : "bg-blue-100 text-blue-600"
                         }`}
                       >
                         {!isUnlocked && <Lock className="w-2.5 h-2.5" />}
@@ -1345,7 +1346,7 @@ export function KeyboardGame({
                           ? "text-emerald-400"
                           : isRightOnly
                           ? "text-purple-400"
-                          : "text-orange-500"
+                          : "text-blue-400"
                         : isDark
                         ? "text-white"
                         : "text-slate-900"
@@ -1363,7 +1364,7 @@ export function KeyboardGame({
                   {stats && isUnlocked && (
                     <div className="mt-3 pt-2.5 border-t border-slate-200/50 dark:border-slate-800/80 flex items-center justify-between text-[11px] font-mono font-bold">
                       <span className="text-emerald-400">Acc: {stats.accuracy}%</span>
-                      <span className="text-orange-400">Streak: {stats.maxStreak}x 🔥</span>
+                      <span className="text-blue-400">Streak: {stats.maxStreak}x 🔥</span>
                     </div>
                   )}
                 </motion.div>
@@ -1408,7 +1409,7 @@ export function KeyboardGame({
                               ? "bg-emerald-600"
                               : isRight
                               ? "bg-purple-600"
-                              : "bg-orange-500"
+                              : "bg-blue-600"
                           }`}
                         >
                           {!isSelectedUnlocked ? "🔒 LOCKED MISSION" : `MISSION BRIEFING • LEVEL ${selectedLvl.id}`}
@@ -1421,7 +1422,7 @@ export function KeyboardGame({
                               ? "text-emerald-400"
                               : isRight
                               ? "text-purple-400"
-                              : "text-orange-500"
+                              : "text-blue-400"
                           }`}
                         >
                           {selectedLvl.category === "left_hand"
@@ -1532,7 +1533,7 @@ export function KeyboardGame({
                         </span>
                         <span
                           className={`text-sm font-black font-mono ${
-                            selectedStats?.maxStreak ? "text-orange-500" : "text-slate-400"
+                            selectedStats?.maxStreak ? "text-blue-400" : "text-slate-400"
                           }`}
                         >
                           {selectedStats?.maxStreak ? `${selectedStats.maxStreak}x 🔥` : "--"}
@@ -1630,7 +1631,7 @@ export function KeyboardGame({
                         {prevRequiredLvl && (
                           <button
                             onClick={() => startLevel(currentLevelIndex - 1)}
-                            className="w-full py-3.5 px-5 rounded-2xl bg-gradient-to-r from-orange-600 to-amber-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 hover:scale-101 active:scale-98 transition-all cursor-pointer"
+                            className="w-full py-3.5 px-5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:scale-101 active:scale-98 transition-all cursor-pointer"
                           >
                             <span>Play Level {prevRequiredLvl.id} ({prevRequiredLvl.title})</span>
                             <ArrowRight className="w-4 h-4" />
@@ -1645,7 +1646,7 @@ export function KeyboardGame({
                             ? "bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 shadow-emerald-500/25 hover:shadow-emerald-500/40 ring-emerald-400/40"
                             : isRight
                             ? "bg-gradient-to-r from-purple-600 via-purple-500 to-indigo-500 shadow-purple-500/25 hover:shadow-purple-500/40 ring-purple-400/40"
-                            : "bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500 shadow-orange-500/25 hover:shadow-orange-500/40 ring-orange-400/40"
+                            : "bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 shadow-blue-500/25 hover:shadow-blue-500/40 ring-blue-400/40"
                         }`}
                       >
                         <Zap className="w-5 h-5 fill-white group-hover:rotate-12 transition-transform" />
@@ -1692,7 +1693,7 @@ export function KeyboardGame({
                 ? "bg-emerald-600"
                 : isRightLevel
                 ? "bg-purple-600"
-                : "bg-orange-500"
+                : "bg-blue-600"
             }`}
           >
             {activeLevel.subtitle}
@@ -1721,7 +1722,7 @@ export function KeyboardGame({
                         ? "bg-emerald-600 text-white border-emerald-600 shadow-2xs"
                         : isLvlRight
                         ? "bg-purple-600 text-white border-purple-600 shadow-2xs"
-                        : "bg-orange-500 text-white border-orange-500 shadow-2xs"
+                        : "bg-blue-600 text-white border-blue-600 shadow-2xs"
                       : isDark
                       ? "bg-slate-900/80 border-slate-800 text-slate-400 hover:text-white"
                       : "bg-white border-slate-200 text-slate-600 hover:text-slate-900"
@@ -1738,9 +1739,9 @@ export function KeyboardGame({
 
           <div className="flex items-center gap-1.5 font-mono text-xs font-black shrink-0">
             <span className={`px-2 py-0.5 rounded-lg border flex items-center gap-1 ${
-              isDark ? "bg-slate-900 border-slate-800 text-orange-400" : "bg-white border-slate-200 text-orange-600"
+              isDark ? "bg-slate-900 border-slate-800 text-blue-400" : "bg-white border-slate-200 text-blue-600"
             }`}>
-              <Flame className="w-3 h-3 text-orange-500" />
+              <Flame className="w-3 h-3 text-blue-400 fill-blue-400" />
               {streak}x
             </span>
             <span className={`px-2 py-0.5 rounded-lg border ${
@@ -1775,7 +1776,7 @@ export function KeyboardGame({
             <div className={`text-[11px] truncate font-medium flex items-center gap-1 ${
               isDark ? "text-slate-400" : "text-slate-500"
             }`}>
-              <HelpCircle className="w-3 h-3 text-orange-500 shrink-0" />
+              <HelpCircle className="w-3 h-3 text-blue-400 shrink-0" />
               <span className="truncate">{activeStep.tip}</span>
             </div>
           )}
@@ -1784,7 +1785,7 @@ export function KeyboardGame({
           <div className="w-full flex items-center gap-2 mt-0.5">
             <div className={`flex-1 h-1.5 rounded-full overflow-hidden ${isDark ? "bg-slate-800" : "bg-slate-200"}`}>
               <motion.div
-                className="h-full bg-gradient-to-r from-orange-500 via-amber-400 to-emerald-400 rounded-full"
+                className="h-full bg-gradient-to-r from-blue-600 via-sky-400 to-emerald-400 rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: `${progressPercent}%` }}
                 transition={{ duration: 0.3 }}
@@ -1805,8 +1806,8 @@ export function KeyboardGame({
             animate={{ scale: 1, opacity: 1 }}
             className={`relative flex flex-col items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-xl border-2 shadow-xl font-mono select-none ${
               isDark
-                ? "bg-gradient-to-b from-amber-400 via-orange-500 to-amber-600 border-amber-300 text-white shadow-[0_0_20px_rgba(245,158,11,0.5)]"
-                : "bg-gradient-to-b from-amber-400 via-orange-500 to-amber-600 border-white text-white shadow-[0_0_20px_rgba(245,158,11,0.35)]"
+                ? "bg-gradient-to-b from-blue-500 via-blue-600 to-indigo-700 border-blue-400 text-white shadow-[0_0_20px_rgba(59,130,246,0.5)]"
+                : "bg-gradient-to-b from-blue-500 via-blue-600 to-indigo-700 border-white text-white shadow-[0_0_20px_rgba(59,130,246,0.35)]"
             }`}
           >
             <span className="text-lg sm:text-xl font-black tracking-tight leading-none">{activeStep?.label}</span>
@@ -1852,12 +1853,12 @@ export function KeyboardGame({
               }`}
             >
               {/* Animated Trophy Icon */}
-              <div className="p-4 rounded-3xl bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-xl shadow-orange-500/30">
+              <div className="p-4 rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-xl shadow-blue-500/30">
                 <Trophy className="w-12 h-12 animate-bounce" />
               </div>
 
               <div>
-                <span className="text-xs font-black uppercase tracking-widest text-orange-500 block mb-1">
+                <span className="text-xs font-black uppercase tracking-widest text-blue-400 block mb-1">
                   LEVEL COMPLETED!
                 </span>
                 <h3 className="text-2xl font-black tracking-tight">{activeLevel.title}</h3>
@@ -1874,7 +1875,7 @@ export function KeyboardGame({
                 </div>
                 <div className={`p-3 rounded-2xl border ${isDark ? "bg-slate-950 border-slate-800" : "bg-slate-50 border-slate-200"}`}>
                   <span className="text-[10px] text-slate-400 uppercase font-bold block mb-0.5">Max Streak</span>
-                  <span className="text-lg font-black font-mono text-orange-500">{maxStreak}x</span>
+                  <span className="text-lg font-black font-mono text-blue-400">{maxStreak}x</span>
                 </div>
                 <div className={`p-3 rounded-2xl border ${isDark ? "bg-slate-950 border-slate-800" : "bg-slate-50 border-slate-200"}`}>
                   <span className="text-[10px] text-slate-400 uppercase font-bold block mb-0.5">Total Keys</span>
@@ -1906,7 +1907,7 @@ export function KeyboardGame({
 
                 <button
                   onClick={nextLevel}
-                  className="w-full sm:w-1/3 py-3 px-3 rounded-xl font-bold text-xs bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white flex items-center justify-center gap-1.5 shadow-lg shadow-orange-500/25 transition-all cursor-pointer"
+                  className="w-full sm:w-1/3 py-3 px-3 rounded-xl font-bold text-xs bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white flex items-center justify-center gap-1.5 shadow-lg shadow-blue-500/25 transition-all cursor-pointer"
                 >
                   <span>Next</span>
                   <ArrowRight className="w-3.5 h-3.5" />
