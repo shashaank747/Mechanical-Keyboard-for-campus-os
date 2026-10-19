@@ -14,6 +14,7 @@
     <img src="https://img.shields.io/badge/Vite-6.0-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
     <img src="https://img.shields.io/badge/Tailwind_CSS-v4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
     <img src="https://img.shields.io/badge/Framer_Motion-12.0-FF0055?style=for-the-badge&logo=framer&logoColor=white" alt="Framer Motion" />
+    <img src="https://img.shields.io/badge/Release-Version_2.0-brightgreen?style=for-the-badge&logo=github" alt="Version 2.0" />
     <img src="https://img.shields.io/badge/Architecture-Local--First_&_Cloud--Ready-blue?style=for-the-badge" alt="Local First" />
   </p>
 </div>
