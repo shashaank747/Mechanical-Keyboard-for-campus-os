@@ -19,6 +19,11 @@ import {
   Code2,
   Settings,
   BarChart3,
+  X,
+  HelpCircle,
+  Info,
+  Calendar,
+  Play,
 } from "lucide-react";
 import { getLatestPlayedGameId, setLatestPlayedGameId } from "@/lib/userStats";
 
@@ -188,6 +193,126 @@ const ARCADE_GAMES: GameCardInfo[] = [
   },
 ];
 
+export interface GameGuideItem {
+  id: GameId;
+  title: string;
+  tagline: string;
+  category: string;
+  icon: React.ElementType;
+  summary: string;
+  howToPlay: string[];
+  xpRules: string;
+  buttonText: string;
+}
+
+const GAME_GUIDES: GameGuideItem[] = [
+  {
+    id: "academy",
+    title: "Touch Typing Academy",
+    tagline: "16-Level Curriculum • Left & Right Hand Mastery",
+    category: "Structured Training",
+    icon: TouchTypingIcon,
+    summary: "Comprehensive 16-level curriculum teaching proper 10-finger posture, home row tactile bumps, dedicated left & right hand drills, and full keyboard fluency.",
+    howToPlay: [
+      "Rest your index fingers on the 'F' and 'J' keycap tactile bumps.",
+      "Look at screen prompts and glowing key guides on the 3D keyboard without looking down at your hands.",
+      "Type the target characters using the recommended fingers to complete each step with high precision.",
+    ],
+    xpRules: "Earn +2 XP for every level completed (awarded strictly upon level completion).",
+    buttonText: "Play Touch Typing Academy",
+  },
+  {
+    id: "codesprint",
+    title: "Code Sprint & Dev Syntax",
+    tagline: "Dual-Pane Real-Time IDE Compiler & Coding Dojo",
+    category: "Coding & Logic",
+    icon: CodeSprintIcon,
+    summary: "Dual-pane IDE coding simulator designed for developers to practice real-world programming syntax, brackets, punctuation, and code flow across Python, JS, TypeScript, HTML, CSS, C, C++, and SQL.",
+    howToPlay: [
+      "Select your preferred language (Python, TypeScript, HTML, etc.) and difficulty mode.",
+      "Type the real-world code snippet accurately, paying close attention to indentation, quotes, and symbols.",
+      "Check the live compiler output panel as your code executes upon successful completion.",
+    ],
+    xpRules: "Earn +1 XP for every completed code sprint module.",
+    buttonText: "Start Code Sprint",
+  },
+  {
+    id: "blindtyping",
+    title: "Blind Typing Dojo",
+    tagline: "Pure Audio Dictation • Words Hidden",
+    category: "Muscle Memory",
+    icon: BlindTypingIcon,
+    summary: "Speech synthesis dictation challenge where target phrases are hidden from the screen. Train pure auditory-to-fingertip muscle memory.",
+    howToPlay: [
+      "Listen closely as the voice dictation speaks the target sentence (or click Play Audio to replay).",
+      "Type the sentence into the input field completely from memory without looking at visual cues.",
+      "Hit Enter to submit and check your accuracy breakdown.",
+    ],
+    xpRules: "+0.5 XP for 0 errors (Perfect), +0.25 XP for 1 error, and -0.5 XP deduction if more than 1 error.",
+    buttonText: "Play Blind Typing",
+  },
+  {
+    id: "speedtest",
+    title: "Speed Typing Arena",
+    tagline: "Live Words-Per-Minute & Accuracy Benchmark",
+    category: "Speed & Reflexes",
+    icon: SpeedTypingIcon,
+    summary: "Real-time WPM speedometer and live character accuracy benchmark testing raw keyboard speed across curated quotes and phrases.",
+    howToPlay: [
+      "Read the challenge phrase presented on the screen.",
+      "Begin typing into the input bar—the high-precision timer automatically starts on your first keystroke.",
+      "Complete the sentence to lock in your live WPM, accuracy percentage, and streak.",
+    ],
+    xpRules: "Earn +1 XP for each completed speed test phrase.",
+    buttonText: "Enter Speed Arena",
+  },
+  {
+    id: "fallingwords",
+    title: "Key Meteor Defense",
+    tagline: "Falling Words Arcade Survival",
+    category: "Arcade Action",
+    icon: MeteorDefenseIcon,
+    summary: "Action-packed arcade game where incoming word meteors drop from the sky toward your mechanical keyboard perimeter. Blast words before they breach your shield.",
+    howToPlay: [
+      "Select your mission duration (2 min, 5 min, or Unlimited) and speed pace (Relaxed, Balanced, Rapid).",
+      "Type the first letter of a falling word to target it, then finish typing the word to destroy the meteor.",
+      "Keep your 3 shield hearts safe—each meteor that breaches your bottom perimeter costs 1 heart.",
+    ],
+    xpRules: "2min: 3 hearts = 2 XP, 2 hearts = 1 XP, 1 heart = 0.5 XP. 5min: 3 hearts = 5 XP, 2 hearts = 3 XP, 1 heart = 1 XP. Unlimited: >10 min (up to 10 XP), >15 min (15 XP), >20 min (20 XP).",
+    buttonText: "Launch Meteor Defense",
+  },
+  {
+    id: "soundmatrix",
+    title: "Echo Matrix Voice Dictation",
+    tagline: "Switch Acoustic Simon Says & Auditory Recall",
+    category: "Auditory Training",
+    icon: Headphones,
+    summary: "Auditory pattern memory game powered by procedural mechanical switch acoustics. Listen to notes and re-strike the exact keys in sequence.",
+    howToPlay: [
+      "Click Start and listen carefully to the acoustic switch sound sequence and visual key flashes.",
+      "Re-type the exact key sequence on your keyboard in the proper order.",
+      "Advance through escalating memory waves as the sequence grows longer.",
+    ],
+    xpRules: "Earn +1 XP for each completed sequence round.",
+    buttonText: "Play Sound Matrix",
+  },
+  {
+    id: "shortcuts",
+    title: "Keyboard Shortcuts Dojo",
+    tagline: "Developer Productivity & System Hotkeys",
+    category: "Productivity",
+    icon: ShortcutsDojoIcon,
+    summary: "Practice essential IDE, browser, terminal, and operating system shortcuts with hardware key interception and live keyboard visualizers.",
+    howToPlay: [
+      "Select a hotkeys category (VS Code, Chrome, Terminal, Windows/Mac, Figma).",
+      "Read the target command prompt (e.g., 'Ctrl + Shift + P' for Command Palette).",
+      "Press the physical combination on your hardware keyboard; the dojo detects and validates your keystrokes live.",
+    ],
+    xpRules: "Earn +0.25 XP for every shortcut command practiced (resets daily).",
+    buttonText: "Enter Shortcuts Dojo",
+  },
+];
+
 export function GamesHub({
   onSelectGame,
   onOpenDashboard,
@@ -225,6 +350,26 @@ export function GamesHub({
   const heroGame = ARCADE_GAMES.find((g) => g.id === latestGameId) || ARCADE_GAMES[0];
   const otherGames = ARCADE_GAMES.filter((g) => g.id !== heroGame.id);
 
+  const [isHelpModalOpen, setIsHelpModalOpen] = React.useState(false);
+  const [selectedGuideGameId, setSelectedGuideGameId] = React.useState<GameId | "all">("all");
+
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsHelpModalOpen(false);
+      }
+    };
+    if (isHelpModalOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isHelpModalOpen]);
+
+  const displayedGuides =
+    selectedGuideGameId === "all"
+      ? GAME_GUIDES
+      : GAME_GUIDES.filter((g) => g.id === selectedGuideGameId);
+
   const handleLaunchGame = (gameId: GameId) => {
     setLatestPlayedGameId(gameId);
     setLatestGameId(gameId);
@@ -248,7 +393,7 @@ export function GamesHub({
           </p>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0 self-stretch sm:self-auto">
+        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 self-stretch sm:self-auto justify-end">
           {onOpenDashboard && (
             <button
               onClick={onOpenDashboard}
@@ -267,7 +412,7 @@ export function GamesHub({
             </button>
           )}
 
-          <div className="flex items-center gap-3 p-3 sm:p-3.5 rounded-2xl border border-slate-200/90 bg-white shadow-[0_4px_16px_-2px_rgba(15,23,42,0.06),0_2px_6px_-1px_rgba(15,23,42,0.04),inset_0_1px_0_rgba(255,255,255,1)] shrink-0">
+          <div className="hidden md:flex items-center gap-3 p-3 sm:p-3.5 rounded-2xl border border-slate-200/90 bg-white shadow-[0_4px_16px_-2px_rgba(15,23,42,0.06),0_2px_6px_-1px_rgba(15,23,42,0.04),inset_0_1px_0_rgba(255,255,255,1)] shrink-0">
             <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-[0_2px_8px_rgba(37,99,235,0.3)]">
               <Trophy className="w-5 h-5" />
             </div>
@@ -278,6 +423,18 @@ export function GamesHub({
               </span>
             </div>
           </div>
+
+          {/* Top-Right Rounded Square Box with "?" */}
+          <button
+            onClick={() => setIsHelpModalOpen(true)}
+            className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-2 border-blue-200 bg-white hover:border-blue-500 hover:bg-blue-50 text-blue-600 shadow-[0_4px_16px_-2px_rgba(15,23,42,0.06),0_2px_6px_-1px_rgba(15,23,42,0.04),inset_0_1px_0_rgba(255,255,255,1)] hover:shadow-lg hover:shadow-blue-500/15 hover:scale-105 active:scale-95 transition-all flex items-center justify-center font-black text-xl sm:text-2xl font-mono cursor-pointer shrink-0 group"
+            title="How to Play & Game Directory (?)"
+            aria-label="How to Play & Game Directory"
+          >
+            <span className="group-hover:scale-115 transition-transform text-blue-600 font-black font-mono">
+              ?
+            </span>
+          </button>
         </div>
       </div>
 
@@ -469,6 +626,166 @@ export function GamesHub({
           );
         })}
       </div>
+
+      {/* ========================================================================= */}
+      {/* MID-SIZED MODAL: GAME GUIDE & HOW TO PLAY (BLURRED SCREEN BACKGROUND)     */}
+      {/* ========================================================================= */}
+      {isHelpModalOpen && (
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsHelpModalOpen(false);
+          }}
+          className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200"
+        >
+          <div className="max-w-3xl w-full bg-white rounded-3xl border-2 border-blue-200 shadow-2xl flex flex-col max-h-[88vh] overflow-hidden relative ring-1 ring-black/[0.05]">
+            {/* Header */}
+            <div className="p-4 sm:p-5 border-b border-blue-100 flex items-center justify-between gap-3 bg-gradient-to-r from-blue-50/70 via-white to-slate-50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-mono font-black text-lg sm:text-xl shadow-md shadow-blue-500/25">
+                  ?
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base sm:text-lg font-black tracking-tight text-slate-950">
+                      Arcade Game Guide & How To Play
+                    </h3>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                      7 Games
+                    </span>
+                  </div>
+                  <p className="text-[11px] sm:text-xs text-slate-600 font-medium mt-0.5">
+                    Select any game below to review how it works, how to play, and XP scoring rules.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setIsHelpModalOpen(false)}
+                className="p-2 rounded-xl border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-all cursor-pointer shadow-2xs"
+                title="Close Guide (Esc)"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Quick Filter Navigation Pills */}
+            <div className="px-4 py-2.5 border-b border-blue-100 bg-slate-50/70 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+              <button
+                onClick={() => setSelectedGuideGameId("all")}
+                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                  selectedGuideGameId === "all"
+                    ? "bg-blue-600 text-white shadow-xs"
+                    : "bg-white text-slate-600 hover:bg-blue-50 hover:text-blue-600 border border-slate-200/90"
+                }`}
+              >
+                All 7 Games
+              </button>
+              {GAME_GUIDES.map((g) => (
+                <button
+                  key={g.id}
+                  onClick={() => setSelectedGuideGameId(g.id)}
+                  className={`px-3 py-1 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+                    selectedGuideGameId === g.id
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "bg-white text-slate-600 hover:bg-blue-50 hover:text-blue-600 border border-slate-200/90"
+                  }`}
+                >
+                  <g.icon className="w-3.5 h-3.5" />
+                  <span>{g.title}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Scrollable Game Cards Content */}
+            <div className="p-4 sm:p-5 overflow-y-auto flex flex-col gap-4 divide-y divide-blue-100/70">
+              {displayedGuides.map((guide) => {
+                const Icon = guide.icon;
+                return (
+                  <div key={guide.id} className="pt-4 first:pt-0 flex flex-col gap-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-2xl bg-blue-50 border border-blue-200 shadow-2xs">
+                          <Icon className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="text-sm sm:text-base font-black text-slate-950">
+                              {guide.title}
+                            </h4>
+                            <span className="px-2 py-0.5 rounded-full text-[9.5px] font-black uppercase tracking-wider bg-blue-100 text-blue-800 border border-blue-200">
+                              {guide.category}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-500 font-medium">
+                            {guide.tagline}
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          setIsHelpModalOpen(false);
+                          handleLaunchGame(guide.id);
+                        }}
+                        className="self-start sm:self-auto px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer hover:scale-102 active:scale-98 transition-all shrink-0"
+                      >
+                        <Play className="w-3 h-3 fill-white" />
+                        <span>Launch Game</span>
+                      </button>
+                    </div>
+
+                    {/* Summary Description */}
+                    <p className="text-xs text-slate-700 leading-relaxed bg-slate-50/80 p-3 rounded-2xl border border-slate-200/80">
+                      {guide.summary}
+                    </p>
+
+                    {/* How to Play Step-by-Step */}
+                    <div className="flex flex-col gap-1.5 bg-blue-50/40 p-3 rounded-2xl border border-blue-150">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-blue-700 flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
+                        How To Play
+                      </span>
+                      <ol className="flex flex-col gap-1 text-xs text-slate-700 pl-4 list-decimal font-medium">
+                        {guide.howToPlay.map((step, idx) => (
+                          <li key={idx} className="leading-snug">
+                            {step}
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+
+                    {/* XP Rules Pill */}
+                    <div className="p-2.5 rounded-2xl bg-amber-50/70 border border-amber-200/80 flex items-center gap-2 text-xs text-amber-900">
+                      <Sparkles className="w-4 h-4 text-amber-600 shrink-0 fill-amber-400" />
+                      <div>
+                        <span className="font-black text-amber-800 mr-1.5">XP Reward:</span>
+                        <span className="font-medium text-amber-900">{guide.xpRules}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Modal Footer Deck */}
+            <div className="p-3.5 sm:p-4 border-t border-blue-100 bg-slate-50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-[11px] text-slate-600">
+                <Calendar className="w-4 h-4 text-blue-600 shrink-0" />
+                <span>
+                  <strong>Daily Attendance Rule:</strong> Play all 7 games everyday to prevent the -5 XP unplayed penalty per game!
+                </span>
+              </div>
+
+              <button
+                onClick={() => setIsHelpModalOpen(false)}
+                className="self-stretch sm:self-auto px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all cursor-pointer shadow-xs"
+              >
+                Close Guide
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
