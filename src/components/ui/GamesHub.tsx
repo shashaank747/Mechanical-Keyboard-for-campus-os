@@ -378,6 +378,18 @@ export function GamesHub({
 
   return (
     <div className="relative z-10 w-full max-w-6xl px-4 sm:px-6 py-8 flex flex-col items-center gap-8 animate-in fade-in duration-300">
+      {/* Top-Right Corner Floating "?" Rounded Square Box (Red, Compact) */}
+      <button
+        onClick={() => setIsHelpModalOpen(true)}
+        className="fixed top-3.5 right-3.5 sm:top-5 sm:right-5 z-40 w-8.5 h-8.5 sm:w-9.5 sm:h-9.5 rounded-xl border-2 border-red-200 bg-white/95 hover:border-red-500 hover:bg-red-50/90 text-red-600 shadow-[0_3px_14px_rgba(239,68,68,0.18),0_1px_4px_rgba(239,68,68,0.1)] hover:shadow-[0_6px_20px_rgba(239,68,68,0.32)] hover:scale-108 active:scale-95 transition-all flex items-center justify-center font-black text-sm sm:text-base font-mono cursor-pointer backdrop-blur-md group"
+        title="Game Explanations & How to Play (?)"
+        aria-label="How to Play & Game Directory"
+      >
+        <span className="group-hover:scale-115 transition-transform text-red-600 font-black font-mono">
+          ?
+        </span>
+      </button>
+
       {/* Arcade Header Banner */}
       <div className="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b pb-6 border-blue-100">
         <div className="flex flex-col gap-1.5">
@@ -423,18 +435,6 @@ export function GamesHub({
               </span>
             </div>
           </div>
-
-          {/* Top-Right Rounded Square Box with "?" */}
-          <button
-            onClick={() => setIsHelpModalOpen(true)}
-            className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-2 border-blue-200 bg-white hover:border-blue-500 hover:bg-blue-50 text-blue-600 shadow-[0_4px_16px_-2px_rgba(15,23,42,0.06),0_2px_6px_-1px_rgba(15,23,42,0.04),inset_0_1px_0_rgba(255,255,255,1)] hover:shadow-lg hover:shadow-blue-500/15 hover:scale-105 active:scale-95 transition-all flex items-center justify-center font-black text-xl sm:text-2xl font-mono cursor-pointer shrink-0 group"
-            title="How to Play & Game Directory (?)"
-            aria-label="How to Play & Game Directory"
-          >
-            <span className="group-hover:scale-115 transition-transform text-blue-600 font-black font-mono">
-              ?
-            </span>
-          </button>
         </div>
       </div>
 
@@ -641,7 +641,7 @@ export function GamesHub({
             {/* Header */}
             <div className="p-4 sm:p-5 border-b border-blue-100 flex items-center justify-between gap-3 bg-gradient-to-r from-blue-50/70 via-white to-slate-50">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-mono font-black text-lg sm:text-xl shadow-md shadow-blue-500/25">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-red-600 text-white flex items-center justify-center font-mono font-black text-lg sm:text-xl shadow-md shadow-red-500/25">
                   ?
                 </div>
                 <div>
