@@ -196,6 +196,7 @@ const ARCADE_GAMES: GameCardInfo[] = [
 export interface GameGuideItem {
   id: GameId;
   title: string;
+  shortTitle: string;
   tagline: string;
   category: string;
   icon: React.ElementType;
@@ -209,6 +210,7 @@ const GAME_GUIDES: GameGuideItem[] = [
   {
     id: "academy",
     title: "Touch Typing Academy",
+    shortTitle: "Touch Typing",
     tagline: "16-Level Curriculum • Left & Right Hand Mastery",
     category: "Structured Training",
     icon: TouchTypingIcon,
@@ -224,6 +226,7 @@ const GAME_GUIDES: GameGuideItem[] = [
   {
     id: "codesprint",
     title: "Code Sprint & Dev Syntax",
+    shortTitle: "Code Sprint",
     tagline: "Dual-Pane Real-Time IDE Compiler & Coding Dojo",
     category: "Coding & Logic",
     icon: CodeSprintIcon,
@@ -239,6 +242,7 @@ const GAME_GUIDES: GameGuideItem[] = [
   {
     id: "blindtyping",
     title: "Blind Typing Dojo",
+    shortTitle: "Blind Typing",
     tagline: "Pure Audio Dictation • Words Hidden",
     category: "Muscle Memory",
     icon: BlindTypingIcon,
@@ -254,6 +258,7 @@ const GAME_GUIDES: GameGuideItem[] = [
   {
     id: "speedtest",
     title: "Speed Typing Arena",
+    shortTitle: "Speed Arena",
     tagline: "Live Words-Per-Minute & Accuracy Benchmark",
     category: "Speed & Reflexes",
     icon: SpeedTypingIcon,
@@ -269,6 +274,7 @@ const GAME_GUIDES: GameGuideItem[] = [
   {
     id: "fallingwords",
     title: "Key Meteor Defense",
+    shortTitle: "Meteor Defense",
     tagline: "Falling Words Arcade Survival",
     category: "Arcade Action",
     icon: MeteorDefenseIcon,
@@ -284,6 +290,7 @@ const GAME_GUIDES: GameGuideItem[] = [
   {
     id: "soundmatrix",
     title: "Echo Matrix Voice Dictation",
+    shortTitle: "Voice Dictation",
     tagline: "Switch Acoustic Simon Says & Auditory Recall",
     category: "Auditory Training",
     icon: Headphones,
@@ -299,6 +306,7 @@ const GAME_GUIDES: GameGuideItem[] = [
   {
     id: "shortcuts",
     title: "Keyboard Shortcuts Dojo",
+    shortTitle: "Shortcuts Dojo",
     tagline: "Developer Productivity & System Hotkeys",
     category: "Productivity",
     icon: ShortcutsDojoIcon,
@@ -669,31 +677,36 @@ export function GamesHub({
             </div>
 
             {/* Quick Filter Navigation Pills */}
-            <div className="px-4 py-2.5 border-b border-blue-100 bg-slate-50/70 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            <div className="px-4 sm:px-5 py-3 border-b border-blue-100 bg-slate-50/80 flex flex-wrap items-center gap-1.5 sm:gap-2">
               <button
                 onClick={() => setSelectedGuideGameId("all")}
-                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
                   selectedGuideGameId === "all"
-                    ? "bg-blue-600 text-white shadow-xs"
-                    : "bg-white text-slate-600 hover:bg-blue-50 hover:text-blue-600 border border-slate-200/90"
+                    ? "bg-blue-600 text-white shadow-xs ring-2 ring-blue-500/20"
+                    : "bg-white text-slate-700 hover:bg-blue-50 hover:text-blue-600 border border-slate-200/90 shadow-2xs"
                 }`}
               >
-                All 7 Games
+                <span>All 7 Games</span>
               </button>
-              {GAME_GUIDES.map((g) => (
-                <button
-                  key={g.id}
-                  onClick={() => setSelectedGuideGameId(g.id)}
-                  className={`px-3 py-1 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
-                    selectedGuideGameId === g.id
-                      ? "bg-blue-600 text-white shadow-xs"
-                      : "bg-white text-slate-600 hover:bg-blue-50 hover:text-blue-600 border border-slate-200/90"
-                  }`}
-                >
-                  <g.icon className="w-3.5 h-3.5" />
-                  <span>{g.title}</span>
-                </button>
-              ))}
+              {GAME_GUIDES.map((g) => {
+                const isSelected = selectedGuideGameId === g.id;
+                const Icon = g.icon;
+                return (
+                  <button
+                    key={g.id}
+                    onClick={() => setSelectedGuideGameId(g.id)}
+                    title={g.title}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
+                      isSelected
+                        ? "bg-blue-600 text-white shadow-xs ring-2 ring-blue-500/20"
+                        : "bg-white text-slate-700 hover:bg-blue-50 hover:text-blue-600 border border-slate-200/90 shadow-2xs"
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5 shrink-0" />
+                    <span>{g.shortTitle}</span>
+                  </button>
+                );
+              })}
             </div>
 
             {/* Scrollable Game Cards Content */}
