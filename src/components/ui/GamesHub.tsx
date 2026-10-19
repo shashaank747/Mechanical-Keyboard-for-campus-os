@@ -69,6 +69,16 @@ export function SpeedTypingIcon({ className }: { className?: string }) {
   );
 }
 
+export function TouchTypingIcon({ className }: { className?: string }) {
+  return (
+    <img
+      src="/touchtypingemblem.png"
+      alt="Touch Typing Academy"
+      className={`object-contain rounded-xl shadow-2xs transition-transform duration-300 ease-out hover:scale-120 ${className || "w-9 h-9"}`}
+    />
+  );
+}
+
 const ARCADE_GAMES: GameCardInfo[] = [
   {
     id: "codesprint",
@@ -88,7 +98,7 @@ const ARCADE_GAMES: GameCardInfo[] = [
     tagline: "16-Level Curriculum • Left & Right Hand Mastery",
     category: "Structured Training",
     description: "Master home row anchors, 10-finger mapping, dedicated Left-Hand (5 levels) and Right-Hand (5 levels) word drills, and live finger visualizers with donut progress charts.",
-    icon: Sparkles,
+    icon: TouchTypingIcon,
     badgeColor: "bg-blue-500 text-white",
     gradient: "from-blue-500/20 via-sky-500/10 to-transparent",
     metrics: ["16 Master Levels", "Left & Right Only", "Dual-Hands HUD", "Donut Pie Charts"],

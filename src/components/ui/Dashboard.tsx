@@ -56,6 +56,16 @@ function SpeedTypingIcon({ className }: { className?: string }) {
   );
 }
 
+function TouchTypingIcon({ className }: { className?: string }) {
+  return (
+    <img
+      src="/touchtypingemblem.png"
+      alt="Touch Typing Academy"
+      className={`object-contain rounded-xs ${className || "w-4 h-4"}`}
+    />
+  );
+}
+
 const GAME_META: Record<
   string,
   { title: string; category: string; icon: React.ElementType; color: string; barGradient: string }
@@ -70,7 +80,7 @@ const GAME_META: Record<
   academy: {
     title: "Touch Typing Academy",
     category: "Curriculum",
-    icon: Sparkles,
+    icon: TouchTypingIcon,
     color: "#3b82f6",
     barGradient: "from-blue-500 to-cyan-400",
   },
