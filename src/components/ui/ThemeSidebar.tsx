@@ -197,18 +197,9 @@ export function ThemeSidebar({
               /* VIEW 2: SETTINGS / THEME PALETTE VIEW                    */
               /* ======================================================== */
               <div className="flex flex-col h-full">
-                {/* Header with Back Button */}
+                {/* Header */}
                 <div className="px-3.5 py-3 border-b border-blue-200 flex items-center justify-between bg-white pl-13">
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setView("menu")}
-                      className="p-1.5 rounded-lg border border-blue-200 bg-white hover:bg-blue-50 text-slate-700 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs text-xs font-bold"
-                      title="Back to Navigation"
-                    >
-                      <ArrowLeft className="w-3.5 h-3.5" />
-                      <span>Back</span>
-                    </button>
-
                     <div className="flex items-center gap-1.5 pl-0.5">
                       <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-200 shadow-xs">
                         <Palette className="w-3.5 h-3.5" />
@@ -312,18 +303,11 @@ export function ThemeSidebar({
                   })}
                 </div>
 
-                {/* Footer with Back Button */}
-                <div className="p-3 border-t border-blue-200 bg-slate-50/80 flex items-center justify-between text-xs text-slate-500">
-                  <button
-                    onClick={() => setView("menu")}
-                    className="flex items-center gap-1 font-bold text-slate-600 hover:text-blue-600 cursor-pointer text-xs"
-                  >
-                    <ArrowLeft className="w-3 h-3" />
-                    <span>Back</span>
-                  </button>
+                {/* Footer */}
+                <div className="p-3 border-t border-blue-200 bg-slate-50/80 flex items-center justify-end text-xs text-slate-500">
                   <button
                     onClick={handleClose}
-                    className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors shadow-xs cursor-pointer"
+                    className="px-4 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors shadow-xs cursor-pointer"
                   >
                     Done
                   </button>
