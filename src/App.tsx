@@ -394,28 +394,39 @@ export default function KeyboardLandingPage() {
       {/* ============================================================ */}
       {currentPage === "speedtest" && (
         <section className="relative z-10 w-full max-w-5xl px-4 py-8 flex flex-col items-center gap-6 animate-in fade-in duration-300">
-          <div className="w-full flex items-center justify-between pt-4 pb-2 border-b border-blue-200">
-            <div className="flex items-center gap-2">
-              <span className="p-2 rounded-xl bg-blue-50 text-blue-600 border border-blue-200">
-                <Flame className="w-5 h-5" />
-              </span>
-              <div>
-                <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
+          {/* Top Header Navigation Bar (Standardized Suite Header) */}
+          <div className="w-full flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-blue-200">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <button
+                onClick={() => setCurrentPage("start")}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-blue-200 bg-white text-slate-800 hover:bg-blue-50 hover:text-blue-600 text-xs font-bold transition-all shadow-xs cursor-pointer"
+                title="Back to Games Hub"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Games Hub</span>
+              </button>
+
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-blue-200 shadow-xs">
+                <Flame className="w-5 h-5 text-blue-600" />
+                <span className="text-sm sm:text-base font-black tracking-tight text-slate-950">
                   Speed Typing Arena
-                </h2>
-                <p className="text-xs text-slate-600">
-                  Real-time accuracy calculation, words-per-minute metrics, and automatic phrase progression
-                </p>
+                </span>
               </div>
+
+              <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                WPM & Live Accuracy
+              </span>
             </div>
 
-            <button
-              onClick={() => setCurrentPage("start")}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-blue-200 bg-white hover:bg-blue-50 text-slate-800 text-xs font-bold transition-all shadow-xs cursor-pointer"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to Games Hub</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={resetSpeedTest}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all shadow-xs cursor-pointer"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Next Phrase</span>
+              </button>
+            </div>
           </div>
 
           {/* Speed Test Banner */}
@@ -497,28 +508,29 @@ export default function KeyboardLandingPage() {
       {/* ============================================================ */}
       {currentPage === "shortcuts" && (
         <section className="relative z-10 w-full max-w-5xl px-4 py-8 flex flex-col items-center gap-6 animate-in fade-in duration-300">
-          <div className="w-full flex items-center justify-between pt-4 pb-2 border-b border-blue-200">
-            <div className="flex items-center gap-2">
-              <span className="p-2 rounded-xl bg-blue-50 text-blue-600 border border-blue-200">
-                <Sparkles className="w-5 h-5" />
-              </span>
-              <div>
-                <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
-                  Keyboard Shortcuts Guide & Dojo
-                </h2>
-                <p className="text-xs text-slate-600">
-                  Comprehensive standard shortcut reference matrix for power users & developers
-                </p>
-              </div>
-            </div>
+          {/* Top Header Navigation Bar (Standardized Suite Header) */}
+          <div className="w-full flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-blue-200">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <button
+                onClick={() => setCurrentPage("start")}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-blue-200 bg-white text-slate-800 hover:bg-blue-50 hover:text-blue-600 text-xs font-bold transition-all shadow-xs cursor-pointer"
+                title="Back to Games Hub"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Games Hub</span>
+              </button>
 
-            <button
-              onClick={() => setCurrentPage("start")}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 text-xs font-bold transition-all shadow-xs cursor-pointer"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to Games Hub</span>
-            </button>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-blue-200 shadow-xs">
+                <Sparkles className="w-5 h-5 text-blue-600" />
+                <span className="text-sm sm:text-base font-black tracking-tight text-slate-950">
+                  Keyboard Shortcuts Dojo
+                </span>
+              </div>
+
+              <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                Shortcut Reference Matrix
+              </span>
+            </div>
           </div>
 
           <div className="w-full p-6 sm:p-8 border border-slate-200/90 rounded-3xl shadow-[0_16px_40px_-8px_rgba(15,23,42,0.1),0_4px_14px_-2px_rgba(15,23,42,0.04),inset_0_1px_0_rgba(255,255,255,1)] flex flex-col gap-6 bg-white text-slate-900 ring-1 ring-black/[0.03]">

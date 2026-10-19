@@ -267,24 +267,27 @@ export function FallingWordsGame({
 
   return (
     <div className="relative z-10 w-full max-w-5xl px-3 sm:px-5 py-3 flex flex-col items-center justify-between gap-3 animate-in fade-in duration-300 select-none">
-      {/* Top Header & HUD */}
-      <div className="w-full flex items-center justify-between gap-3 pb-2 border-b border-blue-200">
-        <div className="flex items-center gap-2">
+      {/* Top Header Navigation Bar (Standardized Suite Header) */}
+      <div className="w-full flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-blue-200">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <button
             onClick={onBackToHub}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-black transition-all shadow-2xs cursor-pointer ${
-              isDark
-                ? "bg-slate-900 border-slate-700 text-slate-200 hover:bg-slate-800 hover:text-white"
-                : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900"
-            }`}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-blue-200 bg-white text-slate-800 hover:bg-blue-50 hover:text-blue-600 text-xs font-bold transition-all shadow-xs cursor-pointer"
+            title="Back to Games Hub"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Games Hub</span>
           </button>
 
-          <span className="text-xs font-black px-2.5 py-0.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-2xs uppercase tracking-wider flex items-center gap-1">
-            <Crosshair className="w-3.5 h-3.5" />
-            <span>Meteor Defense</span>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-blue-200 shadow-xs">
+            <Crosshair className="w-5 h-5 text-blue-600" />
+            <span className="text-sm sm:text-base font-black tracking-tight text-slate-950">
+              Key Meteor Defense
+            </span>
+          </div>
+
+          <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+            Arcade Survival
           </span>
         </div>
 

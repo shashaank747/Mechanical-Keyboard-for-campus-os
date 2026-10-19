@@ -168,31 +168,28 @@ export function Dashboard({
 
   return (
     <div className="relative z-10 w-full max-w-6xl px-4 sm:px-6 py-6 sm:py-8 flex flex-col gap-6 sm:gap-8 animate-in fade-in duration-300">
-      {/* Top Navigation & Profile Bar */}
-      <div className="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b pb-5 border-blue-200">
-        <div className="flex items-center gap-3">
+      {/* Top Header Navigation Bar (Standardized Suite Header) */}
+      <div className="w-full flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-blue-200">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <button
             onClick={onBackToGames}
-            className="p-2 sm:p-2.5 rounded-xl border border-blue-200 bg-white hover:bg-blue-50 text-slate-800 hover:text-blue-600 transition-all shadow-xs cursor-pointer flex items-center gap-1.5 text-xs font-bold"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-blue-200 bg-white text-slate-800 hover:bg-blue-50 hover:text-blue-600 text-xs font-bold transition-all shadow-xs cursor-pointer"
             title="Return to Games Hub"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back to Games</span>
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Games Hub</span>
           </button>
 
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
-                User Activity Dashboard
-              </h1>
-              <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 uppercase">
-                Analytics
-              </span>
-            </div>
-            <p className="text-xs text-slate-600">
-              {loggedInUser ? `Logged in as @${loggedInUser}` : "Guest Player Session"} • Real-time game history & metrics
-            </p>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-blue-200 shadow-xs">
+            <BarChart3 className="w-5 h-5 text-blue-600" />
+            <span className="text-sm sm:text-base font-black tracking-tight text-slate-950">
+              User Activity Dashboard
+            </span>
           </div>
+
+          <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+            {loggedInUser ? `@${loggedInUser}` : "Guest Session"} • Live Analytics
+          </span>
         </div>
 
         {/* Tab switcher */}

@@ -1149,45 +1149,35 @@ export function KeyboardGame({
   if (gameView === "select") {
     return (
       <div className="relative z-10 w-full max-w-6xl px-4 sm:px-6 py-8 flex flex-col items-center gap-6 animate-in fade-in duration-300">
-        {/* Campaign Header */}
-        <div className="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b pb-6 border-slate-200">
-          <div className="flex items-start sm:items-center gap-3.5">
+        {/* Top Header Navigation Bar (Standardized Suite Header) */}
+        <div className="w-full flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-blue-200">
+          <div className="flex items-center gap-2.5 flex-wrap">
             {onBackToHome && (
               <button
                 onClick={onBackToHome}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-blue-200 bg-white hover:bg-blue-50 text-slate-800 hover:text-blue-600 text-xs font-bold transition-all shadow-xs cursor-pointer shrink-0"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-blue-200 bg-white text-slate-800 hover:bg-blue-50 hover:text-blue-600 text-xs font-bold transition-all shadow-xs cursor-pointer"
                 title="Back to Games Hub"
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="w-3.5 h-3.5" />
                 <span>Games Hub</span>
               </button>
             )}
 
-            <div className="flex flex-col gap-1.5">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-black tracking-wider uppercase w-fit border border-blue-200">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Touch Typing Academy</span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-slate-900">
-                Choose Your Training Level
-              </h2>
-              <p className="text-xs sm:text-sm max-w-2xl text-slate-600">
-                Master key positioning, finger assignments, and single-hand dexterity with our interactive 3D mechanical keyboard.
-              </p>
-            </div>
-          </div>
-
-          {/* Campaign Progress Badge */}
-          <div className="flex items-center gap-3 p-3.5 rounded-2xl border border-slate-200 bg-white shadow-xs shrink-0">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-md">
-              <Trophy className="w-5 h-5" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">Total Progress</span>
-              <span className="text-sm font-black font-mono text-blue-600">
-                {completedLevels.size} / {GAME_LEVELS.length} Completed
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-blue-200 shadow-xs">
+              <Sparkles className="w-5 h-5 text-blue-600" />
+              <span className="text-sm sm:text-base font-black tracking-tight text-slate-950">
+                Touch Typing Academy
               </span>
             </div>
+
+            <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+              Interactive 3D Curriculum
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl border border-blue-200 bg-white text-blue-700 text-xs font-mono font-bold shadow-xs">
+            <Trophy className="w-3.5 h-3.5 text-blue-600" />
+            <span>{completedLevels.size} / {GAME_LEVELS.length} Completed</span>
           </div>
         </div>
 
@@ -1684,40 +1674,36 @@ export function KeyboardGame({
 
   return (
     <div className="relative z-10 w-full max-w-5xl px-3 sm:px-5 py-2 flex flex-col items-center justify-start gap-2.5 animate-in fade-in duration-300 select-none">
-      {/* Top Cockpit Header Bar */}
-      <div className="w-full flex items-center justify-between gap-3 pt-1 pb-1.5 border-b border-slate-200/80 dark:border-slate-800">
-        <div className="flex items-center gap-2">
+      {/* Top Header Navigation Bar (Standardized Suite Header) */}
+      <div className="w-full flex flex-wrap items-center justify-between gap-3 pb-2.5 border-b border-blue-200">
+        <div className="flex items-center gap-2.5 flex-wrap">
           {onBackToHome && (
             <button
               onClick={onBackToHome}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-xl border border-blue-200 bg-white text-slate-800 hover:bg-blue-50 hover:text-blue-600 text-xs font-bold transition-all shadow-xs cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-blue-200 bg-white text-slate-800 hover:bg-blue-50 hover:text-blue-600 text-xs font-bold transition-all shadow-xs cursor-pointer"
               title="Back to Games Hub"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Games Hub</span>
+              <span>Games Hub</span>
             </button>
           )}
 
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-blue-200 shadow-xs">
+            <Sparkles className="w-5 h-5 text-blue-600" />
+            <span className="text-sm sm:text-base font-black tracking-tight text-slate-950">
+              Touch Typing Academy
+            </span>
+          </div>
+
           <button
             onClick={() => setGameView("select")}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900 text-xs font-black transition-all shadow-2xs cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all shadow-xs cursor-pointer"
           >
             <Layers className="w-3.5 h-3.5" />
             <span>All Levels</span>
           </button>
 
-          <span
-            className={`text-xs font-black px-2.5 py-0.5 rounded-lg text-white shadow-2xs uppercase tracking-wider ${
-              isLeftLevel
-                ? "bg-emerald-600"
-                : isRightLevel
-                ? "bg-purple-600"
-                : "bg-blue-600"
-            }`}
-          >
-            {activeLevel.subtitle}
-          </span>
-          <span className={`text-xs font-bold hidden sm:inline ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+          <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
             {activeLevel.title}
           </span>
         </div>

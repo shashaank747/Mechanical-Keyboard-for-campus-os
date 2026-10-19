@@ -2514,52 +2514,45 @@ export function CodeSprintGame({
   return (
     <div className="relative z-10 w-full max-w-7xl px-3 sm:px-6 py-6 flex flex-col items-center gap-6 animate-in fade-in duration-300">
       {/* ========================================================================= */}
-      {/* 1. TOP HEADER NAVIGATION BAR                                              */}
+      {/* 1. TOP HEADER NAVIGATION BAR (STANDARDIZED SUITE HEADER)                  */}
       {/* ========================================================================= */}
-      <div className={`w-full flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b ${
-        isDark ? "border-slate-800" : "border-slate-200"
-      }`}>
-        <div className="flex items-center gap-3">
-          <div className="p-1 rounded-2xl bg-white border border-blue-200 shadow-xs flex items-center justify-center shrink-0">
-            <img src="/codesprintemblem.png" alt="Code Sprint & Dev Syntax" className="w-9 h-9 object-contain rounded-xl" />
+      <div className="w-full flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-blue-200">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <button
+            onClick={onBackToHub}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-blue-200 bg-white text-slate-800 hover:bg-blue-50 hover:text-blue-600 text-xs font-bold transition-all shadow-xs cursor-pointer"
+            title="Back to Games Hub"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Games Hub</span>
+          </button>
+
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-blue-200 shadow-xs">
+            <img src="/codesprintemblem.png" alt="Code Sprint & Dev Syntax" className="w-6 h-6 object-contain rounded-md" />
+            <span className="text-sm sm:text-base font-black tracking-tight text-slate-950">
+              Code Sprint & Dev Syntax
+            </span>
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className={`text-xl sm:text-2xl font-black tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>
-                Code Sprint & Dev Syntax
-              </h1>
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                Basics ➔ Loops ➔ Functions
-              </span>
-            </div>
-            <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-              Step-by-step coding curriculum: start with print & variables, advance through if/elif, while/for loops, and functions
-            </p>
-          </div>
+
+          <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+            Basics ➔ Loops ➔ Functions
+          </span>
         </div>
 
         <div className="flex items-center gap-2">
           {currentLevelIndex !== null && (
             <button
               onClick={() => setCurrentLevelIndex(null)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
-                isDark
-                  ? "bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700"
-                  : "bg-white hover:bg-slate-50 text-slate-700 border-slate-200 shadow-xs"
-              }`}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all shadow-xs cursor-pointer"
             >
               <Layers className="w-3.5 h-3.5" />
               <span>All Levels</span>
             </button>
           )}
 
-          <button
-            onClick={onBackToHub}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-blue-200 bg-white hover:bg-blue-50 text-slate-800 hover:text-blue-600 text-xs font-bold transition-all shadow-xs cursor-pointer"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Games Hub</span>
-          </button>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl border border-blue-200 bg-white text-blue-700 text-xs font-mono font-bold shadow-xs">
+            <span>{completedCountForLang}/{currentLanguage.levels.length} Solved</span>
+          </div>
         </div>
       </div>
 
