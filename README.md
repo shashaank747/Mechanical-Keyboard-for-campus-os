@@ -28,9 +28,12 @@ Unlike traditional barebones typing tutors, this application bridges **physical 
 
 1. **Interactive 3D Mechanical Simulation**: Experience realistic physical key-travel kinematics (4px vertical travel, spring compression, bottom-out shadow physics) paired with zero-latency synthesized sound profiles (Linear Thock, Clicky Crisp, Tactile Bump).
 2. **7 Comprehensive Arcade Training Games**: Tackle structured curricula ranging from 10-finger muscle memory in Touch Typing Academy to real multi-language IDE code completion in Code Sprint.
-3. **User Activity Analytics Dashboard**: A built-in personal telemetry hub featuring interactive **Bar Graphs** (visualizing what games are played and how many times each has been played) and **Line Graphs** (plotting speed progression in WPM and accuracy trajectories over time).
-4. **Customization & Aesthetics**: Switch seamlessly across 7 curated theme palettes, toggle touch-typing finger color zones, and enjoy an intuitive, compact navigation drawer accessible via the top-left toggle button.
-5. **Local-First, Cloud-Ready Architecture**: Runs 100% out-of-the-box in local offline mode with zero required external database dependencies. Ready to connect to any team Supabase project at any time with a single `.env` update.
+3. **Standardized Suite Header System**: A unified, cohesive top navigation bar across all 7 games featuring a standardized Games Hub back button, clean white card pill badges with custom game emblems, curriculum tags, and contextual HUD metric chips.
+4. **Precision Mission Timers & Performance Debrief**: Timed arcade modes featuring high-precision millisecond countdown timers (`MM:SS:ms`), live survival count-up timers, and post-game telemetry screens showing exact timer-referenced WPM calculations, total keys typed, and word counts.
+5. **Interactive UI & Hover Magnification**: Modern squircle app icons with interactive hover magnification (`scale-135` hover pop effect), fluid animations, and rich tactile feedback.
+6. **User Activity Analytics Dashboard**: A built-in personal telemetry hub featuring interactive **Bar Graphs** (visualizing game frequencies) and **Line Graphs** (plotting speed progression in WPM and accuracy trajectories over time).
+7. **Customization & Aesthetics**: Switch seamlessly across 8 curated theme palettes, toggle touch-typing finger color zones, and enjoy an intuitive, compact navigation drawer.
+8. **Local-First, Cloud-Ready Architecture**: Runs 100% out-of-the-box in local offline mode with zero required external database dependencies, with one-click Supabase cloud sync ready at any time.
 
 ---
 
@@ -44,15 +47,51 @@ Each game is carefully calibrated to train a distinct facet of keyboard mastery:
 | :--- | :--- | :--- | :--- |
 | **🎓 Touch Typing Academy** | Structured Curriculum | 16 comprehensive master levels starting from home-row keys (`ASDF JKL;`) and branching into dedicated Left-Hand and Right-Hand drills, top numbers, and punctuation. Features a live dual-hand visualizer with donut accuracy charts. | Level & Accuracy % |
 | **⚡ Code Sprint & Dev Syntax** | Coding & Logic | A dual-pane IDE compiler training typing speed in **Python, JavaScript, TypeScript, Java, C, C++, HTML/CSS, and SQL**. Students fill in missing logical blanks with real auto-indentation and instant syntax validation. | WPM & Blanks Solved |
+| **☄️ Key Meteor Defense** | Arcade Survival | Retro arcade shooter with launch duration options (**2 Min**, **5 Min**, or **Unlimited**). Features real-time `MM:SS:ms` millisecond countdown or count-up timers, lives tracking, wave scaling, and a post-mission debrief card with exact timer-referenced WPM. | Score, Wave, WPM |
 | **🔥 Speed Typing Arena** | Speed & Reflexes | Dynamic real-time pangram typing benchmark. Delivers instantaneous WPM calculation, streak tracking, accuracy meter, and celebratory particle confetti upon round completion. | Peak WPM & Net Speed |
-| **☄️ Key Meteor Defense** | Arcade Action | Fast-paced retro survival shooter where falling words and keycaps threaten the mechanical keyboard perimeter. Players blast words out of the sky, protect 3 shield lives, and chain combo multipliers. | High Score & Wave Reached |
-| **🙈 Blind Typing Dojo** | Pure Muscle Memory | Pure auditory training where character prompts are spoken aloud or kept hidden. Students type blind directly on their mechanical keyboard to build unbreakable tactile reflexes. | Lines Dictated & Recall |
+| **🙈 Blind Typing Dojo** | Pure Muscle Memory | Pure auditory and muscle memory training with hardcoded punctuation where character prompts are spoken aloud or kept hidden. Students build unbreakable tactile reflexes. | Lines Dictated & Recall |
 | **🥋 Keyboard Shortcuts Dojo** | Productivity | Interactive developer hotkey trainer that safely intercepts and tests key combinations (`Ctrl+C`, `Ctrl+V`, `Ctrl+Shift+P`, `Alt+Tab`, `Windows+.`, `Ctrl+F`, etc.) without triggering browser default dialogs. | Hotkeys Mastered |
 | **🎵 Echo Matrix Voice Dictation** | Auditory Training | Text-to-speech audio dictation where the engine speaks letters, spaces, and complete vocabulary words for synchronized rhythmic typing. | Rhythmic Accuracy |
 
 ---
 
-### 📊 2. User Activity Analytics Dashboard
+### ☄️ 2. Key Meteor Defense: Precision Timed Arcade
+
+The Meteor Defense game features a full mission launch and debrief lifecycle:
+
+- **Launch Duration Modal**:
+  - Displays a centered modal over a smoothly blurred backdrop (`backdrop-blur-md`).
+  - Choose between **2 Min** (high-speed sprint), **5 Min** (extended endurance), or **Unlimited** (count-up arcade survival).
+  - The game and timers only begin once the user explicitly clicks **START DEFENSE MISSION**.
+- **Dual Timer Modes**:
+  - **Timed (2m / 5m)**: Precision countdown timer displaying `MM:SS:ms` (minutes, seconds, and centiseconds) updated on the 60fps game loop.
+  - **Unlimited**: Monospace count-up survival timer (`MM:SS`) measuring total active defense duration.
+- **Post-Game Mission Debrief Card**:
+  - When the countdown finishes (or all 3 lives are lost), a medium-sized result card opens over the blurred game screen.
+  - Displays exact performance metrics:
+    - **Total Keys Typed**: Verified count of valid keystrokes.
+    - **Total Words Typed**: Total number of meteor words destroyed.
+    - **Timer-Referenced WPM**: Calculated using international standard formula $\text{WPM} = \frac{\text{Keys Typed} / 5}{\text{Actual Minutes Elapsed}}$.
+    - **Total Duration**: Exact active mission time (e.g. `2m 00s`, `1m 45s`).
+    - **Score & Waves**: Points earned, max wave achieved, and accuracy percentage.
+
+---
+
+### 🎨 3. Standardized Suite Headers & Visual Design System
+
+All games share an identical, cohesive header layout:
+
+```
+[ ← Games Hub ]  [ 🌐 Game Logo Badge ]  [ Subtitle Tag ]  ------  [ Actions & Live HUD Metrics ]
+```
+
+- **Uniform Top Bar**: `pb-3 border-b border-blue-200` with clean white card pills, blue borders, and dark typography (`text-slate-950 font-black`).
+- **Interactive Hover Magnification**: Game cards and logo containers smoothly enlarge on hover (`scale-135 hover:shadow-xl hover:z-30`) for an immersive tactile feel.
+- **Full Squircle App Icons**: High-resolution rounded square app icons (`codesprintemblem.png`, `blindtypingicon.png`) designed to match modern OS aesthetics.
+
+---
+
+### 📊 4. User Activity Analytics Dashboard
 
 Accessed directly from the sidebar navigation or the Arcade Hub header, the **Dashboard** acts as the student's personal flight recorder:
 
@@ -72,9 +111,9 @@ Accessed directly from the sidebar navigation or the Arcade Hub header, the **Da
 
 ---
 
-### 🎨 3. Keyboard Settings & Aesthetic Palettes
+### 🎨 5. Keyboard Settings & Aesthetic Palettes
 
-The slide-over drawer (accessible via the top-left hamburger toggle) houses complete keyboard configuration:
+The slide-over drawer (accessible via the top-left toggle) houses complete keyboard configuration:
 
 - **Navigation Menu**:
   - 🎮 **Let's Play**: Return to the Arcade Games & Academy Hub.
@@ -93,11 +132,10 @@ The slide-over drawer (accessible via the top-left hamburger toggle) houses comp
 
 ---
 
-### 🔊 4. Low-Latency Acoustic Sound Synthesis
+### 🔊 6. Low-Latency Acoustic Sound Synthesis
 
 - Procedural Web Audio API sound generator producing authentic mechanical switch feedback without static audio file lag.
 - Switch types modeled: **Linear Thock** (smooth bottom-out), **Clicky Crisp** (tactile reset click), and **Tactile Bump** (subtle resistance drop).
-- Audio assets for Lo-Fi background soundtracks are retained in `public/` and `src/lib/bgMusic.ts` for future player activation.
 
 ---
 
@@ -305,8 +343,10 @@ When your team is ready to connect a live Supabase project:
 
 ```
 Mechanical-Keyboard-for-campus-os/
-├── public/                       # Static assets and music tracks
+├── public/                       # Static assets, branding, and audio
 │   ├── icon_logo.png             # Official brand logo & favicon
+│   ├── codesprintemblem.png      # Full squircle Code Sprint app icon
+│   ├── blindtypingicon.png       # Full squircle Blind Typing app icon
 │   ├── Afternoon_on_the_Sill.mp3 # Lo-Fi soundtrack tracks
 │   ├── Notes_on_the_Glass.mp3
 │   ├── Steaming_Mug_Grey_Skies.mp3
@@ -320,12 +360,12 @@ Mechanical-Keyboard-for-campus-os/
 ├── src/
 │   ├── components/ui/            # Core UI and game components
 │   │   ├── keyboard.tsx          # Interactive 3D mechanical keyboard simulator
-│   │   ├── GamesHub.tsx          # Arcade games selector hub
+│   │   ├── GamesHub.tsx          # Arcade games selector hub with hover magnification
 │   │   ├── Dashboard.tsx         # User Activity Dashboard (Bar & Line Graphs)
 │   │   ├── ThemeSidebar.tsx      # Sidebar navigation & Keyboard Settings drawer
 │   │   ├── KeyboardGame.tsx      # Touch Typing Academy engine (16 levels)
-│   │   ├── CodeSprintGame.tsx    # Multi-language IDE compiler game
-│   │   ├── FallingWordsGame.tsx  # Key Meteor Defense arcade shooter
+│   │   ├── CodeSprintGame.tsx    # Multi-language IDE compiler game (8 languages)
+│   │   ├── FallingWordsGame.tsx  # Key Meteor Defense arcade shooter (Timed & Survival)
 │   │   ├── BlindTypingGame.tsx   # Auditory blind typing challenge
 │   │   └── SoundMatrixGame.tsx   # Echo matrix synthesizer
 │   ├── lib/
@@ -334,7 +374,7 @@ Mechanical-Keyboard-for-campus-os/
 │   │   ├── supabase.ts           # Supabase client initialization (guarded)
 │   │   ├── sound.ts              # Procedural Web Audio API sound engine
 │   │   ├── bgMusic.ts            # Lo-Fi soundtrack playlist manager
-│   │   └── themes.ts             # 7 curated mechanical keyboard themes
+│   │   └── themes.ts             # 8 curated mechanical keyboard themes
 │   ├── App.tsx                   # Main application router and state coordinator
 │   ├── index.css                 # Global CSS and layout tokens
 │   └── main.tsx                  # React application entry point
