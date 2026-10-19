@@ -27,6 +27,63 @@ import { updateStudentProgress } from "@/lib/db";
 
 export type DurationOption = "2min" | "5min" | "unlimited";
 export type EndReason = "time_up" | "lives_depleted";
+export type SpeedPace = "relaxed" | "balanced" | "rapid";
+
+export interface PaceConfig {
+  id: SpeedPace;
+  label: string;
+  sub: string;
+  badge: string;
+  description: string;
+  baseSpeed: number; // percentage of arena height per second
+  waveStep: number;  // added speed per wave
+  randomVariation: number;
+  initialSpawnInterval: number; // ms
+  minSpawnInterval: number; // ms
+  spawnWaveReduction: number; // ms reduction per wave
+}
+
+export const SPEED_PACES: Record<SpeedPace, PaceConfig> = {
+  relaxed: {
+    id: "relaxed",
+    label: "Relaxed",
+    sub: "Flow / Gentle",
+    badge: "🍃 Relaxed Pace",
+    description: "Gentle falling speed (~15s fall time). Ideal for getting into the rhythm, warming up, and casual flow.",
+    baseSpeed: 4.8,
+    waveStep: 0.6,
+    randomVariation: 0.8,
+    initialSpawnInterval: 4800,
+    minSpawnInterval: 2400,
+    spawnWaveReduction: 250,
+  },
+  balanced: {
+    id: "balanced",
+    label: "Balanced",
+    sub: "Recommended",
+    badge: "⚡ Balanced Pace",
+    description: "Smooth starting speed (~12s fall time) with gradual wave ramp-up. Perfect balance of flow and challenge.",
+    baseSpeed: 6.2,
+    waveStep: 0.85,
+    randomVariation: 1.0,
+    initialSpawnInterval: 4200,
+    minSpawnInterval: 1800,
+    spawnWaveReduction: 280,
+  },
+  rapid: {
+    id: "rapid",
+    label: "Rapid",
+    sub: "Arcade Sprint",
+    badge: "🔥 Rapid Pace",
+    description: "High-speed arcade action (~8s fall time) for sharp reflexes and seasoned speed typists.",
+    baseSpeed: 9.2,
+    waveStep: 1.3,
+    randomVariation: 1.4,
+    initialSpawnInterval: 3200,
+    minSpawnInterval: 1400,
+    spawnWaveReduction: 300,
+  },
+};
 
 interface FallingWord {
   id: string;
@@ -38,11 +95,23 @@ interface FallingWord {
   color: string;
 }
 
-const WORD_BANK = [
-  "CLICK", "SWITCH", "KEYCAP", "STEM", "SPRING", "LINEAR", "TACTILE",
-  "CLICKY", "LUBED", "SPACE", "ENTER", "SPEED", "SHIFT", "LASER",
-  "NEON", "PIXEL", "RGB", "TURBO", "BLAST", "POWER", "MATRIX",
-  "CODE", "SMOKE", "GHOST", "SOUND", "ACOUSTIC", "METEOR", "CHERRY"
+// Progressive Tiered Words:
+// Wave 1 features accessible 3-4 letter words so players immediately hit keys and enter the flow!
+const WORDS_SHORT = [
+  "KEY", "CAP", "RUN", "FLOW", "SKY", "TAP", "CODE", "NEON", "GLOW",
+  "STEM", "CORE", "CHIP", "RGB", "WAVE", "TYPE", "ZOOM", "MINT", "BEAT",
+  "LINE", "WARP", "SYNC", "GRID", "ECHO", "FIRE", "BLUE", "FAST"
+];
+
+const WORDS_MEDIUM = [
+  "CLICK", "SPACE", "ENTER", "SPEED", "SHIFT", "LASER", "PIXEL", "TURBO",
+  "BLAST", "POWER", "SOUND", "LUBED", "GHOST", "PULSE", "SMOKE", "FLASH",
+  "GAMER", "BOARD", "SWITCH", "DRIVE", "SPRING"
+];
+
+const WORDS_ADVANCED = [
+  "TACTILE", "LINEAR", "MECHANIC", "KEYCAP", "MATRIX", "ACOUSTIC",
+  "CHERRY", "OVERDRIVE", "VELOCITY", "KEYSTROKE", "PERIMETER"
 ];
 
 const COLORS = ["#f97316", "#10b981", "#3b82f6", "#8b5cf6", "#ec4899", "#eab308"];
@@ -63,6 +132,8 @@ export function FallingWordsGame({
   const [gameState, setGameState] = useState<"ready" | "playing" | "gameover">("ready");
   const [selectedDuration, setSelectedDuration] = useState<DurationOption>("2min");
   const [activeDuration, setActiveDuration] = useState<DurationOption>("2min");
+  const [selectedPace, setSelectedPace] = useState<SpeedPace>("balanced");
+  const [activePace, setActivePace] = useState<SpeedPace>("balanced");
   const [endReason, setEndReason] = useState<EndReason>("lives_depleted");
   const [displayTimer, setDisplayTimer] = useState<string>("02:00:00");
 
@@ -83,6 +154,7 @@ export function FallingWordsGame({
 
   const startTimeRef = useRef<number>(0);
   const durationModeRef = useRef<DurationOption>("2min");
+  const paceRef = useRef<SpeedPace>("balanced");
   const totalKeysTypedRef = useRef<number>(0);
   const totalErrorsRef = useRef<number>(0);
   const wordsDestroyedRef = useRef<number>(0);
@@ -104,15 +176,30 @@ export function FallingWordsGame({
     return `${mins}m ${String(secs).padStart(2, "0")}s`;
   };
 
-  // Spawns a word at the top with randomized horizontal position & speed based on wave
+  // Spawns a word at the top with randomized horizontal position & speed based on wave & pace
   const spawnWord = useCallback(() => {
-    const word = WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)];
+    const currentWave = waveRef.current;
+    
+    // Progressive word difficulty:
+    // Wave 1 gives concise 3-4 letter words to quickly get fingers in motion and into flow
+    let wordPool = WORDS_SHORT;
+    const roll = Math.random();
+    if (currentWave === 1) {
+      wordPool = roll < 0.85 ? WORDS_SHORT : WORDS_MEDIUM;
+    } else if (currentWave === 2) {
+      wordPool = roll < 0.45 ? WORDS_SHORT : roll < 0.9 ? WORDS_MEDIUM : WORDS_ADVANCED;
+    } else {
+      wordPool = roll < 0.2 ? WORDS_SHORT : roll < 0.7 ? WORDS_MEDIUM : WORDS_ADVANCED;
+    }
+
+    const word = wordPool[Math.floor(Math.random() * wordPool.length)];
     const id = `${word}-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
     // Horizontal random placement bounded to 12% - 78% so words stay cleanly inside the arena
     const xPercent = 12 + Math.random() * 66;
-    const currentWave = waveRef.current;
-    // Speed in percentage of arena height per second
-    const speed = 13 + currentWave * 2.8 + Math.random() * 3.5;
+
+    const pace = SPEED_PACES[paceRef.current];
+    // Smooth, gentle starting speed that scales comfortably per wave
+    const speed = pace.baseSpeed + (currentWave - 1) * pace.waveStep + Math.random() * pace.randomVariation;
     const color = COLORS[Math.floor(Math.random() * COLORS.length)];
 
     setActiveWords((prev) => [
@@ -162,13 +249,19 @@ export function FallingWordsGame({
     }
   }, []);
 
-  // Start game with selected duration
-  const startGame = (duration: DurationOption = selectedDuration) => {
+  // Start game with selected duration & speed pace
+  const startGame = (
+    duration: DurationOption = selectedDuration,
+    pace: SpeedPace = selectedPace
+  ) => {
     setActiveDuration(duration);
     durationModeRef.current = duration;
+    setActivePace(pace);
+    paceRef.current = pace;
     setScore(0);
     setLives(3);
     setWave(1);
+    waveRef.current = 1;
     setStreak(0);
     setWordsDestroyed(0);
     wordsDestroyedRef.current = 0;
@@ -181,7 +274,8 @@ export function FallingWordsGame({
     targetWordIdRef.current = null;
 
     startTimeRef.current = performance.now();
-    lastSpawnRef.current = Date.now();
+    // Smooth start: give user 1000ms breathing room before first word drops
+    lastSpawnRef.current = Date.now() - (SPEED_PACES[pace].initialSpawnInterval - 1000);
 
     if (duration === "2min") setDisplayTimer("02:00:00");
     else if (duration === "5min") setDisplayTimer("05:00:00");
@@ -232,11 +326,19 @@ export function FallingWordsGame({
       }
 
       const currentWave = waveRef.current;
-      const spawnInterval = Math.max(1300, 3200 - currentWave * 320);
+      const pace = SPEED_PACES[paceRef.current];
+      const spawnInterval = Math.max(
+        pace.minSpawnInterval,
+        pace.initialSpawnInterval - (currentWave - 1) * pace.spawnWaveReduction
+      );
       const now = Date.now();
 
+      // Early waves: limit concurrent words so player is never swamped early on
+      // Wave 1: max 2 words; Wave 2: max 3 words; Wave 3+: max 4 words
+      const maxConcurrent = currentWave <= 1 ? 2 : currentWave <= 2 ? 3 : 4;
+
       // Spawn word when timer fires and arena is not overcrowded
-      if (now - lastSpawnRef.current > spawnInterval && activeWordsRef.current.length < 3 + Math.min(4, currentWave)) {
+      if (now - lastSpawnRef.current > spawnInterval && activeWordsRef.current.length < maxConcurrent) {
         spawnWord();
         lastSpawnRef.current = now;
       }
@@ -316,8 +418,8 @@ export function FallingWordsGame({
                 setWordsDestroyed((prevCount) => {
                   const newCount = prevCount + 1;
                   wordsDestroyedRef.current = newCount;
-                  // Increase wave level every 4 words destroyed!
-                  if (newCount % 4 === 0) {
+                  // Increase wave level every 6 words destroyed for smoother flow!
+                  if (newCount % 6 === 0) {
                     setWave((w) => w + 1);
                     soundEngine.playKeySound("Space");
                   }
@@ -399,12 +501,12 @@ export function FallingWordsGame({
       {/* ========================================================================= */}
       {gameState === "ready" && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="max-w-md w-full bg-white rounded-3xl border border-blue-200 shadow-2xl p-6 sm:p-7 flex flex-col items-center gap-5 text-center text-slate-900 ring-1 ring-black/[0.04]">
+          <div className="max-w-md w-full bg-white rounded-3xl border border-blue-200 shadow-2xl p-6 sm:p-7 flex flex-col items-center gap-4 text-center text-slate-900 ring-1 ring-black/[0.04]">
             {/* Header Icon */}
             <img
               src="/meteordefenseemblem.png"
               alt="Key Meteor Defense"
-              className="w-20 h-20 object-contain rounded-2xl shadow-xl hover:scale-110 transition-transform duration-300 cursor-pointer"
+              className="w-16 h-16 sm:w-20 sm:h-20 object-contain rounded-2xl shadow-xl hover:scale-110 transition-transform duration-300 cursor-pointer"
             />
 
             <div>
@@ -412,54 +514,93 @@ export function FallingWordsGame({
                 Key Meteor Defense
               </h3>
               <p className="text-xs text-slate-600 mt-1 max-w-xs mx-auto leading-relaxed">
-                Type letters on falling words to fire defense lasers and prevent keycap impact. Choose your game duration:
+                Type letters on falling words to fire defense lasers and prevent keycap impact.
               </p>
             </div>
 
-            {/* Duration Selector Pills (2 min, 5 min, Unlimited) */}
-            <div className="w-full flex items-center gap-2 p-1.5 rounded-2xl bg-blue-50/80 border border-blue-200">
-              {(
-                [
-                  { id: "2min", label: "2 Min", sub: "Countdown" },
-                  { id: "5min", label: "5 Min", sub: "Countdown" },
-                  { id: "unlimited", label: "Unlimited", sub: "Count-up" },
-                ] as const
-              ).map((item) => {
-                const isSelected = selectedDuration === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => setSelectedDuration(item.id)}
-                    className={`flex-1 py-2.5 px-2 rounded-xl text-xs font-black transition-all cursor-pointer flex flex-col items-center gap-0.5 ${
-                      isSelected
-                        ? "bg-blue-600 text-white shadow-md shadow-blue-600/30 scale-102"
-                        : "bg-white text-slate-700 hover:bg-blue-100/50 hover:text-blue-700 border border-transparent"
-                    }`}
-                  >
-                    <span className="text-sm font-black">{item.label}</span>
-                    <span className={`text-[10px] font-bold ${isSelected ? "text-blue-100" : "text-slate-500"}`}>
-                      {item.sub}
-                    </span>
-                  </button>
-                );
-              })}
+            {/* Duration Selector */}
+            <div className="w-full flex flex-col gap-1.5 text-left">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                <Clock className="w-3 h-3 text-blue-600" />
+                Mission Duration
+              </span>
+              <div className="w-full flex items-center gap-2 p-1.5 rounded-2xl bg-blue-50/80 border border-blue-200">
+                {(
+                  [
+                    { id: "2min", label: "2 Min", sub: "Countdown" },
+                    { id: "5min", label: "5 Min", sub: "Countdown" },
+                    { id: "unlimited", label: "Unlimited", sub: "Survival" },
+                  ] as const
+                ).map((item) => {
+                  const isSelected = selectedDuration === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setSelectedDuration(item.id)}
+                      className={`flex-1 py-2 px-2 rounded-xl text-xs font-black transition-all cursor-pointer flex flex-col items-center gap-0.5 ${
+                        isSelected
+                          ? "bg-blue-600 text-white shadow-md shadow-blue-600/30 scale-102"
+                          : "bg-white text-slate-700 hover:bg-blue-100/50 hover:text-blue-700 border border-transparent"
+                      }`}
+                    >
+                      <span className="text-xs font-black">{item.label}</span>
+                      <span className={`text-[9.5px] font-bold ${isSelected ? "text-blue-100" : "text-slate-500"}`}>
+                        {item.sub}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Duration Information Tip */}
-            <div className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] font-semibold text-slate-600 flex items-center justify-center gap-2">
-              <Clock className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-              <span>
-                {selectedDuration === "2min" && "2 Minutes: High-speed sprint with mm:ss:ms precision countdown"}
-                {selectedDuration === "5min" && "5 Minutes: Extended defense test with mm:ss:ms precision countdown"}
-                {selectedDuration === "unlimited" && "Unlimited Mode: Count-up survival timer until defense lives deplete"}
+            {/* Speed & Flow Pace Selector */}
+            <div className="w-full flex flex-col gap-1.5 text-left">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                <Gauge className="w-3 h-3 text-blue-600" />
+                Falling Speed & Flow Pace
               </span>
+              <div className="w-full flex items-center gap-2 p-1.5 rounded-2xl bg-slate-100/80 border border-slate-200">
+                {(
+                  [
+                    { id: "relaxed", label: "🍃 Relaxed", sub: "~15s Fall" },
+                    { id: "balanced", label: "⚡ Balanced", sub: "Recommended" },
+                    { id: "rapid", label: "🔥 Rapid", sub: "~8s Fall" },
+                  ] as const
+                ).map((item) => {
+                  const isSelected = selectedPace === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setSelectedPace(item.id)}
+                      className={`flex-1 py-2 px-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex flex-col items-center gap-0.5 ${
+                        isSelected
+                          ? "bg-blue-600 text-white shadow-md shadow-blue-600/30 scale-102"
+                          : "bg-white text-slate-700 hover:bg-slate-200/70 hover:text-blue-700 border border-transparent"
+                      }`}
+                    >
+                      <span className="text-xs font-black">{item.label}</span>
+                      <span
+                        className={`text-[9.5px] font-bold ${
+                          isSelected ? "text-blue-100" : "text-slate-500"
+                        }`}
+                      >
+                        {item.sub}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] text-slate-600 font-medium px-1 leading-snug">
+                {SPEED_PACES[selectedPace].description}
+              </p>
             </div>
 
             {/* Start Button & Hub Return */}
             <div className="w-full flex flex-col gap-2 pt-1">
               <button
-                onClick={() => startGame(selectedDuration)}
+                onClick={() => startGame(selectedDuration, selectedPace)}
                 className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs sm:text-sm tracking-wider uppercase flex items-center justify-center gap-2 shadow-xl shadow-blue-500/35 cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
                 <Play className="w-4 h-4 fill-white" />
@@ -494,7 +635,7 @@ export function FallingWordsGame({
                 {endReason === "time_up" ? <Trophy className="w-7 h-7" /> : <ShieldAlert className="w-7 h-7" />}
               </div>
               <div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span
                     className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
                       endReason === "time_up"
@@ -506,6 +647,9 @@ export function FallingWordsGame({
                   </span>
                   <span className="text-xs font-bold text-slate-500 font-mono">
                     Mode: {activeDuration === "unlimited" ? "Unlimited" : activeDuration}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                    {SPEED_PACES[activePace].badge}
                   </span>
                 </div>
                 <h3 className="text-2xl font-black text-slate-950 tracking-tight mt-0.5">
@@ -584,20 +728,20 @@ export function FallingWordsGame({
             {/* Action Buttons */}
             <div className="flex items-center gap-3 pt-1">
               <button
-                onClick={() => startGame(activeDuration)}
+                onClick={() => startGame(activeDuration, activePace)}
                 className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs sm:text-sm tracking-wider uppercase flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
                 <RotateCcw className="w-4 h-4" />
-                <span>Play Again ({activeDuration})</span>
+                <span>Play Again ({SPEED_PACES[activePace].label})</span>
               </button>
 
               <button
                 onClick={() => setGameState("ready")}
                 className="py-3 px-4 rounded-2xl border border-blue-200 bg-white text-blue-700 hover:bg-blue-50 text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
-                title="Change Game Duration"
+                title="Change Game Settings"
               >
                 <Sliders className="w-4 h-4" />
-                <span>Change Duration</span>
+                <span>Settings</span>
               </button>
 
               <button
@@ -638,6 +782,11 @@ export function FallingWordsGame({
 
           <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
             {activeDuration === "unlimited" ? "Arcade Survival" : `${activeDuration} Mission`}
+          </span>
+
+          <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+            <Gauge className="w-3 h-3 text-blue-600" />
+            {SPEED_PACES[activePace].label} Pace
           </span>
         </div>
 
