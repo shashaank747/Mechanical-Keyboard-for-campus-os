@@ -401,9 +401,11 @@ export function FallingWordsGame({
         <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="max-w-md w-full bg-white rounded-3xl border border-blue-200 shadow-2xl p-6 sm:p-7 flex flex-col items-center gap-5 text-center text-slate-900 ring-1 ring-black/[0.04]">
             {/* Header Icon */}
-            <div className="p-3.5 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25">
-              <Crosshair className="w-8 h-8" />
-            </div>
+            <img
+              src="/meteordefenseemblem.png"
+              alt="Key Meteor Defense"
+              className="w-20 h-20 object-contain rounded-2xl shadow-xl hover:scale-110 transition-transform duration-300 cursor-pointer"
+            />
 
             <div>
               <h3 className="text-2xl font-black tracking-tight text-slate-950">
@@ -624,7 +626,11 @@ export function FallingWordsGame({
           </button>
 
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-blue-200 shadow-xs">
-            <Crosshair className="w-5 h-5 text-blue-600" />
+            <img
+              src="/meteordefenseemblem.png"
+              alt="Key Meteor Defense"
+              className="w-7 h-7 object-contain rounded-lg shadow-2xs hover:scale-135 transition-transform duration-200 cursor-pointer"
+            />
             <span className="text-sm sm:text-base font-black tracking-tight text-slate-950">
               Key Meteor Defense
             </span>

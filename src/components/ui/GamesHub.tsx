@@ -79,6 +79,16 @@ export function TouchTypingIcon({ className }: { className?: string }) {
   );
 }
 
+export function MeteorDefenseIcon({ className }: { className?: string }) {
+  return (
+    <img
+      src="/meteordefenseemblem.png"
+      alt="Key Meteor Defense"
+      className={`object-contain rounded-xl shadow-2xs transition-transform duration-300 ease-out hover:scale-120 ${className || "w-9 h-9"}`}
+    />
+  );
+}
+
 const ARCADE_GAMES: GameCardInfo[] = [
   {
     id: "codesprint",
@@ -134,7 +144,7 @@ const ARCADE_GAMES: GameCardInfo[] = [
     tagline: "Falling Words Arcade Survival",
     category: "Arcade Action",
     description: "Blast falling words and keycaps before they breach your mechanical keyboard perimeter! Keep your 3 lives safe and chain score combos with high-speed typing.",
-    icon: Crosshair,
+    icon: MeteorDefenseIcon,
     badgeColor: "bg-emerald-500 text-white",
     gradient: "from-emerald-500/20 via-teal-500/10 to-transparent",
     metrics: ["Falling Words", "3 Shield Lives", "Combo Multipliers", "Wave Escalation"],

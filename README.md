@@ -350,6 +350,7 @@ Mechanical-Keyboard-for-campus-os/
 │   ├── blindtypingicon.png       # Full squircle Blind Typing app icon
 │   ├── speedtypingemblem.png     # Full squircle Speed Typing Arena app icon
 │   ├── touchtypingemblem.png     # Full squircle Touch Typing Academy app icon
+│   ├── meteordefenseemblem.png   # Full squircle Key Meteor Defense app icon
 │   ├── Afternoon_on_the_Sill.mp3 # Lo-Fi soundtrack tracks
 │   ├── Notes_on_the_Glass.mp3
 │   ├── Steaming_Mug_Grey_Skies.mp3

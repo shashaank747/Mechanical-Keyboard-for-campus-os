@@ -66,6 +66,16 @@ function TouchTypingIcon({ className }: { className?: string }) {
   );
 }
 
+function MeteorDefenseIcon({ className }: { className?: string }) {
+  return (
+    <img
+      src="/meteordefenseemblem.png"
+      alt="Key Meteor Defense"
+      className={`object-contain rounded-xs ${className || "w-4 h-4"}`}
+    />
+  );
+}
+
 const GAME_META: Record<
   string,
   { title: string; category: string; icon: React.ElementType; color: string; barGradient: string }
@@ -94,7 +104,7 @@ const GAME_META: Record<
   fallingwords: {
     title: "Key Meteor Defense",
     category: "Arcade Action",
-    icon: Crosshair,
+    icon: MeteorDefenseIcon,
     color: "#10b981",
     barGradient: "from-emerald-500 to-teal-400",
   },
