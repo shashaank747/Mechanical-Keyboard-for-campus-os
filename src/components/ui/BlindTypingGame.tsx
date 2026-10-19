@@ -584,7 +584,7 @@ export function BlindTypingGame({
           </button>
 
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-blue-200 shadow-xs">
-            <img src="/blindtypingicon.png" alt="Blind Typing" className="w-7 h-7 object-contain rounded-lg shadow-2xs" />
+            <img src="/blindtypingicon.png" alt="Blind Typing" className="w-7 h-7 object-contain rounded-lg shadow-2xs hover:scale-135 transition-transform duration-200 cursor-pointer" />
             <span className="text-sm sm:text-base font-black tracking-tight text-slate-950">
               Blind Typing
             </span>
