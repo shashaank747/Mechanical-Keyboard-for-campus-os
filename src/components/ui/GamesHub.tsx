@@ -378,10 +378,8 @@ export function GamesHub({
                       </span>
                     )}
                   </div>
-                  {isLocked ? (
+                  {isLocked && (
                     <Lock className="w-5 h-5 text-amber-500/70" />
-                  ) : (
-                    <Icon className="w-5 h-5 text-slate-400 group-hover:text-blue-600 group-hover:scale-110 transition-all" />
                   )}
                 </div>
 
