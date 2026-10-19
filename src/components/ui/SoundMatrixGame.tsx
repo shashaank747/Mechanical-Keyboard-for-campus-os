@@ -118,7 +118,7 @@ export function SoundMatrixGame({
   onBackToHub: () => void;
 }) {
   // Website and games remain on the sleek White, Blue, and Black palette
-  const isDark = true;
+  const isDark = false;
 
   // Game Settings
   const [dictationMode, setDictationMode] = useState<DictationMode>("spell"); // 'spell' or 'words'

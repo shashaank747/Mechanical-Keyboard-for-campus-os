@@ -2270,7 +2270,7 @@ export function CodeSprintGame({
   onBackToHub: () => void;
 }) {
   // Website and games remain on the sleek White, Blue, and Black palette
-  const isDark = true;
+  const isDark = false;
 
   // Navigation / Selection State
   const [selectedLanguageId, setSelectedLanguageId] = useState<CodeLanguage>("python");
@@ -2555,14 +2555,10 @@ export function CodeSprintGame({
 
           <button
             onClick={onBackToHub}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
-              isDark
-                ? "bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700"
-                : "bg-white hover:bg-slate-50 text-slate-700 border-slate-200 shadow-xs"
-            }`}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-blue-200 bg-white hover:bg-blue-50 text-slate-800 hover:text-blue-600 text-xs font-bold transition-all shadow-xs cursor-pointer"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Back to Arcade</span>
+            <span>Games Hub</span>
           </button>
         </div>
       </div>

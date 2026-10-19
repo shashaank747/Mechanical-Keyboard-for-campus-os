@@ -50,7 +50,7 @@ export function FallingWordsGame({
   onOpenThemeSidebar?: () => void;
   onBackToHub: () => void;
 }) {
-  const isDark = theme.isDark || theme.category === "Dark";
+  const isDark = false;
 
   const [gameState, setGameState] = useState<"ready" | "playing" | "gameover">("ready");
   const [score, setScore] = useState<number>(0);
