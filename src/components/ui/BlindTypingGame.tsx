@@ -854,7 +854,7 @@ export function BlindTypingGame({
                     return (
                       <span
                         key={idx}
-                        className={isError ? "text-rose-500 underline font-black bg-rose-500/20 px-0.5 rounded" : "text-emerald-400"}
+                        className={isError ? "text-rose-700 underline font-black bg-rose-100 px-1 rounded border border-rose-200" : "text-emerald-700 font-bold"}
                       >
                         {char}
                       </span>
@@ -864,15 +864,15 @@ export function BlindTypingGame({
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-xs font-mono font-bold text-amber-500 px-2 py-0.5 rounded bg-amber-500/10">
+                <span className="text-xs font-mono font-bold text-amber-900 px-2 py-0.5 rounded bg-amber-100 border border-amber-300">
                   {mistakesCount} {mistakesCount === 1 ? "mistake" : "mistakes"} ({accuracy}%)
                 </span>
               </div>
             </div>
 
             {/* Would you like to type again? Yes / No Buttons */}
-            <div className="flex items-center justify-between p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs">
-              <span className="font-bold text-amber-400">
+            <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-xl bg-white border-2 border-amber-300 shadow-xs text-xs">
+              <span className="font-extrabold text-amber-950 text-xs sm:text-sm">
                 Not a perfect match. Would you like to type again?
               </span>
 
@@ -880,7 +880,7 @@ export function BlindTypingGame({
                 {/* YES Button */}
                 <button
                   onClick={resetCurrentPhrase}
-                  className="flex items-center gap-1 px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-black shadow-xs transition-all cursor-pointer"
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-black shadow-xs transition-all cursor-pointer"
                   title="Press 'Y' or click to re-type"
                 >
                   <Check className="w-3.5 h-3.5" />
@@ -891,7 +891,7 @@ export function BlindTypingGame({
                 {/* NO Button */}
                 <button
                   onClick={nextRandomPhrase}
-                  className="flex items-center gap-1 px-3 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-black shadow-xs transition-all cursor-pointer"
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-black shadow-xs transition-all cursor-pointer"
                   title="Press 'N' or click to continue"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -908,15 +908,26 @@ export function BlindTypingGame({
         {/* ============================================================ */}
         {validationState === "major_errors" && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="w-full flex items-center justify-between p-2 rounded-xl bg-rose-500/15 border border-rose-500/30 text-xs text-rose-400 font-bold"
+            className="w-full flex items-center justify-between p-3 rounded-xl bg-white border-2 border-rose-400 text-rose-950 font-extrabold shadow-sm"
           >
-            <div className="flex items-center gap-2">
-              <XCircle className="w-4 h-4 text-rose-500 shrink-0" />
-              <span>{mistakesCount} mistakes made. Resetting and telling Part 1 again...</span>
+            <div className="flex items-center gap-2.5">
+              <div className="p-1.5 rounded-lg bg-rose-100 text-rose-700">
+                <XCircle className="w-5 h-5 text-rose-600 shrink-0" />
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
+                <span className="text-sm font-black text-rose-700">
+                  {mistakesCount} mistakes made.
+                </span>
+                <span className="text-xs font-bold text-slate-800">
+                  Resetting and telling {isMultiPart ? `Part ${activeChunk}` : "phrase"} again...
+                </span>
+              </div>
             </div>
-            <span className="text-[10px] font-mono animate-pulse">Listening...</span>
+            <span className="px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 text-xs font-mono font-bold animate-pulse shrink-0 border border-rose-200">
+              Replaying Voice...
+            </span>
           </motion.div>
         )}
 
