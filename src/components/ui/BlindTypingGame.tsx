@@ -134,8 +134,6 @@ export function BlindTypingGame({
   onOpenThemeSidebar,
   onBackToHub,
 }: BlindTypingGameProps) {
-  const isDark = false;
-
   // Indirect Tier Management (5-10 -> 10-15 -> 15-20)
   // NEVER display "Level" anywhere in UI
   const [currentTier, setCurrentTier] = useState<"5-10" | "10-15" | "15-20">("5-10");
@@ -575,29 +573,19 @@ export function BlindTypingGame({
       />
 
       {/* Top Header Bar */}
-      <div
-        className={`w-full flex items-center justify-between pb-2 border-b ${
-          isDark ? "border-slate-800" : "border-slate-200"
-        }`}
-      >
+      <div className="w-full flex items-center justify-between pb-2 border-b border-blue-200">
         <div className="flex items-center gap-2.5">
           <button
             onClick={onBackToHub}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all shadow-xs cursor-pointer ${
-              isDark
-                ? "bg-slate-900 border-slate-700 text-slate-200 hover:bg-slate-800"
-                : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-            }`}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-blue-200 bg-white text-slate-800 hover:bg-blue-50 hover:text-blue-600 text-xs font-bold transition-all shadow-xs cursor-pointer"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Games Hub</span>
           </button>
 
-          <div className="flex items-center gap-2">
-            <span className="p-1 rounded-xl bg-white border border-blue-200 shadow-xs flex items-center justify-center">
-              <img src="/blindtypingicon.png" alt="Blind Typing" className="w-5 h-5 object-contain rounded-md" />
-            </span>
-            <span className={`text-sm font-black tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>
+          <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-white border border-blue-200 shadow-xs">
+            <img src="/blindtypingicon.png" alt="Blind Typing" className="w-6 h-6 object-contain rounded-md" />
+            <span className="text-sm sm:text-base font-black tracking-tight text-slate-950">
               Blind Typing
             </span>
           </div>
@@ -605,27 +593,17 @@ export function BlindTypingGame({
 
         {/* Right HUD Badges */}
         <div className="flex items-center gap-2">
-          <div
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-xl border text-xs font-mono font-bold ${
-              isDark
-                ? "bg-slate-900 border-slate-800 text-purple-300"
-                : "bg-purple-50 border-purple-200 text-purple-900"
-            }`}
-          >
-            <Flame className="w-3.5 h-3.5 text-blue-400 fill-blue-400" />
+          <div className="flex items-center gap-1 px-2.5 py-1 rounded-xl border border-blue-200 bg-white text-slate-900 text-xs font-mono font-bold shadow-xs">
+            <Flame className="w-3.5 h-3.5 text-blue-600 fill-blue-600" />
             <span>Streak: {streak}</span>
           </div>
 
           <button
             onClick={onOpenThemeSidebar}
-            className={`p-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
-              isDark
-                ? "bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800"
-                : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-            }`}
+            className="p-1.5 rounded-xl border border-blue-200 bg-white text-slate-800 hover:text-blue-600 hover:bg-blue-50 text-xs font-bold transition-all cursor-pointer shadow-xs"
             title="Themes"
           >
-            <Sparkles className="w-4 h-4 text-blue-400" />
+            <Sparkles className="w-4 h-4 text-blue-600" />
           </button>
         </div>
       </div>
@@ -635,24 +613,14 @@ export function BlindTypingGame({
         onClick={() => inputRef.current?.focus()}
         className={`w-full px-4 py-3 rounded-2xl border shadow-lg backdrop-blur-md flex flex-col gap-2.5 transition-all cursor-text ${
           validationState === "perfect"
-            ? isDark
-              ? "bg-emerald-950/40 border-emerald-500/50 text-white shadow-[0_0_20px_rgba(16,185,129,0.15)]"
-              : "bg-emerald-50 border-emerald-300 text-slate-900"
+            ? "bg-emerald-50 border-emerald-300 text-slate-900"
             : validationState === "reveal_answer"
-            ? isDark
-              ? "bg-purple-950/50 border-purple-400/70 text-white shadow-[0_0_25px_rgba(168,85,247,0.25)]"
-              : "bg-purple-50 border-purple-400 text-slate-900"
+            ? "bg-blue-50 border-blue-400 text-slate-900"
             : validationState === "minor_errors"
-            ? isDark
-              ? "bg-amber-950/40 border-amber-500/50 text-white shadow-[0_0_20px_rgba(245,158,11,0.15)]"
-              : "bg-amber-50 border-amber-300 text-slate-900"
+            ? "bg-amber-50 border-amber-300 text-slate-900"
             : validationState === "major_errors"
-            ? isDark
-              ? "bg-rose-950/40 border-rose-500/50 text-white shadow-[0_0_20px_rgba(244,63,94,0.15)] animate-shake"
-              : "bg-rose-50 border-rose-300 text-slate-900 animate-shake"
-            : isDark
-            ? "bg-slate-900/90 border-purple-500/30 text-white"
-            : "bg-white/95 border-purple-200 text-slate-900"
+            ? "bg-rose-50 border-rose-300 text-slate-900 animate-shake"
+            : "bg-white border-blue-200 text-slate-900"
         }`}
       >
         {/* Controls Row */}
@@ -668,8 +636,8 @@ export function BlindTypingGame({
                 }`}
               ></span>
             </span>
-            <span className="text-[11px] font-black uppercase tracking-wider text-purple-400 flex items-center gap-1.5">
-              <Headphones className="w-3 h-3" />
+            <span className="text-[11px] font-black uppercase tracking-wider text-blue-700 flex items-center gap-1.5">
+              <Headphones className="w-3.5 h-3.5 text-blue-600" />
               <span>
                 {isSpeaking
                   ? isMultiPart
@@ -695,7 +663,7 @@ export function BlindTypingGame({
                 speakPart(activeChunk);
                 inputRef.current?.focus();
               }}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
               title={isMultiPart ? `Hear Part ${activeChunk} again` : "Hear the phrase again"}
             >
               <Volume2 className="w-3 h-3" />
@@ -709,10 +677,8 @@ export function BlindTypingGame({
               }}
               className={`px-2 py-1 rounded-lg border text-[10px] font-bold transition-all cursor-pointer ${
                 speechMode === "spelling"
-                  ? "bg-purple-500/20 border-purple-400 text-purple-300"
-                  : isDark
-                  ? "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700"
-                  : "bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200"
+                  ? "bg-blue-100 border-blue-400 text-blue-800"
+                  : "bg-white border-blue-200 text-slate-800 hover:bg-blue-50"
               }`}
             >
               Mode: {speechMode === "words" ? "Words" : "Spell"}
@@ -723,9 +689,7 @@ export function BlindTypingGame({
                 e.stopPropagation();
                 setSpeechRate((prev) => (prev === 0.75 ? 0.95 : prev === 0.95 ? 1.15 : 0.75));
               }}
-              className={`px-2 py-1 rounded-lg border text-[10px] font-mono font-bold transition-all cursor-pointer ${
-                isDark ? "bg-slate-800 border-slate-700 text-slate-300" : "bg-slate-100 border-slate-200 text-slate-700"
-              }`}
+              className="px-2 py-1 rounded-lg border border-blue-200 bg-white text-slate-800 hover:bg-blue-50 text-[10px] font-mono font-bold transition-all cursor-pointer"
             >
               {speechRate === 0.75 ? "0.75x" : speechRate === 0.95 ? "1.0x" : "1.2x"}
             </button>
@@ -735,7 +699,7 @@ export function BlindTypingGame({
                 e.stopPropagation();
                 resetCurrentPhrase();
               }}
-              className="p-1 rounded-lg text-slate-400 hover:text-purple-400 transition-colors cursor-pointer"
+              className="p-1 rounded-lg text-slate-500 hover:text-blue-600 transition-colors cursor-pointer"
               title="Reset phrase"
             >
               <RotateCcw className="w-3.5 h-3.5" />
@@ -747,9 +711,9 @@ export function BlindTypingGame({
         {/* VIEW 1: ACTIVE BLINDFOLD TYPING PROGRESS (CHUNK-HIGHLIGHTED) */}
         {/* ============================================================ */}
         {validationState === "typing" && (
-          <div className="w-full flex flex-col items-center gap-1.5 pt-1 border-t border-purple-500/10">
+          <div className="w-full flex flex-col items-center gap-1.5 pt-1 border-t border-blue-100">
             {/* Masked Dots Progress Bar with Chunk Highlight Boundaries & Hardcoded Punctuations */}
-            <div className="w-full flex flex-wrap items-center justify-center gap-1 p-2 rounded-xl bg-purple-500/5 border border-purple-500/15">
+            <div className="w-full flex flex-wrap items-center justify-center gap-1 p-2 rounded-xl bg-blue-50/50 border border-blue-200/80">
               {targetChars.map((char, idx) => {
                 const isTyped = idx < typedChars.length;
                 const isSpace = char === " ";
@@ -796,15 +760,9 @@ export function BlindTypingGame({
                     key={idx}
                     className={`w-4 h-5 rounded flex items-center justify-center font-mono text-[10px] font-bold transition-all ${
                       isTyped
-                        ? isDark
-                          ? "bg-purple-500/40 text-purple-300 border border-purple-400 shadow-xs"
-                          : "bg-purple-200 text-purple-900 border border-purple-300"
+                        ? "bg-blue-600 text-white border border-blue-700 shadow-xs"
                         : isCurrentActivePart
-                        ? isDark
-                          ? "bg-purple-950/70 border-2 border-purple-400 text-purple-300 shadow-[0_0_8px_rgba(168,85,247,0.3)] animate-pulse"
-                          : "bg-purple-50 border-2 border-purple-400 text-purple-700 shadow-xs"
-                        : isDark
-                        ? "bg-slate-950/60 border border-slate-800 text-slate-600 opacity-40"
+                        ? "bg-blue-50 border-2 border-blue-500 text-blue-800 shadow-xs"
                         : "bg-slate-100 border border-slate-200 text-slate-400 opacity-40"
                     }`}
                   >
@@ -852,21 +810,17 @@ export function BlindTypingGame({
             className="w-full flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-emerald-500/20"
           >
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              <div
-                className={`px-3 py-1 rounded-xl font-mono text-xs font-bold border ${
-                  isDark ? "bg-slate-950 text-emerald-300 border-emerald-500/40" : "bg-emerald-50 text-emerald-900 border-emerald-300"
-                }`}
-              >
+              <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+              <div className="px-3 py-1 rounded-xl font-mono text-xs font-bold border bg-emerald-50 text-emerald-900 border-emerald-300">
                 {currentPhrase}
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs font-mono font-bold text-blue-400 px-2 py-0.5 rounded bg-blue-500/10">
+              <span className="text-xs font-mono font-bold text-blue-700 px-2 py-0.5 rounded bg-blue-50 border border-blue-200">
                 {wpm} WPM
               </span>
-              <span className="text-xs font-mono font-bold text-emerald-400 px-2 py-0.5 rounded bg-emerald-500/10">
+              <span className="text-xs font-mono font-bold text-emerald-700 px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200">
                 100% Match
               </span>
 
@@ -894,11 +848,7 @@ export function BlindTypingGame({
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
-                <div
-                  className={`px-3 py-1 rounded-xl font-mono text-xs font-bold border ${
-                    isDark ? "bg-slate-950 border-amber-500/40" : "bg-amber-50 border-amber-300"
-                  }`}
-                >
+                <div className="px-3 py-1 rounded-xl font-mono text-xs font-bold border bg-amber-50 border-amber-300 text-slate-900">
                   {targetChars.map((char, idx) => {
                     const isError = errorIndices.has(idx);
                     return (
@@ -1000,21 +950,11 @@ export function BlindTypingGame({
             </div>
 
             {/* Prominent Revealed Words Display */}
-            <div
-              className={`w-full p-3 rounded-xl border flex flex-wrap items-center justify-center gap-2 ${
-                isDark
-                  ? "bg-slate-950/80 border-purple-400/40 shadow-[0_0_20px_rgba(168,85,247,0.15)]"
-                  : "bg-purple-50/90 border-purple-300 shadow-sm"
-              }`}
-            >
+            <div className="w-full p-3 rounded-xl border border-blue-200 bg-blue-50/80 shadow-sm flex flex-wrap items-center justify-center gap-2">
               {words.map((word, wIdx) => (
                 <span
                   key={wIdx}
-                  className={`px-2.5 py-1 rounded-lg font-mono text-sm font-bold border transition-all ${
-                    isDark
-                      ? "bg-purple-900/30 border-purple-500/40 text-purple-200"
-                      : "bg-white border-purple-200 text-purple-900 shadow-xs"
-                  }`}
+                  className="px-2.5 py-1 rounded-lg font-mono text-sm font-bold border bg-white border-blue-200 text-slate-900 shadow-xs"
                 >
                   {word}
                 </span>
