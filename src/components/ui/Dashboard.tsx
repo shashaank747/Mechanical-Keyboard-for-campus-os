@@ -26,6 +26,16 @@ import {
 import { getUserStats, type UserStatsData, type GamePlayRecord } from "@/lib/userStats";
 import { type KeyboardTheme } from "@/lib/themes";
 
+function CodeSprintIcon({ className }: { className?: string }) {
+  return (
+    <img
+      src="/codesprintemblem.png"
+      alt="Code Sprint & Dev Syntax"
+      className={`object-contain rounded-xs ${className || "w-4 h-4"}`}
+    />
+  );
+}
+
 function BlindTypingIcon({ className }: { className?: string }) {
   return (
     <img
@@ -57,7 +67,7 @@ const GAME_META: Record<
   codesprint: {
     title: "Code Sprint & Dev Syntax",
     category: "Coding & Logic",
-    icon: Code2,
+    icon: CodeSprintIcon,
     color: "#60a5fa",
     barGradient: "from-indigo-500 to-blue-500",
   },

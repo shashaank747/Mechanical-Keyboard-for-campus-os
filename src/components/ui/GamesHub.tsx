@@ -39,6 +39,16 @@ export interface GameCardInfo {
   lockedLabel?: string;
 }
 
+export function CodeSprintIcon({ className }: { className?: string }) {
+  return (
+    <img
+      src="/codesprintemblem.png"
+      alt="Code Sprint & Dev Syntax"
+      className={`object-contain rounded-md ${className || "w-6 h-6"}`}
+    />
+  );
+}
+
 export function BlindTypingIcon({ className }: { className?: string }) {
   return (
     <img
@@ -56,7 +66,7 @@ const ARCADE_GAMES: GameCardInfo[] = [
     tagline: "Dual-Compiler Logic & Code Typing Dojo",
     category: "Coding & Logic",
     description: "Dual-pane IDE compiler with problem templates, missing logical blanks, smart auto-indentation, and multi-language challenges across Python, JS, Java, C, C++, HTML, CSS & SQL.",
-    icon: Code2,
+    icon: CodeSprintIcon,
     badgeColor: "bg-blue-600 text-white",
     gradient: "from-blue-600/20 via-indigo-600/10 to-transparent",
     metrics: ["8 Languages", "Dual Compiler IDE", "Code Template Blanks", "Real Auto-Indent"],

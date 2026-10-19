@@ -2520,8 +2520,8 @@ export function CodeSprintGame({
         isDark ? "border-slate-800" : "border-slate-200"
       }`}>
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-blue-500/15 text-blue-400 border border-blue-500/30 shadow-xs">
-            <Code2 className="w-6 h-6" />
+          <div className="p-1 rounded-2xl bg-white border border-blue-200 shadow-xs flex items-center justify-center shrink-0">
+            <img src="/codesprintemblem.png" alt="Code Sprint & Dev Syntax" className="w-9 h-9 object-contain rounded-xl" />
           </div>
           <div>
             <div className="flex items-center gap-2">
