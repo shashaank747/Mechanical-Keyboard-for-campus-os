@@ -58,94 +58,121 @@ export function FallingWordsGame({
   const [lives, setLives] = useState<number>(3);
   const [wave, setWave] = useState<number>(1);
   const [streak, setStreak] = useState<number>(0);
+  const [wordsDestroyed, setWordsDestroyed] = useState<number>(0);
   const [activeWords, setActiveWords] = useState<FallingWord[]>([]);
   const [targetWordId, setTargetWordId] = useState<string | null>(null);
 
   const requestRef = useRef<number | null>(null);
   const lastSpawnRef = useRef<number>(0);
+  const waveRef = useRef<number>(wave);
+  waveRef.current = wave;
+  const scoreRef = useRef<number>(score);
+  scoreRef.current = score;
+  const activeWordsRef = useRef<FallingWord[]>(activeWords);
+  activeWordsRef.current = activeWords;
+  const targetWordIdRef = useRef<string | null>(targetWordId);
+  targetWordIdRef.current = targetWordId;
 
+  // Spawns a word at the top with randomized horizontal position & speed based on wave
   const spawnWord = useCallback(() => {
     const word = WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)];
     const id = `${word}-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-    const xPercent = 12 + Math.random() * 72;
-    const speed = 0.28 + wave * 0.05 + Math.random() * 0.15;
+    // Horizontal random placement bounded to 12% - 78% so words stay cleanly inside the arena
+    const xPercent = 12 + Math.random() * 66;
+    const currentWave = waveRef.current;
+    // Speed in percentage of arena height per second:
+    // Wave 1: ~14-17%/sec (takes ~5-6s to fall)
+    // Wave 2: ~17-20%/sec
+    // Wave 3: ~20-24%/sec, scaling up progressively
+    const speed = 13 + currentWave * 2.8 + Math.random() * 3.5;
     const color = COLORS[Math.floor(Math.random() * COLORS.length)];
 
     setActiveWords((prev) => [
       ...prev,
       { id, word, matchedChars: 0, xPercent, yPercent: 0, speed, color },
     ]);
-  }, [wave]);
+  }, []);
 
   const startGame = () => {
     setScore(0);
     setLives(3);
     setWave(1);
     setStreak(0);
+    setWordsDestroyed(0);
     setActiveWords([]);
     setTargetWordId(null);
     setGameState("playing");
     lastSpawnRef.current = Date.now();
   };
 
-  // Main game loop (tick)
+  // Main 60fps Game Loop
   useEffect(() => {
     if (gameState !== "playing") return;
 
     let lastTime = performance.now();
+    let animId: number;
 
     const loop = (time: number) => {
-      const delta = (time - lastTime) / 1000;
+      // Calculate delta time in seconds, capped to 80ms to avoid jumps
+      const delta = Math.min((time - lastTime) / 1000, 0.08);
       lastTime = time;
 
-      // Spawn timer
-      const spawnInterval = Math.max(1200, 3000 - wave * 250);
-      if (Date.now() - lastSpawnRef.current > spawnInterval && activeWords.length < 5 + wave) {
+      const currentWave = waveRef.current;
+      const spawnInterval = Math.max(1300, 3200 - currentWave * 320);
+      const now = Date.now();
+
+      // Spawn word when timer fires and arena is not overcrowded
+      if (now - lastSpawnRef.current > spawnInterval && activeWordsRef.current.length < 3 + Math.min(4, currentWave)) {
         spawnWord();
-        lastSpawnRef.current = Date.now();
+        lastSpawnRef.current = now;
       }
 
-      // Update falling positions
+      // Smoothly advance falling positions downwards
       setActiveWords((prev) => {
         const nextWords: FallingWord[] = [];
-        let hitBottom = false;
+        let hitCount = 0;
 
         for (const w of prev) {
-          const newY = w.yPercent + w.speed * delta * 15;
-          if (newY >= 88) {
-            hitBottom = true;
+          // Continuous downward position update
+          const newY = w.yPercent + w.speed * delta;
+          if (newY >= 85) {
+            hitCount++;
             soundEngine.playKeySound("Backspace");
           } else {
             nextWords.push({ ...w, yPercent: newY });
           }
         }
 
-        if (hitBottom) {
+        if (hitCount > 0) {
           setLives((l) => {
-            const nextL = l - 1;
+            const nextL = l - hitCount;
             if (nextL <= 0) {
               setGameState("gameover");
               updateStudentProgress({
                 gameType: "meteorDefense",
-                details: { score, wave },
+                details: { score: scoreRef.current, wave: waveRef.current },
               });
             }
             return Math.max(0, nextL);
           });
           setStreak(0);
+          // If targeted word reached perimeter, release lock
+          if (targetWordIdRef.current && !nextWords.some((w) => w.id === targetWordIdRef.current)) {
+            setTargetWordId(null);
+          }
         }
 
         return nextWords;
       });
 
-      requestRef.current = requestAnimationFrame(loop);
+      animId = requestAnimationFrame(loop);
     };
 
-    requestRef.current = requestAnimationFrame(loop);
+    animId = requestAnimationFrame(loop);
     return () => {
-      if (requestRef.current) cancelAnimationFrame(requestRef.current);
+      cancelAnimationFrame(animId);
     };
-  }, [activeWords.length, gameState, spawnWord, wave]);
+  }, [gameState, spawnWord]);
 
   // Update high score
   useEffect(() => {
@@ -159,7 +186,7 @@ export function FallingWordsGame({
       const upperChar = char.toUpperCase();
 
       setActiveWords((prev) => {
-        // If we already have an active targeted word, try matching the next char
+        // If we already have an active targeted word, advance its matched characters
         if (targetWordId) {
           const target = prev.find((w) => w.id === targetWordId);
           if (target) {
@@ -172,10 +199,18 @@ export function FallingWordsGame({
                 setScore((s) => s + target.word.length * 20 * (1 + streak * 0.1));
                 setStreak((st) => st + 1);
                 setTargetWordId(null);
-                if ((score + 100) % 500 === 0) setWave((w) => w + 1);
+                setWordsDestroyed((prevCount) => {
+                  const newCount = prevCount + 1;
+                  // Increase wave level every 4 words destroyed!
+                  if (newCount % 4 === 0) {
+                    setWave((w) => w + 1);
+                    soundEngine.playKeySound("Space");
+                  }
+                  return newCount;
+                });
                 return prev.filter((w) => w.id !== target.id);
               } else {
-                // Char matched
+                // Character matched!
                 soundEngine.playKeySound(upperChar);
                 return prev.map((w) => (w.id === target.id ? { ...w, matchedChars: newMatched } : w));
               }
@@ -187,7 +222,7 @@ export function FallingWordsGame({
           }
         }
 
-        // If no target word yet, find the lowest word matching the typed starting letter
+        // If no target word yet, lock onto the lowest word matching the typed starting letter
         const candidates = prev
           .filter((w) => w.word[0] === upperChar)
           .sort((a, b) => b.yPercent - a.yPercent);
@@ -201,6 +236,7 @@ export function FallingWordsGame({
             setScore((s) => s + 30);
             setStreak((st) => st + 1);
             setTargetWordId(null);
+            setWordsDestroyed((c) => c + 1);
             return prev.filter((w) => w.id !== target.id);
           } else {
             return prev.map((w) =>
@@ -212,7 +248,7 @@ export function FallingWordsGame({
         return prev;
       });
     },
-    [gameState, score, streak, targetWordId]
+    [gameState, streak, targetWordId]
   );
 
   // Global Keydown Listener
@@ -232,7 +268,7 @@ export function FallingWordsGame({
   return (
     <div className="relative z-10 w-full max-w-5xl px-3 sm:px-5 py-3 flex flex-col items-center justify-between gap-3 animate-in fade-in duration-300 select-none">
       {/* Top Header & HUD */}
-      <div className="w-full flex items-center justify-between gap-3 pb-2 border-b border-slate-200/80 dark:border-slate-800">
+      <div className="w-full flex items-center justify-between gap-3 pb-2 border-b border-blue-200">
         <div className="flex items-center gap-2">
           <button
             onClick={onBackToHub}
@@ -284,18 +320,14 @@ export function FallingWordsGame({
 
       {/* METEOR SKY ARENA (FALLING WORDS CONTAINER) */}
       <div
-        className={`relative w-full h-[230px] sm:h-[260px] rounded-3xl border overflow-hidden shadow-2xl backdrop-blur-xl flex flex-col justify-end ${
-          isDark
-            ? "bg-slate-950/90 border-slate-800 shadow-[inset_0_0_40px_rgba(0,0,0,0.8)]"
-            : "bg-slate-100/95 border-slate-300 shadow-inner"
-        }`}
+        className="relative w-full h-[280px] sm:h-[320px] rounded-3xl border-2 border-blue-200 overflow-hidden shadow-lg bg-gradient-to-b from-slate-50 to-blue-50/30 flex flex-col justify-end"
       >
         {/* Star / Meteor Dust Background Grid */}
-        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#f97316_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+        <div className="absolute inset-0 opacity-25 bg-[radial-gradient(#2563eb_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none" />
 
         {/* Defense Barrier Line */}
-        <div className="absolute inset-x-0 bottom-4 h-[2px] bg-gradient-to-r from-transparent via-rose-500/80 to-transparent flex items-center justify-center">
-          <span className="text-[9px] font-mono font-bold tracking-widest text-rose-400 uppercase bg-slate-950/80 px-2 py-0.5 rounded-full border border-rose-500/30">
+        <div className="absolute inset-x-0 bottom-5 h-[2px] bg-gradient-to-r from-transparent via-rose-500 to-transparent flex items-center justify-center">
+          <span className="text-[10px] font-mono font-black tracking-widest text-rose-700 uppercase bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-300 shadow-xs">
             Keyboard Defense Perimeter
           </span>
         </div>
@@ -312,18 +344,16 @@ export function FallingWordsGame({
                 top: `${item.yPercent}%`,
                 transform: "translate(-50%, 0)",
               }}
-              className={`absolute transition-all duration-75 flex flex-col items-center select-none ${
+              className={`absolute flex flex-col items-center select-none pointer-events-none ${
                 isTargeted ? "scale-110 z-20" : "z-10"
               }`}
             >
               <div
                 style={{
-                  borderColor: isTargeted ? "#f97316" : item.color,
-                  boxShadow: isTargeted ? `0 0 20px ${item.color}` : `0 0 10px ${item.color}44`,
+                  borderColor: isTargeted ? "#2563eb" : item.color,
+                  boxShadow: isTargeted ? `0 0 16px ${item.color}` : `0 2px 8px ${item.color}33`,
                 }}
-                className={`px-3 py-1.5 rounded-xl border-2 font-mono font-black text-sm tracking-wider flex items-center gap-0.5 transition-all ${
-                  isDark ? "bg-slate-900/95 text-white" : "bg-white text-slate-900"
-                }`}
+                className="px-3 py-1.5 rounded-xl border-2 font-mono font-black text-sm tracking-wider flex items-center gap-0.5 bg-white text-slate-900 shadow-sm"
               >
                 {item.word.split("").map((c, cIdx) => {
                   const isTyped = cIdx < item.matchedChars;
@@ -332,10 +362,10 @@ export function FallingWordsGame({
                       key={cIdx}
                       className={
                         isTyped
-                          ? "text-emerald-400 underline font-extrabold drop-shadow-[0_0_8px_#10b981]"
+                          ? "text-emerald-600 underline font-extrabold"
                           : isTargeted && cIdx === item.matchedChars
-                          ? "text-blue-400 font-extrabold animate-pulse"
-                          : "opacity-80"
+                          ? "text-blue-600 font-extrabold animate-pulse"
+                          : "text-slate-800"
                       }
                     >
                       {c}
