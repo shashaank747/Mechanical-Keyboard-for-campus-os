@@ -16,6 +16,7 @@ import {
   ShieldAlert,
   Play,
   Crosshair,
+  Timer,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { updateStudentProgress } from "@/lib/db";
@@ -61,6 +62,7 @@ export function FallingWordsGame({
   const [wordsDestroyed, setWordsDestroyed] = useState<number>(0);
   const [activeWords, setActiveWords] = useState<FallingWord[]>([]);
   const [targetWordId, setTargetWordId] = useState<string | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
 
   const requestRef = useRef<number | null>(null);
   const lastSpawnRef = useRef<number>(0);
@@ -72,6 +74,22 @@ export function FallingWordsGame({
   activeWordsRef.current = activeWords;
   const targetWordIdRef = useRef<string | null>(targetWordId);
   targetWordIdRef.current = targetWordId;
+
+  // Format MM:SS for user live countup timer
+  const formatTimer = (secs: number) => {
+    const mins = Math.floor(secs / 60);
+    const remainingSecs = secs % 60;
+    return `${String(mins).padStart(2, "0")}:${String(remainingSecs).padStart(2, "0")}`;
+  };
+
+  // Live Countup Timer Effect
+  useEffect(() => {
+    if (gameState !== "playing") return;
+    const interval = setInterval(() => {
+      setElapsedSeconds((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [gameState]);
 
   // Spawns a word at the top with randomized horizontal position & speed based on wave
   const spawnWord = useCallback(() => {
@@ -101,6 +119,7 @@ export function FallingWordsGame({
     setWordsDestroyed(0);
     setActiveWords([]);
     setTargetWordId(null);
+    setElapsedSeconds(0);
     setGameState("playing");
     lastSpawnRef.current = Date.now();
   };
@@ -291,31 +310,38 @@ export function FallingWordsGame({
           </span>
         </div>
 
-        {/* Lives & Score Counter */}
-        <div className="flex items-center gap-3">
+        {/* Lives, Timer, Wave & Score Counter */}
+        <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+          {/* Live Countup Timer */}
+          <div
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl border border-blue-200 bg-white text-slate-800 text-xs font-mono font-bold shadow-xs"
+            title="Mission Survival Timer"
+          >
+            <Timer className={`w-3.5 h-3.5 text-blue-600 ${gameState === "playing" ? "animate-pulse" : ""}`} />
+            <span>{formatTimer(elapsedSeconds)}</span>
+          </div>
+
           {/* Lives Hearts */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 px-2 py-1 rounded-xl border border-blue-200 bg-white shadow-xs">
             {[1, 2, 3].map((heart) => (
               <Heart
                 key={heart}
-                className={`w-4 h-4 transition-all ${
+                className={`w-3.5 h-3.5 transition-all ${
                   heart <= lives
                     ? "text-rose-500 fill-rose-500 animate-pulse"
-                    : "text-slate-600 opacity-40"
+                    : "text-slate-300 opacity-40"
                 }`}
               />
             ))}
           </div>
 
           {/* Wave */}
-          <span className={`px-2 py-0.5 rounded-lg border text-xs font-bold font-mono ${
-            isDark ? "bg-slate-900 border-slate-800 text-slate-300" : "bg-white border-slate-200 text-slate-700"
-          }`}>
+          <span className="px-2.5 py-1 rounded-xl border border-blue-200 bg-white text-slate-700 text-xs font-bold font-mono shadow-xs">
             Wave {wave}
           </span>
 
           {/* Score */}
-          <span className="px-3 py-0.5 rounded-lg bg-blue-600 text-white font-mono text-xs font-black shadow-xs">
+          <span className="px-3 py-1 rounded-xl bg-blue-600 text-white font-mono text-xs font-black shadow-xs">
             {score} PTS
           </span>
         </div>
@@ -416,7 +442,7 @@ export function FallingWordsGame({
               </span>
               <h3 className="text-2xl font-black text-white">Mission Over</h3>
               <p className="text-xs text-slate-400 mt-0.5">
-                Final Score: <span className="font-mono font-bold text-blue-400">{score} PTS</span> • Wave {wave}
+                Surv Time: <span className="font-mono font-bold text-emerald-400">{formatTimer(elapsedSeconds)}</span> • Final Score: <span className="font-mono font-bold text-blue-400">{score} PTS</span> • Wave {wave}
               </p>
             </div>
             <div className="flex items-center gap-3 mt-2">
