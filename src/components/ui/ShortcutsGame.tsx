@@ -530,6 +530,14 @@ export function ShortcutsGame({
 
   const activeCategory = selectedCategory;
   const activeShortcut = activeCategory ? activeCategory.shortcuts[activeShortcutIndex] : null;
+  const activeItemRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    activeItemRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+    });
+  }, [activeShortcutIndex]);
 
   // Persist mastered shortcuts
   useEffect(() => {
@@ -868,12 +876,12 @@ export function ShortcutsGame({
       </div>
 
       {/* Main Practice Container */}
-      <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         {/* Left Side: Current Target Shortcut & Live Input HUD (7 Cols) */}
-        <div className="lg:col-span-7 flex flex-col gap-4">
+        <div className="lg:col-span-7 flex flex-col">
           {/* Active Shortcut Card with Meaning */}
           {activeShortcut && (
-            <div className="p-6 sm:p-7 rounded-3xl border border-blue-200/90 bg-white shadow-[0_12px_32px_-6px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,1)] flex flex-col gap-4 relative overflow-hidden ring-1 ring-black/[0.03]">
+            <div className="h-full p-6 sm:p-7 rounded-3xl border border-blue-200/90 bg-white shadow-[0_12px_32px_-6px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,1)] flex flex-col justify-between gap-4 relative overflow-hidden ring-1 ring-black/[0.03]">
               {/* Top Accent Gradient Bar */}
               <div
                 className="absolute top-0 left-0 right-0 h-1.5"
@@ -959,9 +967,9 @@ export function ShortcutsGame({
         </div>
 
         {/* Right Side: Interactive Shortcuts Directory in this Category (5 Cols) */}
-        <div className="lg:col-span-5 flex flex-col gap-3">
-          <div className="p-4 sm:p-5 rounded-3xl border border-blue-200 bg-white shadow-sm flex flex-col gap-3 max-h-[460px] overflow-y-auto">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+        <div className="lg:col-span-5 relative flex flex-col min-h-[360px] lg:min-h-0">
+          <div className="lg:absolute lg:inset-0 p-5 sm:p-6 rounded-3xl border border-blue-200/90 bg-white shadow-[0_12px_32px_-6px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,1)] ring-1 ring-black/[0.03] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 shrink-0">
               <span className="text-xs font-black uppercase tracking-wider text-slate-700">
                 Shortcuts in this Dojo ({activeCategory.shortcuts.length})
               </span>
@@ -970,7 +978,7 @@ export function ShortcutsGame({
               </span>
             </div>
 
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 overflow-y-auto pr-1 flex-1 min-h-0 pt-3">
               {activeCategory.shortcuts.map((sc, index) => {
                 const isActive = index === activeShortcutIndex;
                 const isMastered = masteredShortcuts.has(sc.id);
@@ -979,6 +987,7 @@ export function ShortcutsGame({
                 return (
                   <div
                     key={sc.id}
+                    ref={isActive ? activeItemRef : undefined}
                     onClick={() => handleSelectShortcut(index)}
                     className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
                       isJustSuccess
