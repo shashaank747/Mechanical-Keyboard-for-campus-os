@@ -59,6 +59,11 @@ export interface UserRecord {
 
 const LOCAL_STORAGE_KEY = "setu_users_database_v1";
 
+// Check if dev server API or cloud backend is enabled
+const isServerApiEnabled = (): boolean => {
+  return Boolean(import.meta.env.DEV || import.meta.env.VITE_ENABLE_SERVER_API === "true");
+};
+
 export function createDefaultProgress(): StudentProgress {
   return {
     codeSprint: {
@@ -206,18 +211,20 @@ export async function registerUser(params: {
     }
 
     // Try server API fallback if available
-    try {
-      await fetch("/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...payload,
-          themeId: "studio-light",
-          colorZones: false,
-        }),
-      });
-    } catch {
-      // ignore
+    if (isServerApiEnabled()) {
+      try {
+        await fetch("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...payload,
+            themeId: "studio-light",
+            colorZones: false,
+          }),
+        });
+      } catch {
+        // ignore
+      }
     }
 
     const newUser: UserRecord = {
@@ -260,34 +267,36 @@ export async function loginUser(params: {
     const identifier = params.loginIdentifier.trim().toLowerCase();
 
     // 1. Try server API if available
-    try {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          loginIdentifier: params.loginIdentifier.trim(),
-          password: params.password,
-          ipAddress,
-        }),
-      });
+    if (isServerApiEnabled()) {
+      try {
+        const res = await fetch("/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            loginIdentifier: params.loginIdentifier.trim(),
+            password: params.password,
+            ipAddress,
+          }),
+        });
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success && data.user) {
-          const local = getLocalUsers();
-          const idx = local.findIndex((u) => u.userId === data.user.userId);
-          if (idx >= 0) {
-            local[idx] = data.user;
-            saveLocalUsers(local);
-          } else {
-            local.push(data.user);
-            saveLocalUsers(local);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.user) {
+            const local = getLocalUsers();
+            const idx = local.findIndex((u) => u.userId === data.user.userId);
+            if (idx >= 0) {
+              local[idx] = data.user;
+              saveLocalUsers(local);
+            } else {
+              local.push(data.user);
+              saveLocalUsers(local);
+            }
+            return { success: true, user: data.user };
           }
-          return { success: true, user: data.user };
         }
+      } catch {
+        // Offline fallback
       }
-    } catch {
-      // Offline fallback
     }
 
     // 2. Validate in LocalStorage database
@@ -361,21 +370,23 @@ export async function resetPassword(params: {
     let updated = false;
 
     // 1. Update in server API if available
-    try {
-      const res = await fetch("/api/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          loginIdentifier: params.loginIdentifier.trim(),
-          newPassword: params.newPassword,
-        }),
-      });
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success) updated = true;
+    if (isServerApiEnabled()) {
+      try {
+        const res = await fetch("/api/reset-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            loginIdentifier: params.loginIdentifier.trim(),
+            newPassword: params.newPassword,
+          }),
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success) updated = true;
+        }
+      } catch {
+        // ignore
       }
-    } catch {
-      // ignore
     }
 
     // 2. Update in local storage
@@ -435,19 +446,21 @@ export async function updateStudentProgress(params: {
   else if (rawGame.includes("sound") || rawGame.includes("echo")) targetGame = "soundmatrix";
 
   // 1. Post to local dev server API if running
-  try {
-    fetch("/api/progress", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: activeUser,
-        gameId: targetGame,
-        data: payload,
-        timestamp: nowIso,
-      }),
-    }).catch(() => {});
-  } catch {
-    // ignore
+  if (isServerApiEnabled()) {
+    try {
+      fetch("/api/progress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: activeUser,
+          gameId: targetGame,
+          data: payload,
+          timestamp: nowIso,
+        }),
+      }).catch(() => {});
+    } catch {
+      // ignore
+    }
   }
 
   // 2. Update LocalStorage Database
@@ -562,19 +575,21 @@ export async function updateUserTheme(params: {
   const colorZones = Boolean(params.colorZones);
 
   // 1. Send to local dev server API if available
-  try {
-    fetch("/api/theme", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: activeUser,
-        themeId,
-        colorZones,
-        timestamp: nowIso,
-      }),
-    }).catch(() => {});
-  } catch {
-    // ignore
+  if (isServerApiEnabled()) {
+    try {
+      fetch("/api/theme", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: activeUser,
+          themeId,
+          colorZones,
+          timestamp: nowIso,
+        }),
+      }).catch(() => {});
+    } catch {
+      // ignore
+    }
   }
 
   // 2. Update local storage record
