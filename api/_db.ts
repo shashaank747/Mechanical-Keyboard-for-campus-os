@@ -174,30 +174,47 @@ export async function getDb(): Promise<UserRecord[]> {
   // 1. Try Supabase Cloud Database if configured
   if (supabaseClient) {
     try {
-      const { data, error } = await supabaseClient
+      const { data: students, error } = await supabaseClient
         .from('students')
         .select('*');
-      if (!error && Array.isArray(data) && data.length > 0) {
-        inMemoryUsers = data.map((row: any) => ({
-          userId: row.user_id,
-          username: row.username,
-          email: row.email,
-          password: row.password_hash || row.password,
-          ipAddress: row.ip_address || '127.0.0.1',
-          createdAt: row.created_at,
-          lastLoginAt: row.last_login_at,
-          progress: row.progress
-            ? typeof row.progress === 'string'
-              ? JSON.parse(row.progress)
-              : row.progress
-            : getDefaultProgress(),
-          themeId: row.theme_id || 'studio-light',
-          colorZones: Boolean(row.color_zones),
-          preferences: {
+
+      if (!error && Array.isArray(students) && students.length > 0) {
+        // Fetch separate student_progress rows if present
+        let progressMap: Record<string, any> = {};
+        try {
+          const { data: progressRows } = await supabaseClient
+            .from('student_progress')
+            .select('user_id, progress');
+          if (Array.isArray(progressRows)) {
+            for (const p of progressRows) {
+              if (p.user_id) progressMap[p.user_id] = p.progress;
+            }
+          }
+        } catch {
+          // ignore
+        }
+
+        inMemoryUsers = students.map((row: any) => {
+          const prog =
+            row.progress || progressMap[row.user_id] || getDefaultProgress();
+          return {
+            userId: row.user_id,
+            username: row.username,
+            email: row.email,
+            password: row.password_hash || row.password,
+            ipAddress: row.ip_address || '127.0.0.1',
+            createdAt: row.created_at,
+            lastLoginAt: row.last_login_at,
+            progress:
+              typeof prog === 'string' ? JSON.parse(prog) : prog,
             themeId: row.theme_id || 'studio-light',
             colorZones: Boolean(row.color_zones),
-          },
-        }));
+            preferences: {
+              themeId: row.theme_id || 'studio-light',
+              colorZones: Boolean(row.color_zones),
+            },
+          };
+        });
         return inMemoryUsers;
       }
     } catch (e) {
@@ -252,21 +269,41 @@ export async function saveDb(users: UserRecord[]): Promise<void> {
   if (supabaseClient) {
     try {
       for (const u of users) {
-        await supabaseClient.from('students').upsert(
-          {
-            user_id: u.userId,
-            username: u.username,
-            email: u.email,
-            password_hash: u.password,
-            ip_address: u.ipAddress,
-            created_at: u.createdAt,
-            last_login_at: u.lastLoginAt,
-            theme_id: u.themeId || 'studio-light',
-            color_zones: Boolean(u.colorZones),
-            progress: u.progress || getDefaultProgress(),
-          },
-          { onConflict: 'user_id' }
-        );
+        const studentPayload: any = {
+          user_id: u.userId,
+          username: u.username,
+          email: u.email,
+          password_hash: u.password,
+          ip_address: u.ipAddress,
+          created_at: u.createdAt,
+          last_login_at: u.lastLoginAt,
+          theme_id: u.themeId || 'studio-light',
+          color_zones: Boolean(u.colorZones),
+          progress: u.progress || getDefaultProgress(),
+        };
+
+        const { error: studentErr } = await supabaseClient
+          .from('students')
+          .upsert(studentPayload, { onConflict: 'user_id' });
+
+        // If 'progress' column is not on students, upsert without it and write to student_progress
+        if (studentErr && (studentErr.message?.includes('progress') || studentErr.code === 'PGRST204')) {
+          delete studentPayload.progress;
+          await supabaseClient
+            .from('students')
+            .upsert(studentPayload, { onConflict: 'user_id' });
+
+          try {
+            await supabaseClient.from('student_progress').upsert(
+              {
+                user_id: u.userId,
+                progress: u.progress || getDefaultProgress(),
+                updated_at: new Date().toISOString(),
+              },
+              { onConflict: 'user_id' }
+            );
+          } catch {}
+        }
       }
     } catch (e) {
       console.warn('[Supabase Backend Upsert]:', e);
