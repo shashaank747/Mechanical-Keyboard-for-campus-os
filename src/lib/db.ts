@@ -184,10 +184,18 @@ export async function registerUser(params: {
   password: string;
 }): Promise<{ success: boolean; user?: UserRecord; error?: string }> {
   try {
+    const rawEmail = params.email.trim().toLowerCase();
+    if (!rawEmail.endsWith(".com")) {
+      return {
+        success: false,
+        error: "Email address must end with '.com' (e.g. user@gmail.com).",
+      };
+    }
+
     const ipAddress = await fetchClientIp();
     const payload = {
       username: params.username.trim(),
-      email: params.email.trim().toLowerCase(),
+      email: rawEmail,
       password: params.password,
       ipAddress,
     };

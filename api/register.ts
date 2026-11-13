@@ -27,6 +27,10 @@ export default async function handler(req: any, res: any) {
       return sendJson(res, 400, { success: false, error: 'Username and password are required' });
     }
 
+    if (email && !email.endsWith('.com')) {
+      return sendJson(res, 400, { success: false, error: "Email must end with '.com' (e.g. user@gmail.com)" });
+    }
+
     // Check existing
     const existing = users.find(
       (u) =>

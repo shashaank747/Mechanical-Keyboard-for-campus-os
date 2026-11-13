@@ -92,11 +92,17 @@ export function TemporaryLoginCard({
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!loginEmail.trim() || !loginPassword) return;
+    const identifier = loginEmail.trim();
+    if (!identifier || !loginPassword) return;
+
+    if (identifier.includes("@") && !identifier.toLowerCase().endsWith(".com")) {
+      setInternalError("Email address must end with '.com' (e.g. user@gmail.com).");
+      return;
+    }
 
     clearErrors();
     const res = await loginUser({
-      loginIdentifier: loginEmail.trim(),
+      loginIdentifier: identifier,
       password: loginPassword,
     });
 
@@ -112,14 +118,31 @@ export function TemporaryLoginCard({
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!signupName.trim() || !signupPassword) return;
+    if (!signupName.trim() || !signupPassword) {
+      setInternalError("Username and password are required.");
+      return;
+    }
+
+    const rawEmail = signupEmail.trim();
+    if (!rawEmail) {
+      setInternalError("Email address is required.");
+      return;
+    }
+
+    if (!rawEmail.toLowerCase().endsWith(".com")) {
+      setInternalError("Email address must end with '.com' (e.g. user@gmail.com).");
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.com$/i.test(rawEmail)) {
+      setInternalError("Please enter a valid email format ending with '.com' (e.g. user@gmail.com).");
+      return;
+    }
 
     clearErrors();
     const res = await registerUser({
       username: signupName.trim(),
-      email:
-        signupEmail.trim() ||
-        `${signupName.toLowerCase().replace(/\s+/g, "")}@example.com`,
+      email: rawEmail.toLowerCase(),
       password: signupPassword,
     });
 
@@ -138,8 +161,13 @@ export function TemporaryLoginCard({
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!forgotEmail.trim()) {
+    const identifier = forgotEmail.trim();
+    if (!identifier) {
       setInternalError("Please enter your registered username or email.");
+      return;
+    }
+    if (identifier.includes("@") && !identifier.toLowerCase().endsWith(".com")) {
+      setInternalError("Email address must end with '.com' (e.g. user@gmail.com).");
       return;
     }
     if (forgotNewPassword.length < 6) {
@@ -153,7 +181,7 @@ export function TemporaryLoginCard({
 
     clearErrors();
     const res = await resetPassword({
-      loginIdentifier: forgotEmail.trim(),
+      loginIdentifier: identifier,
       newPassword: forgotNewPassword,
     });
 
@@ -410,12 +438,18 @@ export function TemporaryLoginCard({
 
                   {/* Email */}
                   <div className="sm:col-span-3 flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                      Email Address
-                    </label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        Email Address
+                      </label>
+                      <span className="text-[10.5px] font-mono font-bold text-blue-600 lowercase">
+                        must end with .com
+                      </span>
+                    </div>
                     <input
-                      type="text"
-                      placeholder="example@gmail.com (optional)"
+                      type="email"
+                      required
+                      placeholder="student@example.com"
                       value={signupEmail}
                       onChange={(e) => setSignupEmail(e.target.value)}
                       className="w-full px-4 py-3 rounded-2xl border text-sm font-medium outline-none transition-all bg-slate-50 border-blue-200 focus:border-blue-600 text-slate-900"
