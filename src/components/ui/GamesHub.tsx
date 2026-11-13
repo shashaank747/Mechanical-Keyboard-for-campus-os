@@ -334,7 +334,7 @@ export function GamesHub({
   theme?: KeyboardTheme;
   onSelectGame: (gameId: GameId) => void;
   onOpenDashboard?: () => void;
-  onOpenLogin?: () => void;
+  onOpenLogin?: (reason?: string) => void;
   loggedInUser?: string | null;
   onLogout?: () => void;
 }) {
@@ -387,7 +387,18 @@ export function GamesHub({
       ? GAME_GUIDES
       : GAME_GUIDES.filter((g) => g.id === selectedGuideGameId);
 
+  // ==============================================================================
+  // ⚠️ DEVELOPER NOTICE: TEMPORARY GAME ACCESS GATE
+  // (NOT TO BE INCLUDED IN FINAL PRODUCTION RELEASE)
+  // Games cannot be played without login during this temporary test phase.
+  // ==============================================================================
   const handleLaunchGame = (gameId: GameId) => {
+    if (!loggedInUser) {
+      if (onOpenLogin) {
+        onOpenLogin("⚠️ Sign In Required: Please sign in or register to play arcade games (Temporary developer requirement).");
+      }
+      return;
+    }
     setLatestPlayedGameId(gameId);
     setLatestGameId(gameId);
     onSelectGame(gameId);
@@ -400,7 +411,7 @@ export function GamesHub({
         {onOpenLogin && (
           <button
             type="button"
-            onClick={onOpenLogin}
+            onClick={() => onOpenLogin()}
             className="flex items-center gap-2 px-3 py-1.5 sm:py-2 rounded-xl border-2 border-blue-200 bg-white/95 hover:border-blue-500 hover:bg-blue-50/90 text-blue-600 shadow-[0_3px_14px_rgba(37,99,235,0.18)] hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-md font-bold text-xs group"
             title="Open Temporary Login Card"
           >
@@ -448,7 +459,7 @@ export function GamesHub({
         <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 self-stretch sm:self-auto justify-end flex-wrap">
           {onOpenLogin && (
             <button
-              onClick={onOpenLogin}
+              onClick={() => onOpenLogin()}
               className="flex items-center gap-2.5 p-3 sm:p-3.5 rounded-2xl border border-blue-200/90 bg-white hover:border-blue-500 hover:bg-blue-50/50 text-slate-800 shadow-[0_4px_16px_-2px_rgba(15,23,42,0.06),0_2px_6px_-1px_rgba(15,23,42,0.04),inset_0_1px_0_rgba(255,255,255,1)] hover:shadow-[0_10px_24px_-4px_rgba(37,99,235,0.18)] hover:-translate-y-0.5 transition-all cursor-pointer group"
               title={loggedInUser ? `Logged in as @${loggedInUser} (Click to manage/logout)` : "Sign In or Register (Temporary Login Card)"}
             >
@@ -497,6 +508,41 @@ export function GamesHub({
           </div>
         </div>
       </div>
+
+      {/* ============================================================================== */}
+      {/* ⚠️ DEVELOPER NOTICE: TEMPORARY GAME ACCESS BANNER                               */}
+      {/* (NOT TO BE INCLUDED IN FINAL PRODUCTION RELEASE)                              */}
+      {/* ============================================================================== */}
+      {!loggedInUser && (
+        <div className="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-5 py-3.5 rounded-2xl bg-amber-500/10 border-2 border-amber-400/60 text-amber-950 shadow-sm animate-in fade-in duration-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-amber-500 text-white shadow-xs shrink-0">
+              <Lock className="w-4 h-4" />
+            </div>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-black uppercase tracking-wider text-amber-950">
+                  Authentication Required To Play Games
+                </span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 font-mono font-bold uppercase">
+                  Temporary Developer Gate
+                </span>
+              </div>
+              <p className="text-xs text-amber-900/80 font-medium mt-0.5">
+                Games cannot be played without login. Please sign in or create a student account to unlock all 7 arcade modes.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => onOpenLogin?.("⚠️ Sign In Required: Please sign in or register to play arcade games (Temporary developer requirement).")}
+            className="self-stretch sm:self-auto px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-xs hover:shadow-md transition-all cursor-pointer flex items-center justify-center gap-2 shrink-0 active:scale-95"
+          >
+            <LogIn className="w-3.5 h-3.5" />
+            <span>Sign In to Unlock Games</span>
+          </button>
+        </div>
+      )}
 
       {/* Featured Primary Card: DYNAMIC LATEST PLAYED GAME (HERO GAME) */}
       {(() => {
@@ -569,10 +615,23 @@ export function GamesHub({
                   e.stopPropagation();
                   handleLaunchGame(heroGame.id);
                 }}
-                className="w-full md:w-auto px-7 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-black text-xs tracking-wider uppercase flex items-center justify-center gap-2.5 shadow-[0_6px_20px_rgba(37,99,235,0.4),inset_0_1px_0_rgba(255,255,255,0.25)] hover:shadow-[0_10px_26px_rgba(37,99,235,0.5)] group-hover:scale-103 active:scale-97 transition-all cursor-pointer ring-2 ring-blue-400/50"
+                className={`w-full md:w-auto px-7 py-4 rounded-2xl text-white font-black text-xs tracking-wider uppercase flex items-center justify-center gap-2.5 transition-all cursor-pointer ${
+                  !loggedInUser
+                    ? "bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 shadow-[0_6px_20px_rgba(217,119,6,0.35)] ring-2 ring-amber-400/50"
+                    : "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 shadow-[0_6px_20px_rgba(37,99,235,0.4),inset_0_1px_0_rgba(255,255,255,0.25)] hover:shadow-[0_10px_26px_rgba(37,99,235,0.5)] group-hover:scale-103 active:scale-97 ring-2 ring-blue-400/50"
+                }`}
               >
-                <span>{heroGame.buttonText}</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                {!loggedInUser ? (
+                  <>
+                    <Lock className="w-4 h-4" />
+                    <span>Sign In To Play</span>
+                  </>
+                ) : (
+                  <>
+                    <span>{heroGame.buttonText}</span>
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
               </button>
             </div>
           </motion.div>
@@ -666,6 +725,8 @@ export function GamesHub({
                   className={`w-full py-3 px-4 rounded-xl text-xs font-black tracking-wide uppercase flex items-center justify-center gap-2 transition-all duration-200 border ${
                     isLocked
                       ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-90"
+                      : !loggedInUser
+                      ? "bg-amber-50 hover:bg-amber-100 border-amber-300 text-amber-800 shadow-[0_2px_6px_rgba(217,119,6,0.08)] active:translate-y-0.5 cursor-pointer"
                       : "bg-white border-blue-200/90 hover:bg-blue-600 hover:border-blue-600 text-blue-700 hover:text-white shadow-[0_2px_6px_rgba(15,23,42,0.04)] hover:shadow-[0_6px_18px_rgba(37,99,235,0.35)] active:translate-y-0.5 cursor-pointer"
                   }`}
                 >
@@ -673,6 +734,11 @@ export function GamesHub({
                     <>
                       <Lock className="w-3.5 h-3.5 text-amber-500" />
                       <span className="text-amber-600">AVAILABLE SOON</span>
+                    </>
+                  ) : !loggedInUser ? (
+                    <>
+                      <Lock className="w-3.5 h-3.5 text-amber-600" />
+                      <span className="text-amber-800">Sign In to Play</span>
                     </>
                   ) : (
                     <>
@@ -792,10 +858,23 @@ export function GamesHub({
                           setIsHelpModalOpen(false);
                           handleLaunchGame(guide.id);
                         }}
-                        className="self-start sm:self-auto px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer hover:scale-102 active:scale-98 transition-all shrink-0"
+                        className={`self-start sm:self-auto px-3.5 py-1.5 rounded-xl text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer hover:scale-102 active:scale-98 transition-all shrink-0 ${
+                          !loggedInUser
+                            ? "bg-amber-600 hover:bg-amber-500"
+                            : "bg-blue-600 hover:bg-blue-500"
+                        }`}
                       >
-                        <Play className="w-3 h-3 fill-white" />
-                        <span>Launch Game</span>
+                        {!loggedInUser ? (
+                          <>
+                            <Lock className="w-3 h-3 text-white" />
+                            <span>Sign In to Play</span>
+                          </>
+                        ) : (
+                          <>
+                            <Play className="w-3 h-3 fill-white" />
+                            <span>Launch Game</span>
+                          </>
+                        )}
                       </button>
                     </div>
 

@@ -1,18 +1,21 @@
 /**
  * ==============================================================================
- * ⚠️ DEVELOPER NOTICE: TEMPORARY AUTHENTICATION CARD
+ * ⚠️ DEVELOPER NOTICE: TEMPORARY AUTHENTICATION CARD & GAME GATE
  * ==============================================================================
  * STATUS: TEMPORARY / PROTOTYPE ONLY
  *
  * NOTE FOR DEVELOPERS:
- * This component is a temporary developer bridge used to demonstrate student
- * registration, login, and password resetting during current development phases.
+ * This component and its game-play gating are temporary developer bridges used
+ * to demonstrate student registration, login, and telemetry syncing during current development phases.
  *
- * ⚠️ NOT TO BE INCLUDED IN FINAL PRODUCTION RELEASE.
+ * ⚠️ In final production release:
+ *  1. This login card will NOT be present.
+ *  2. Games will be playable freely without mandatory authentication.
  *
  * To remove prior to final production release:
  *  1. Delete this file: src/components/ui/TemporaryLoginCard.tsx
  *  2. Remove its import and usage in src/App.tsx
+ *  3. Remove the temporary login check in GamesHub.tsx and App.tsx
  * ==============================================================================
  */
 
@@ -202,7 +205,7 @@ export function TemporaryLoginCard({
                   Developer Notice:
                 </span>
                 <span>
-                  This login card is temporary for development testing.{" "}
+                  This login card &amp; game gate are temporary for development testing.{" "}
                   <strong>DO NOT include in final production.</strong>
                 </span>
               </div>

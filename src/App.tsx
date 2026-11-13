@@ -43,6 +43,11 @@ export default function KeyboardLandingPage() {
   });
   const [loginWarningMessage, setLoginWarningMessage] = useState<string | null>(null);
 
+  // ⚠️ DEVELOPER NOTICE: TEMPORARY GAME ACCESS GATE STATE
+  // (NOT TO BE INCLUDED IN FINAL PRODUCTION RELEASE)
+  // Keeps track of the game the user clicked before logging in so they can jump straight into it after login.
+  const [pendingGameToLaunch, setPendingGameToLaunch] = useState<AppPage | null>(null);
+
   const [colorZones, setColorZones] = useState<boolean>(false);
   const [testedKeys, setTestedKeys] = useState<Set<string>>(new Set());
   const [lastTriggeredKey, setLastTriggeredKey] = useState<{ key: string; code: string; time: number } | null>(null);
@@ -78,10 +83,42 @@ export default function KeyboardLandingPage() {
     }
   }, [currentPage]);
 
+  // ⚠️ DEVELOPER NOTICE: TEMPORARY GAME ACCESS GUARD
+  // (NOT TO BE INCLUDED IN FINAL PRODUCTION RELEASE)
+  // If user is not logged in and attempts to access any game page,
+  // return them to the games hub and prompt the login card.
+  useEffect(() => {
+    if (!loggedInUser && currentPage !== "start" && currentPage !== "dashboard") {
+      setCurrentPage("start");
+      setLoginWarningMessage("⚠️ Sign In Required: Please sign in or register to play arcade games (Temporary developer requirement).");
+      setIsLoginModalOpen(true);
+    }
+  }, [loggedInUser, currentPage]);
+
+  // Centralized game launcher checking login status
+  const handleLaunchGame = useCallback((gameId: AppPage) => {
+    // ⚠️ DEVELOPER NOTICE: TEMPORARY GAME ACCESS GATE
+    // Games cannot be played without login during this testing phase.
+    if (!loggedInUser) {
+      setPendingGameToLaunch(gameId);
+      setLoginWarningMessage("⚠️ Sign In Required: Please sign in or register to play arcade games (Temporary developer requirement).");
+      setIsLoginModalOpen(true);
+      return;
+    }
+    setLatestPlayedGameId(gameId);
+    setCurrentPage(gameId);
+  }, [loggedInUser]);
+
   // Navigation: Directly opens Arcade & Games
   const handleLaunchArcade = useCallback((targetPage: AppPage = "start") => {
+    if (targetPage !== "start" && targetPage !== "dashboard" && !loggedInUser) {
+      setPendingGameToLaunch(targetPage);
+      setLoginWarningMessage("⚠️ Sign In Required: Please sign in or register to play arcade games (Temporary developer requirement).");
+      setIsLoginModalOpen(true);
+      return;
+    }
     setCurrentPage(targetPage);
-  }, []);
+  }, [loggedInUser]);
 
   // Lock scroll when login modal is open
   useEffect(() => {
@@ -211,7 +248,7 @@ export default function KeyboardLandingPage() {
           theme={currentTheme}
           loggedInUser={loggedInUser}
           onBackToGames={() => setCurrentPage("start")}
-          onPlayGame={(gameId) => setCurrentPage(gameId as AppPage)}
+          onPlayGame={(gameId) => handleLaunchGame(gameId as AppPage)}
           onOpenLogin={() => setIsLoginModalOpen(true)}
         />
       )}
@@ -223,7 +260,12 @@ export default function KeyboardLandingPage() {
         <GamesHub
           theme={currentTheme}
           loggedInUser={loggedInUser}
-          onOpenLogin={() => setIsLoginModalOpen(true)}
+          onOpenLogin={(reason?: string) => {
+            if (reason) {
+              setLoginWarningMessage(reason);
+            }
+            setIsLoginModalOpen(true);
+          }}
           onLogout={() => {
             setLoggedInUser(null);
             if (typeof window !== "undefined") {
@@ -231,8 +273,7 @@ export default function KeyboardLandingPage() {
             }
           }}
           onSelectGame={(gameId) => {
-            setLatestPlayedGameId(gameId);
-            setCurrentPage(gameId as AppPage);
+            handleLaunchGame(gameId as AppPage);
           }}
           onOpenDashboard={() => setCurrentPage("dashboard")}
         />
@@ -425,6 +466,7 @@ export default function KeyboardLandingPage() {
         onClose={() => {
           setIsLoginModalOpen(false);
           setLoginWarningMessage(null);
+          setPendingGameToLaunch(null);
         }}
         onLoginSuccess={(user) => {
           setLoggedInUser(user.username);
@@ -440,6 +482,14 @@ export default function KeyboardLandingPage() {
           }
           setIsLoginModalOpen(false);
           setLoginWarningMessage(null);
+
+          // ⚠️ DEVELOPER NOTICE: If a game was pending launch before login, launch it now!
+          if (pendingGameToLaunch) {
+            const targetGame = pendingGameToLaunch;
+            setPendingGameToLaunch(null);
+            setLatestPlayedGameId(targetGame);
+            setCurrentPage(targetGame);
+          }
         }}
         warningMessage={loginWarningMessage}
         onClearWarning={() => setLoginWarningMessage(null)}
