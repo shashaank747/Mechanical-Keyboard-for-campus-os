@@ -2,8 +2,21 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { createRequire } from 'node:module';
+import { createClient } from '@supabase/supabase-js';
 
 const require = createRequire(import.meta.url);
+
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://gqzrtecgzwxrnteflmrc.supabase.co';
+const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_btcKUvdeuhp_RI3EfTTBeA_xQNxklvS';
+
+let supabaseClient: any = null;
+if (SUPABASE_URL && SUPABASE_KEY) {
+  try {
+    supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+  } catch (err) {
+    console.warn('[Supabase Backend Init]:', err);
+  }
+}
 
 let defaultUsersData: any[] = [];
 try {
@@ -158,7 +171,41 @@ let inMemoryUsers: UserRecord[] = Array.isArray(defaultUsersData)
   : [];
 
 export async function getDb(): Promise<UserRecord[]> {
-  // 1. Try Vercel KV / Upstash Redis if configured
+  // 1. Try Supabase Cloud Database if configured
+  if (supabaseClient) {
+    try {
+      const { data, error } = await supabaseClient
+        .from('students')
+        .select('*');
+      if (!error && Array.isArray(data) && data.length > 0) {
+        inMemoryUsers = data.map((row: any) => ({
+          userId: row.user_id,
+          username: row.username,
+          email: row.email,
+          password: row.password_hash || row.password,
+          ipAddress: row.ip_address || '127.0.0.1',
+          createdAt: row.created_at,
+          lastLoginAt: row.last_login_at,
+          progress: row.progress
+            ? typeof row.progress === 'string'
+              ? JSON.parse(row.progress)
+              : row.progress
+            : getDefaultProgress(),
+          themeId: row.theme_id || 'studio-light',
+          colorZones: Boolean(row.color_zones),
+          preferences: {
+            themeId: row.theme_id || 'studio-light',
+            colorZones: Boolean(row.color_zones),
+          },
+        }));
+        return inMemoryUsers;
+      }
+    } catch (e) {
+      console.warn('[Supabase Backend Read]:', e);
+    }
+  }
+
+  // 2. Try Vercel KV / Upstash Redis if configured
   const kvUrl = process.env.KV_REST_API_URL;
   const kvToken = process.env.KV_REST_API_TOKEN;
   if (kvUrl && kvToken) {
@@ -201,7 +248,32 @@ export async function getDb(): Promise<UserRecord[]> {
 export async function saveDb(users: UserRecord[]): Promise<void> {
   inMemoryUsers = users;
 
-  // 1. Write to /tmp
+  // 1. Sync to Supabase Cloud Database if configured
+  if (supabaseClient) {
+    try {
+      for (const u of users) {
+        await supabaseClient.from('students').upsert(
+          {
+            user_id: u.userId,
+            username: u.username,
+            email: u.email,
+            password_hash: u.password,
+            ip_address: u.ipAddress,
+            created_at: u.createdAt,
+            last_login_at: u.lastLoginAt,
+            theme_id: u.themeId || 'studio-light',
+            color_zones: Boolean(u.colorZones),
+            progress: u.progress || getDefaultProgress(),
+          },
+          { onConflict: 'user_id' }
+        );
+      }
+    } catch (e) {
+      console.warn('[Supabase Backend Upsert]:', e);
+    }
+  }
+
+  // 2. Write to /tmp
   try {
     fs.writeFileSync(TMP_DB_PATH, JSON.stringify(users, null, 2), 'utf-8');
   } catch (err) {
