@@ -1,4 +1,4 @@
-import { getDb, saveDb, parseBody, sendJson } from './_db';
+import { getDb, saveDb, parseBody, sendJson } from './_db.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method === 'OPTIONS') {

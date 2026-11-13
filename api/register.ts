@@ -1,4 +1,4 @@
-import { getDb, saveDb, hashPassword, getDefaultProgress, parseBody, sendJson, type UserRecord } from './_db';
+import { getDb, saveDb, hashPassword, getDefaultProgress, parseBody, sendJson, type UserRecord } from './_db.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method === 'OPTIONS') {

@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import type { IncomingMessage, ServerResponse } from 'node:http';
+import defaultUsersData from '../data/users.json';
 
 export interface StudentProgress {
   codeSprint: {
@@ -142,7 +142,11 @@ export function verifyPassword(password: string, storedHash: string): boolean {
 }
 
 const TMP_DB_PATH = path.join('/tmp', 'users.json');
-const LOCAL_DB_PATH = path.join(process.cwd(), 'data', 'users.json');
+
+// In-memory cache seeded from bundled users data
+let inMemoryUsers: UserRecord[] = Array.isArray(defaultUsersData)
+  ? (defaultUsersData as unknown as UserRecord[])
+  : [];
 
 export async function getDb(): Promise<UserRecord[]> {
   // 1. Try Vercel KV / Upstash Redis if configured
@@ -157,11 +161,14 @@ export async function getDb(): Promise<UserRecord[]> {
         const json = await res.json();
         if (json.result) {
           const parsed = typeof json.result === 'string' ? JSON.parse(json.result) : json.result;
-          if (Array.isArray(parsed)) return parsed;
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            inMemoryUsers = parsed;
+            return inMemoryUsers;
+          }
         }
       }
     } catch (e) {
-      console.warn('[Vercel Backend] KV read fallback:', e);
+      console.warn('[Vercel Backend] KV read error:', e);
     }
   }
 
@@ -170,32 +177,21 @@ export async function getDb(): Promise<UserRecord[]> {
     if (fs.existsSync(TMP_DB_PATH)) {
       const raw = fs.readFileSync(TMP_DB_PATH, 'utf-8');
       const users = JSON.parse(raw);
-      if (Array.isArray(users)) return users;
+      if (Array.isArray(users) && users.length >= inMemoryUsers.length) {
+        inMemoryUsers = users;
+        return inMemoryUsers;
+      }
     }
   } catch (err) {
     console.warn('[Vercel Backend] /tmp read error:', err);
   }
 
-  // 3. Fallback to bundled data/users.json
-  try {
-    if (fs.existsSync(LOCAL_DB_PATH)) {
-      const raw = fs.readFileSync(LOCAL_DB_PATH, 'utf-8');
-      const users = JSON.parse(raw);
-      if (Array.isArray(users)) {
-        try {
-          fs.writeFileSync(TMP_DB_PATH, JSON.stringify(users, null, 2), 'utf-8');
-        } catch {}
-        return users;
-      }
-    }
-  } catch (err) {
-    console.warn('[Vercel Backend] Bundled DB read error:', err);
-  }
-
-  return [];
+  return inMemoryUsers;
 }
 
 export async function saveDb(users: UserRecord[]): Promise<void> {
+  inMemoryUsers = users;
+
   // 1. Write to /tmp
   try {
     fs.writeFileSync(TMP_DB_PATH, JSON.stringify(users, null, 2), 'utf-8');
@@ -205,8 +201,9 @@ export async function saveDb(users: UserRecord[]): Promise<void> {
 
   // 2. Write to project root if writable (local dev)
   try {
-    if (fs.existsSync(path.dirname(LOCAL_DB_PATH))) {
-      fs.writeFileSync(LOCAL_DB_PATH, JSON.stringify(users, null, 2), 'utf-8');
+    const localDbPath = path.join(process.cwd(), 'data', 'users.json');
+    if (fs.existsSync(path.dirname(localDbPath))) {
+      fs.writeFileSync(localDbPath, JSON.stringify(users, null, 2), 'utf-8');
     }
   } catch {
     // Read-only filesystem in Vercel production is expected
