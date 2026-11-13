@@ -24,6 +24,9 @@ import {
   Info,
   Calendar,
   Play,
+  LogIn,
+  User,
+  LogOut,
 } from "lucide-react";
 import { getLatestPlayedGameId, setLatestPlayedGameId } from "@/lib/userStats";
 
@@ -324,10 +327,16 @@ const GAME_GUIDES: GameGuideItem[] = [
 export function GamesHub({
   onSelectGame,
   onOpenDashboard,
+  onOpenLogin,
+  loggedInUser,
+  onLogout,
 }: {
   theme?: KeyboardTheme;
   onSelectGame: (gameId: GameId) => void;
   onOpenDashboard?: () => void;
+  onOpenLogin?: () => void;
+  loggedInUser?: string | null;
+  onLogout?: () => void;
 }) {
   const [latestGameId, setLatestGameId] = React.useState<GameId>(() => {
     return (getLatestPlayedGameId() as GameId) || "codesprint";
@@ -386,17 +395,40 @@ export function GamesHub({
 
   return (
     <div className="relative z-10 w-full max-w-6xl px-4 sm:px-6 py-8 flex flex-col items-center gap-8 animate-in fade-in duration-300">
-      {/* Top-Right Corner Floating "?" Rounded Square Box (Red, Compact) */}
-      <button
-        onClick={() => setIsHelpModalOpen(true)}
-        className="fixed top-3.5 right-3.5 sm:top-5 sm:right-5 z-40 w-8.5 h-8.5 sm:w-9.5 sm:h-9.5 rounded-xl border-2 border-red-200 bg-white/95 hover:border-red-500 hover:bg-red-50/90 text-red-600 shadow-[0_3px_14px_rgba(239,68,68,0.18),0_1px_4px_rgba(239,68,68,0.1)] hover:shadow-[0_6px_20px_rgba(239,68,68,0.32)] hover:scale-108 active:scale-95 transition-all flex items-center justify-center font-black text-sm sm:text-base font-mono cursor-pointer backdrop-blur-md group"
-        title="Game Explanations & How to Play (?)"
-        aria-label="How to Play & Game Directory"
-      >
-        <span className="group-hover:scale-115 transition-transform text-red-600 font-black font-mono">
-          ?
-        </span>
-      </button>
+      {/* Top-Right Corner Floating Controls */}
+      <div className="fixed top-3.5 right-3.5 sm:top-5 sm:right-5 z-40 flex items-center gap-2">
+        {onOpenLogin && (
+          <button
+            type="button"
+            onClick={onOpenLogin}
+            className="flex items-center gap-2 px-3 py-1.5 sm:py-2 rounded-xl border-2 border-blue-200 bg-white/95 hover:border-blue-500 hover:bg-blue-50/90 text-blue-600 shadow-[0_3px_14px_rgba(37,99,235,0.18)] hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-md font-bold text-xs group"
+            title="Open Temporary Login Card"
+          >
+            {loggedInUser ? (
+              <>
+                <User className="w-3.5 h-3.5 text-blue-600" />
+                <span className="max-w-[110px] truncate">@{loggedInUser}</span>
+              </>
+            ) : (
+              <>
+                <LogIn className="w-3.5 h-3.5 text-blue-600 group-hover:translate-x-0.5 transition-transform" />
+                <span>Sign In</span>
+              </>
+            )}
+          </button>
+        )}
+
+        <button
+          onClick={() => setIsHelpModalOpen(true)}
+          className="w-8.5 h-8.5 sm:w-9.5 sm:h-9.5 rounded-xl border-2 border-red-200 bg-white/95 hover:border-red-500 hover:bg-red-50/90 text-red-600 shadow-[0_3px_14px_rgba(239,68,68,0.18),0_1px_4px_rgba(239,68,68,0.1)] hover:shadow-[0_6px_20px_rgba(239,68,68,0.32)] hover:scale-108 active:scale-95 transition-all flex items-center justify-center font-black text-sm sm:text-base font-mono cursor-pointer backdrop-blur-md group"
+          title="Game Explanations & How to Play (?)"
+          aria-label="How to Play & Game Directory"
+        >
+          <span className="group-hover:scale-115 transition-transform text-red-600 font-black font-mono">
+            ?
+          </span>
+        </button>
+      </div>
 
       {/* Arcade Header Banner */}
       <div className="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b pb-6 border-blue-100">
@@ -413,7 +445,27 @@ export function GamesHub({
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 self-stretch sm:self-auto justify-end">
+        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 self-stretch sm:self-auto justify-end flex-wrap">
+          {onOpenLogin && (
+            <button
+              onClick={onOpenLogin}
+              className="flex items-center gap-2.5 p-3 sm:p-3.5 rounded-2xl border border-blue-200/90 bg-white hover:border-blue-500 hover:bg-blue-50/50 text-slate-800 shadow-[0_4px_16px_-2px_rgba(15,23,42,0.06),0_2px_6px_-1px_rgba(15,23,42,0.04),inset_0_1px_0_rgba(255,255,255,1)] hover:shadow-[0_10px_24px_-4px_rgba(37,99,235,0.18)] hover:-translate-y-0.5 transition-all cursor-pointer group"
+              title={loggedInUser ? `Logged in as @${loggedInUser} (Click to manage/logout)` : "Sign In or Register (Temporary Login Card)"}
+            >
+              <div className="p-2 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-[0_2px_8px_rgba(37,99,235,0.3)] group-hover:scale-105 transition-transform">
+                {loggedInUser ? <User className="w-4 h-4" /> : <LogIn className="w-4 h-4" />}
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                  {loggedInUser ? "Student Account" : "Temporary Auth"}
+                </span>
+                <span className="text-xs font-black text-slate-900 group-hover:text-blue-600 transition-colors">
+                  {loggedInUser ? `@${loggedInUser}` : "Sign In / Register"}
+                </span>
+              </div>
+            </button>
+          )}
+
           {onOpenDashboard && (
             <button
               onClick={onOpenDashboard}

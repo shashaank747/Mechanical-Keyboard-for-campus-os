@@ -212,6 +212,7 @@ export default function KeyboardLandingPage() {
           loggedInUser={loggedInUser}
           onBackToGames={() => setCurrentPage("start")}
           onPlayGame={(gameId) => setCurrentPage(gameId as AppPage)}
+          onOpenLogin={() => setIsLoginModalOpen(true)}
         />
       )}
 
@@ -221,6 +222,14 @@ export default function KeyboardLandingPage() {
       {currentPage === "start" && (
         <GamesHub
           theme={currentTheme}
+          loggedInUser={loggedInUser}
+          onOpenLogin={() => setIsLoginModalOpen(true)}
+          onLogout={() => {
+            setLoggedInUser(null);
+            if (typeof window !== "undefined") {
+              localStorage.removeItem("setu_active_user");
+            }
+          }}
           onSelectGame={(gameId) => {
             setLatestPlayedGameId(gameId);
             setCurrentPage(gameId as AppPage);

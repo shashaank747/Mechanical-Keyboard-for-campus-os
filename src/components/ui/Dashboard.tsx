@@ -156,6 +156,7 @@ interface DashboardProps {
   loggedInUser?: string | null;
   onBackToGames: () => void;
   onPlayGame?: (gameId: string) => void;
+  onOpenLogin?: () => void;
 }
 
 export function Dashboard({
@@ -163,6 +164,7 @@ export function Dashboard({
   loggedInUser,
   onBackToGames,
   onPlayGame,
+  onOpenLogin,
 }: DashboardProps) {
   const [stats, setStats] = useState<UserStatsData>(getUserStats());
   const [activeTab, setActiveTab] = useState<"overview" | "history">("overview");
@@ -240,9 +242,20 @@ export function Dashboard({
             </span>
           </div>
 
-          <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
-            {loggedInUser ? `@${loggedInUser}` : "Guest Session"} • Live Analytics
-          </span>
+          {onOpenLogin ? (
+            <button
+              onClick={onOpenLogin}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 hover:border-blue-300 transition-all cursor-pointer shadow-2xs hover:scale-102"
+              title="Click to open login card or switch account"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+              <span>{loggedInUser ? `@${loggedInUser}` : "Sign In / Register"}</span>
+            </button>
+          ) : (
+            <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+              {loggedInUser ? `@${loggedInUser}` : "Guest Session"} • Live Analytics
+            </span>
+          )}
 
           <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
             <Award className="w-3 h-3 text-amber-600" />
