@@ -37,7 +37,6 @@ import {
   Code2,
 } from "lucide-react";
 import confetti from "canvas-confetti";
-import Keyboard from "@/components/ui/keyboard";
 import type { KeyboardTheme } from "@/lib/themes";
 import {
   loginUser,
@@ -52,8 +51,8 @@ export interface TemporaryLoginCardProps {
   onLoginSuccess: (user: UserRecord) => void;
   warningMessage?: string | null;
   onClearWarning?: () => void;
-  currentTheme: KeyboardTheme;
-  colorZones: boolean;
+  currentTheme?: KeyboardTheme;
+  colorZones?: boolean;
   onKeyTriggered?: (key: string, code: string) => void;
 }
 
@@ -204,14 +203,22 @@ export function TemporaryLoginCard({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-between p-2 sm:p-4 bg-slate-950/40 backdrop-blur-xl overflow-hidden">
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              clearErrors();
+              onClose();
+            }
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/60 backdrop-blur-md overflow-y-auto"
+        >
           {/* Main Card Container */}
           <motion.div
-            initial={{ opacity: 0, y: -25, scale: 0.98 }}
+            initial={{ opacity: 0, y: -20, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.98 }}
             transition={{ type: "spring", damping: 25, stiffness: 350 }}
-            className="w-full max-w-5xl p-6 sm:p-8 rounded-3xl border-2 shadow-[0_20px_50px_rgba(37,99,235,0.15)] relative z-20 backdrop-blur-2xl flex flex-col gap-5 bg-white border-blue-200 text-slate-900"
+            className="w-full max-w-xl p-6 sm:p-8 rounded-3xl border-2 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] relative z-20 flex flex-col gap-5 bg-white border-blue-200 text-slate-900 my-auto"
           >
             {/* Close Button */}
             <button
@@ -346,178 +353,170 @@ export function TemporaryLoginCard({
 
             {/* Form by Mode */}
             {authMode === "signin" ? (
-              <form onSubmit={handleSignIn} className="flex flex-col gap-3">
-                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5">
-                  {/* Email Input */}
-                  <div className="sm:col-span-5 flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">
-                      Email or Username
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="example@gmail.com"
-                      value={loginEmail}
-                      onChange={(e) => setLoginEmail(e.target.value)}
-                      className="w-full px-4 py-3 rounded-2xl border text-sm font-medium outline-none transition-all bg-slate-50 border-blue-200 focus:border-blue-600 text-slate-900"
-                    />
-                  </div>
-
-                  {/* Password Input */}
-                  <div className="sm:col-span-4 flex flex-col gap-1.5">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">
-                        Password
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setAuthMode("forgot");
-                          clearErrors();
-                          setForgotSuccessMessage(null);
-                          setForgotEmail(loginEmail);
-                        }}
-                        className="text-[11px] font-bold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer"
-                      >
-                        Forgot Password?
-                      </button>
-                    </div>
-                    <div className="relative">
-                      <input
-                        type={showLoginPassword ? "text" : "password"}
-                        required
-                        placeholder="••••••••"
-                        value={loginPassword}
-                        onChange={(e) => setLoginPassword(e.target.value)}
-                        className="w-full pl-4 pr-11 py-3 rounded-2xl border text-sm font-medium outline-none transition-all bg-slate-50 border-blue-200 focus:border-blue-600 text-slate-900"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowLoginPassword((prev) => !prev)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-blue-600 transition-colors cursor-pointer"
-                        title={showLoginPassword ? "Hide password" : "Show password"}
-                      >
-                        {showLoginPassword ? (
-                          <EyeOff className="w-4 h-4" />
-                        ) : (
-                          <Eye className="w-4 h-4" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Submit Button */}
-                  <div className="sm:col-span-3 flex flex-col justify-end">
-                    <button
-                      type="submit"
-                      className="w-full py-3.5 px-5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs sm:text-sm tracking-wider uppercase shadow-lg shadow-blue-500/25 hover:scale-102 active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-2"
-                    >
-                      <LogIn className="w-4 h-4" />
-                      <span>Sign In & Play</span>
-                    </button>
-                  </div>
+              <form onSubmit={handleSignIn} className="flex flex-col gap-4">
+                {/* Email Input */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Email or Username
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="example@gmail.com or username"
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    className="w-full px-4 py-3 rounded-2xl border text-sm font-medium outline-none transition-all bg-slate-50 border-blue-200 focus:border-blue-600 text-slate-900"
+                  />
                 </div>
-              </form>
-            ) : authMode === "signup" ? (
-              <form onSubmit={handleSignUp} className="flex flex-col gap-4">
-                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5">
-                  {/* Full Name */}
-                  <div className="sm:col-span-4 flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="John Doe"
-                      value={signupName}
-                      onChange={(e) => setSignupName(e.target.value)}
-                      className="w-full px-4 py-3 rounded-2xl border text-sm font-medium outline-none transition-all bg-slate-50 border-blue-200 focus:border-blue-600 text-slate-900"
-                    />
-                  </div>
 
-                  {/* Email */}
-                  <div className="sm:col-span-3 flex flex-col gap-1.5">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                        Email Address
-                      </label>
-                      <span className="text-[10.5px] font-mono font-bold text-blue-600 lowercase">
-                        must end with .com
-                      </span>
-                    </div>
-                    <input
-                      type="email"
-                      required
-                      placeholder="student@example.com"
-                      value={signupEmail}
-                      onChange={(e) => setSignupEmail(e.target.value)}
-                      className="w-full px-4 py-3 rounded-2xl border text-sm font-medium outline-none transition-all bg-slate-50 border-blue-200 focus:border-blue-600 text-slate-900"
-                    />
-                  </div>
-
-                  {/* Password */}
-                  <div className="sm:col-span-2 flex flex-col gap-1.5">
+                {/* Password Input */}
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between">
                     <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
                       Password
                     </label>
-                    <div className="relative">
-                      <input
-                        type={showSignupPassword ? "text" : "password"}
-                        required
-                        placeholder="••••••••"
-                        value={signupPassword}
-                        onChange={(e) => setSignupPassword(e.target.value)}
-                        className="w-full pl-4 pr-11 py-3 rounded-2xl border text-sm font-medium outline-none transition-all bg-slate-50 border-blue-200 focus:border-blue-600 text-slate-900"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowSignupPassword((prev) => !prev)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-blue-600 transition-colors cursor-pointer"
-                        title={showSignupPassword ? "Hide password" : "Show password"}
-                      >
-                        {showSignupPassword ? (
-                          <EyeOff className="w-4 h-4" />
-                        ) : (
-                          <Eye className="w-4 h-4" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Create Button */}
-                  <div className="sm:col-span-3 flex flex-col justify-end">
                     <button
-                      type="submit"
-                      className="w-full py-3.5 px-5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs sm:text-sm tracking-wider uppercase shadow-md shadow-blue-500/20 hover:scale-102 active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-2"
+                      type="button"
+                      onClick={() => {
+                        setAuthMode("forgot");
+                        clearErrors();
+                        setForgotSuccessMessage(null);
+                        setForgotEmail(loginEmail);
+                      }}
+                      className="text-[11px] font-bold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer"
                     >
-                      <UserPlus className="w-4 h-4" />
-                      <span>Create & Play</span>
+                      Forgot Password?
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type={showLoginPassword ? "text" : "password"}
+                      required
+                      placeholder="••••••••"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      className="w-full pl-4 pr-11 py-3 rounded-2xl border text-sm font-medium outline-none transition-all bg-slate-50 border-blue-200 focus:border-blue-600 text-slate-900"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowLoginPassword((prev) => !prev)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-blue-600 transition-colors cursor-pointer"
+                      title={showLoginPassword ? "Hide password" : "Show password"}
+                    >
+                      {showLoginPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
                     </button>
                   </div>
                 </div>
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  className="w-full py-3.5 px-5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-sm tracking-wider uppercase shadow-lg shadow-blue-500/25 hover:scale-[1.01] active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-2 mt-1"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>Sign In & Play</span>
+                </button>
+              </form>
+            ) : authMode === "signup" ? (
+              <form onSubmit={handleSignUp} className="flex flex-col gap-4">
+                {/* Full Name */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Full Name / Username
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="John Doe"
+                    value={signupName}
+                    onChange={(e) => setSignupName(e.target.value)}
+                    className="w-full px-4 py-3 rounded-2xl border text-sm font-medium outline-none transition-all bg-slate-50 border-blue-200 focus:border-blue-600 text-slate-900"
+                  />
+                </div>
+
+                {/* Email */}
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Email Address
+                    </label>
+                    <span className="text-[10.5px] font-mono font-bold text-blue-600 lowercase">
+                      must end with .com
+                    </span>
+                  </div>
+                  <input
+                    type="email"
+                    required
+                    placeholder="student@example.com"
+                    value={signupEmail}
+                    onChange={(e) => setSignupEmail(e.target.value)}
+                    className="w-full px-4 py-3 rounded-2xl border text-sm font-medium outline-none transition-all bg-slate-50 border-blue-200 focus:border-blue-600 text-slate-900"
+                  />
+                </div>
+
+                {/* Password */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showSignupPassword ? "text" : "password"}
+                      required
+                      placeholder="••••••••"
+                      value={signupPassword}
+                      onChange={(e) => setSignupPassword(e.target.value)}
+                      className="w-full pl-4 pr-11 py-3 rounded-2xl border text-sm font-medium outline-none transition-all bg-slate-50 border-blue-200 focus:border-blue-600 text-slate-900"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowSignupPassword((prev) => !prev)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-blue-600 transition-colors cursor-pointer"
+                      title={showSignupPassword ? "Hide password" : "Show password"}
+                    >
+                      {showSignupPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Create Button */}
+                <button
+                  type="submit"
+                  className="w-full py-3.5 px-5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-sm tracking-wider uppercase shadow-md shadow-blue-500/20 hover:scale-[1.01] active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-2 mt-1"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span>Create Account & Play</span>
+                </button>
               </form>
             ) : (
               /* Forgot / Reset Password Form */
               <form onSubmit={handleResetPassword} className="flex flex-col gap-4">
-                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5">
-                  {/* Account Identifier */}
-                  <div className="sm:col-span-4 flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                      Email or Username
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Registered username or email"
-                      value={forgotEmail}
-                      onChange={(e) => setForgotEmail(e.target.value)}
-                      className="w-full px-4 py-3 rounded-2xl border text-sm font-medium outline-none transition-all bg-slate-50 border-blue-200 focus:border-blue-600 text-slate-900"
-                    />
-                  </div>
+                {/* Account Identifier */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Registered Email or Username
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Registered username or email"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    className="w-full px-4 py-3 rounded-2xl border text-sm font-medium outline-none transition-all bg-slate-50 border-blue-200 focus:border-blue-600 text-slate-900"
+                  />
+                </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   {/* New Password */}
-                  <div className="sm:col-span-3 flex flex-col gap-1.5">
+                  <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
                       New Password
                     </label>
@@ -546,9 +545,9 @@ export function TemporaryLoginCard({
                   </div>
 
                   {/* Confirm New Password */}
-                  <div className="sm:col-span-2 flex flex-col gap-1.5">
+                  <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                      Confirm
+                      Confirm Password
                     </label>
                     <input
                       type="password"
@@ -559,20 +558,18 @@ export function TemporaryLoginCard({
                       className="w-full px-4 py-3 rounded-2xl border text-sm font-medium outline-none transition-all bg-slate-50 border-blue-200 focus:border-blue-600 text-slate-900"
                     />
                   </div>
-
-                  {/* Reset Button */}
-                  <div className="sm:col-span-3 flex flex-col justify-end">
-                    <button
-                      type="submit"
-                      className="w-full py-3.5 px-5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs sm:text-sm tracking-wider uppercase shadow-md shadow-blue-500/20 hover:scale-102 active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-2"
-                    >
-                      <KeyRound className="w-4 h-4" />
-                      <span>Update Password</span>
-                    </button>
-                  </div>
                 </div>
 
-                <div className="flex justify-start">
+                {/* Reset Button */}
+                <button
+                  type="submit"
+                  className="w-full py-3.5 px-5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-sm tracking-wider uppercase shadow-md shadow-blue-500/20 hover:scale-[1.01] active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-2 mt-1"
+                >
+                  <KeyRound className="w-4 h-4" />
+                  <span>Update Password & Sign In</span>
+                </button>
+
+                <div className="flex justify-start pt-1">
                   <button
                     type="button"
                     onClick={() => {
@@ -602,31 +599,10 @@ export function TemporaryLoginCard({
                 </span>
                 <span className="flex items-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />
-                  <span>Live 3D Mech Feedback Active</span>
+                  <span>Cloud Telemetry Active</span>
                 </span>
               </div>
-
-              <span className="font-mono text-[11px] text-blue-600 font-bold">
-                Type on keyboard below anytime ↵
-              </span>
             </div>
-          </motion.div>
-
-          {/* Prominent 3D Mechanical Keyboard Displayed Live on Screen while Logging in */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 30 }}
-            transition={{ duration: 0.3 }}
-            className="w-full flex flex-col items-center justify-center p-0 pointer-events-auto"
-          >
-            <Keyboard
-              className="mx-auto scale-90 sm:scale-100"
-              theme={currentTheme}
-              colorZones={colorZones}
-              allowMouseClick={true}
-              onKeyPress={onKeyTriggered}
-            />
           </motion.div>
         </div>
       )}
