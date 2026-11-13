@@ -1,7 +1,16 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import defaultUsersData from '../data/users.json';
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
+
+let defaultUsersData: any[] = [];
+try {
+  defaultUsersData = require('../data/users.json');
+} catch {
+  defaultUsersData = [];
+}
 
 export interface StudentProgress {
   codeSprint: {
