@@ -11,6 +11,7 @@ import { SoundMatrixGame } from "@/components/ui/SoundMatrixGame";
 import { BlindTypingGame } from "@/components/ui/BlindTypingGame";
 import { CodeSprintGame } from "@/components/ui/CodeSprintGame";
 import { ShortcutsGame } from "@/components/ui/ShortcutsGame";
+import { TemporaryLoginCard } from "@/components/ui/TemporaryLoginCard";
 import { KEYBOARD_THEMES, type KeyboardTheme } from "@/lib/themes";
 import { registerUser, loginUser, resetPassword, validateUserExists, updateStudentProgress, updateUserTheme, getUserPreferences, type UserRecord } from "@/lib/db";
 import { recordGamePlay, setLatestPlayedGameId } from "@/lib/userStats";
@@ -34,25 +35,12 @@ export default function KeyboardLandingPage() {
   
   // Authentication & Session
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState<"signin" | "signup" | "forgot">("signin");
-  const [showLoginPassword, setShowLoginPassword] = useState(false);
-  const [showSignupPassword, setShowSignupPassword] = useState(false);
-  const [showForgotNewPassword, setShowForgotNewPassword] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState<string | null>(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("setu_active_user") || null;
     }
     return null;
   });
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-  const [signupName, setSignupName] = useState("");
-  const [signupEmail, setSignupEmail] = useState("");
-  const [signupPassword, setSignupPassword] = useState("");
-  const [forgotEmail, setForgotEmail] = useState("");
-  const [forgotNewPassword, setForgotNewPassword] = useState("");
-  const [forgotConfirmPassword, setForgotConfirmPassword] = useState("");
-  const [forgotSuccessMessage, setForgotSuccessMessage] = useState<string | null>(null);
   const [loginWarningMessage, setLoginWarningMessage] = useState<string | null>(null);
 
   const [colorZones, setColorZones] = useState<boolean>(false);
@@ -420,487 +408,36 @@ export default function KeyboardLandingPage() {
       )}
 
       {/* ============================================================ */}
-      {/* TOP-CENTER WING AUTHENTICATION MODAL WITH LIVE 3D KEYBOARD   */}
+      {/* ⚠️ DEVELOPER NOTICE: TEMPORARY AUTHENTICATION CARD           */}
+      {/* (NOT TO BE INCLUDED IN FINAL PRODUCTION RELEASE)             */}
       {/* ============================================================ */}
-      <AnimatePresence>
-        {isLoginModalOpen && (
-          <div className="fixed inset-0 z-50 flex flex-col items-center justify-between p-2 sm:p-4 bg-slate-950/40 backdrop-blur-xl overflow-hidden">
-            {/* Enriched & Spacious Authentication Wing Card */}
-            <motion.div
-              initial={{ opacity: 0, y: -25, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -20, scale: 0.98 }}
-              transition={{ type: "spring", damping: 25, stiffness: 350 }}
-              className="w-full max-w-5xl p-6 sm:p-8 rounded-3xl border-2 shadow-[0_20px_50px_rgba(37,99,235,0.15)] relative z-20 backdrop-blur-2xl flex flex-col gap-6 bg-white border-blue-200 text-slate-900"
-            >
-              {/* Close Button */}
-              <button
-                onClick={() => {
-                  setIsLoginModalOpen(false);
-                  setLoginWarningMessage(null);
-                }}
-                className="absolute top-4 sm:top-5 right-4 sm:right-5 p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all cursor-pointer z-30"
-                title="Close"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              {/* Warning Alert if triggered without login */}
-              {loginWarningMessage && (
-                <motion.div
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="p-3 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-500 text-xs sm:text-sm font-bold flex items-center justify-between gap-3 shadow-xs"
-                >
-                  <div className="flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 shrink-0 animate-bounce" />
-                    <span>{loginWarningMessage}</span>
-                  </div>
-                  <span className="text-[10px] font-mono opacity-80 uppercase hidden sm:inline">Authentication Required</span>
-                </motion.div>
-              )}
-
-              {/* Top Header Row: Branding & Mode Switcher Tabs */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-blue-100">
-                <div className="flex items-center gap-3.5">
-                  <div className="flex flex-col">
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-lg sm:text-xl font-black tracking-tight text-slate-900">
-                        {authMode === "signin"
-                          ? "Student & Developer Sign In"
-                          : authMode === "signup"
-                          ? "Create SETU Account"
-                          : "Reset Account Password"}
-                      </h2>
-                      <span className="text-[10px] px-2 py-0.5 rounded-md bg-blue-600 text-white font-mono uppercase font-black">
-                        SETU
-                      </span>
-                    </div>
-                    <p className="text-xs sm:text-sm text-slate-600">
-                      {authMode === "signin"
-                        ? "Sign in to unlock the Arcade, save typing metrics, and access all 16 levels"
-                        : authMode === "signup"
-                        ? "Join SETU to track muscle memory streaks, personal best WPM, and leaderboards"
-                        : "Enter your registered email or username to choose a new password"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Mode Switcher Pill */}
-                <div className="flex rounded-2xl p-1 bg-slate-100 border border-blue-200 shrink-0 self-start sm:self-auto">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAuthMode("signin");
-                      setLoginWarningMessage(null);
-                      setForgotSuccessMessage(null);
-                    }}
-                    className={`px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                      authMode === "signin"
-                        ? "bg-blue-600 text-white shadow-xs"
-                        : "text-slate-600 hover:text-slate-900"
-                    }`}
-                  >
-                    Sign In
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAuthMode("signup");
-                      setLoginWarningMessage(null);
-                      setForgotSuccessMessage(null);
-                    }}
-                    className={`px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                      authMode === "signup"
-                        ? "bg-blue-600 text-white shadow-xs"
-                        : "text-slate-600 hover:text-slate-900"
-                    }`}
-                  >
-                    Create Account
-                  </button>
-                </div>
-              </div>
-
-              {/* Forgot Password Success Banner */}
-              {forgotSuccessMessage && (
-                <motion.div
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="p-3 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs sm:text-sm font-bold flex items-center justify-between gap-3 shadow-xs"
-                >
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
-                    <span>{forgotSuccessMessage}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAuthMode("signin");
-                      setForgotSuccessMessage(null);
-                    }}
-                    className="px-3 py-1 bg-emerald-500 text-white text-[11px] font-black rounded-lg hover:bg-emerald-600 transition-all cursor-pointer uppercase shrink-0"
-                  >
-                    Sign In Now
-                  </button>
-                </motion.div>
-              )}
-
-              {/* Forms by Mode */}
-              {authMode === "signin" ? (
-                <form
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-                    if (loginEmail.trim() && loginPassword) {
-                      setLoginWarningMessage(null);
-                      const res = await loginUser({
-                        loginIdentifier: loginEmail,
-                        password: loginPassword,
-                      });
-                      if (res.success && res.user) {
-                        setLoggedInUser(res.user.username);
-                        if (typeof window !== "undefined") {
-                          localStorage.setItem("setu_active_user", res.user.username);
-                        }
-                        if (res.user.themeId) {
-                          const matched = KEYBOARD_THEMES.find((t) => t.id === res.user?.themeId);
-                          if (matched) setCurrentTheme(matched);
-                        }
-                        if (res.user.colorZones !== undefined) {
-                          setColorZones(Boolean(res.user.colorZones));
-                        }
-                        setIsLoginModalOpen(false);
-                        setLoginWarningMessage(null);
-                        setLoginEmail("");
-                        setLoginPassword("");
-                        confetti({ particleCount: 70, spread: 60, origin: { y: 0.5 } });
-                      } else {
-                        setLoginWarningMessage(res.error || "Login failed. Please check your credentials.");
-                      }
-                    }
-                  }}
-                  className="flex flex-col gap-3"
-                >
-                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5">
-                    {/* Email Input */}
-                    <div className="sm:col-span-5 flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Email or Username</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="example@gmail.com"
-                        value={loginEmail}
-                        onChange={(e) => setLoginEmail(e.target.value)}
-                        className="w-full px-4 py-3 rounded-2xl border text-sm font-medium outline-none transition-all bg-slate-50 border-blue-200 focus:border-blue-600 text-slate-900"
-                      />
-                    </div>
-
-                    {/* Password Input */}
-                    <div className="sm:col-span-4 flex flex-col gap-1.5">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Password</label>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setAuthMode("forgot");
-                            setLoginWarningMessage(null);
-                            setForgotSuccessMessage(null);
-                            setForgotEmail(loginEmail);
-                          }}
-                          className="text-[11px] font-bold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer"
-                        >
-                          Forgot Password?
-                        </button>
-                      </div>
-                      <div className="relative">
-                        <input
-                          type={showLoginPassword ? "text" : "password"}
-                          required
-                          placeholder="••••••••"
-                          value={loginPassword}
-                          onChange={(e) => setLoginPassword(e.target.value)}
-                          className="w-full pl-4 pr-11 py-3 rounded-2xl border text-sm font-medium outline-none transition-all bg-slate-50 border-blue-200 focus:border-blue-600 text-slate-900"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowLoginPassword((prev) => !prev)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-blue-600 transition-colors cursor-pointer"
-                          title={showLoginPassword ? "Hide password" : "Show password"}
-                        >
-                          {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Submit Button */}
-                    <div className="sm:col-span-3 flex flex-col justify-end">
-                      <button
-                        type="submit"
-                        className="w-full py-3.5 px-5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs sm:text-sm tracking-wider uppercase shadow-lg shadow-blue-500/25 hover:scale-102 active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-2"
-                      >
-                        <LogIn className="w-4 h-4" />
-                        <span>Sign In & Play</span>
-                      </button>
-                    </div>
-                  </div>
-                </form>
-              ) : authMode === "signup" ? (
-                <form
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-                    if (signupName.trim() && signupPassword) {
-                      setLoginWarningMessage(null);
-                      const res = await registerUser({
-                        username: signupName,
-                        email: signupEmail || `${signupName.toLowerCase().replace(/\s+/g, '')}@example.com`,
-                        password: signupPassword,
-                      });
-                      if (res.success && res.user) {
-                        setLoggedInUser(res.user.username);
-                        if (typeof window !== "undefined") {
-                          localStorage.setItem("setu_active_user", res.user.username);
-                        }
-                        if (res.user.themeId) {
-                          const matched = KEYBOARD_THEMES.find((t) => t.id === res.user?.themeId);
-                          if (matched) setCurrentTheme(matched);
-                        }
-                        if (res.user.colorZones !== undefined) {
-                          setColorZones(Boolean(res.user.colorZones));
-                        }
-                        setIsLoginModalOpen(false);
-                        setLoginWarningMessage(null);
-                        setSignupName("");
-                        setSignupEmail("");
-                        setSignupPassword("");
-                        confetti({ particleCount: 90, spread: 80, origin: { y: 0.5 } });
-                      } else {
-                        setLoginWarningMessage(res.error || "Registration failed. Username/Email may already be registered.");
-                      }
-                    }
-                  }}
-                  className="flex flex-col gap-4"
-                >
-                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5">
-                    {/* Full Name */}
-                    <div className="sm:col-span-4 flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Full Name</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="John Doe"
-                        value={signupName}
-                        onChange={(e) => setSignupName(e.target.value)}
-                        className="w-full px-4 py-3 rounded-2xl border text-sm font-medium outline-none transition-all bg-slate-50 border-blue-200 focus:border-blue-600 text-slate-900"
-                      />
-                    </div>
-
-                    {/* Email */}
-                    <div className="sm:col-span-3 flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Email Address</label>
-                      <input
-                        type="text"
-                        placeholder="example@gmail.com (optional)"
-                        value={signupEmail}
-                        onChange={(e) => setSignupEmail(e.target.value)}
-                        className="w-full px-4 py-3 rounded-2xl border text-sm font-medium outline-none transition-all bg-slate-50 border-blue-200 focus:border-blue-600 text-slate-900"
-                      />
-                    </div>
-
-                    {/* Password */}
-                    <div className="sm:col-span-2 flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Password</label>
-                      <div className="relative">
-                        <input
-                          type={showSignupPassword ? "text" : "password"}
-                          required
-                          placeholder="••••••••"
-                          value={signupPassword}
-                          onChange={(e) => setSignupPassword(e.target.value)}
-                          className="w-full pl-4 pr-11 py-3 rounded-2xl border text-sm font-medium outline-none transition-all bg-slate-50 border-blue-200 focus:border-blue-600 text-slate-900"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowSignupPassword((prev) => !prev)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-blue-600 transition-colors cursor-pointer"
-                          title={showSignupPassword ? "Hide password" : "Show password"}
-                        >
-                          {showSignupPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Create Button */}
-                    <div className="sm:col-span-3 flex flex-col justify-end">
-                      <button
-                        type="submit"
-                        className="w-full py-3.5 px-5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs sm:text-sm tracking-wider uppercase shadow-md shadow-blue-500/20 hover:scale-102 active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-2"
-                      >
-                        <UserPlus className="w-4 h-4" />
-                        <span>Create & Play</span>
-                      </button>
-                    </div>
-                  </div>
-                </form>
-              ) : (
-                /* Forgot / Reset Password Form */
-                <form
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-                    if (!forgotEmail.trim()) {
-                      setLoginWarningMessage("Please enter your registered username or email.");
-                      return;
-                    }
-                    if (forgotNewPassword.length < 6) {
-                      setLoginWarningMessage("New password must be at least 6 characters long.");
-                      return;
-                    }
-                    if (forgotNewPassword !== forgotConfirmPassword) {
-                      setLoginWarningMessage("Passwords do not match. Please retype carefully.");
-                      return;
-                    }
-
-                    setLoginWarningMessage(null);
-                    const res = await resetPassword({
-                      loginIdentifier: forgotEmail.trim(),
-                      newPassword: forgotNewPassword,
-                    });
-
-                    if (res.success) {
-                      setForgotSuccessMessage("Password reset successfully!");
-                      setLoginEmail(forgotEmail.trim());
-                      setLoginPassword("");
-                      setForgotNewPassword("");
-                      setForgotConfirmPassword("");
-                      confetti({ particleCount: 80, spread: 70, origin: { y: 0.5 } });
-                      setTimeout(() => {
-                        setAuthMode("signin");
-                      }, 2200);
-                    } else {
-                      setLoginWarningMessage(res.error || "Failed to reset password. User not found.");
-                    }
-                  }}
-                  className="flex flex-col gap-4"
-                >
-                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5">
-                    {/* Account Identifier */}
-                    <div className="sm:col-span-4 flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Email or Username</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="Registered username or email"
-                        value={forgotEmail}
-                        onChange={(e) => setForgotEmail(e.target.value)}
-                        className="w-full px-4 py-3 rounded-2xl border text-sm font-medium outline-none transition-all bg-slate-50 border-blue-200 focus:border-blue-600 text-slate-900"
-                      />
-                    </div>
-
-                    {/* New Password */}
-                    <div className="sm:col-span-3 flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">New Password</label>
-                      <div className="relative">
-                        <input
-                          type={showForgotNewPassword ? "text" : "password"}
-                          required
-                          placeholder="Min 6 characters"
-                          value={forgotNewPassword}
-                          onChange={(e) => setForgotNewPassword(e.target.value)}
-                          className="w-full pl-4 pr-11 py-3 rounded-2xl border text-sm font-medium outline-none transition-all bg-slate-50 border-blue-200 focus:border-blue-600 text-slate-900"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowForgotNewPassword((prev) => !prev)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-blue-600 transition-colors cursor-pointer"
-                          title={showForgotNewPassword ? "Hide password" : "Show password"}
-                        >
-                          {showForgotNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Confirm New Password */}
-                    <div className="sm:col-span-2 flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Confirm</label>
-                      <input
-                        type="password"
-                        required
-                        placeholder="Retype password"
-                        value={forgotConfirmPassword}
-                        onChange={(e) => setForgotConfirmPassword(e.target.value)}
-                        className="w-full px-4 py-3 rounded-2xl border text-sm font-medium outline-none transition-all bg-slate-50 border-blue-200 focus:border-blue-600 text-slate-900"
-                      />
-                    </div>
-
-                    {/* Reset Button */}
-                    <div className="sm:col-span-3 flex flex-col justify-end">
-                      <button
-                        type="submit"
-                        className="w-full py-3.5 px-5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs sm:text-sm tracking-wider uppercase shadow-md shadow-blue-500/20 hover:scale-102 active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-2"
-                      >
-                        <KeyRound className="w-4 h-4" />
-                        <span>Update Password</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-start">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAuthMode("signin");
-                        setLoginWarningMessage(null);
-                        setForgotSuccessMessage(null);
-                      }}
-                      className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer flex items-center gap-1.5 hover:underline"
-                    >
-                      <ArrowLeft className="w-3.5 h-3.5" />
-                      <span>Back to Sign In</span>
-                    </button>
-                  </div>
-                </form>
-              )}
-
-              {/* Bottom Feature Perks Row */}
-              <div className="pt-4 border-t flex flex-wrap items-center justify-between gap-3 text-xs border-blue-100 text-slate-600">
-                <div className="flex flex-wrap items-center gap-4">
-                  <span className="flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-                    <span>Instant High-Score Sync</span>
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <Gamepad2 className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Unlocks All 7 Arcade Games</span>
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />
-                    <span>Live 3D Mech Feedback Active</span>
-                  </span>
-                </div>
-
-                <span className="font-mono text-[11px] text-blue-600 font-bold">
-                  Type on keyboard below anytime ↵
-                </span>
-              </div>
-            </motion.div>
-
-            {/* Prominent 3D Mechanical Keyboard Displayed Live on Screen while Logging in */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 30 }}
-              transition={{ duration: 0.3 }}
-              className="w-full flex flex-col items-center justify-center p-0 pointer-events-auto"
-            >
-              <Keyboard
-                className="mx-auto scale-90 sm:scale-100"
-                theme={currentTheme}
-                colorZones={colorZones}
-                allowMouseClick={true}
-                onKeyPress={handleKeyTriggered}
-              />
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      <TemporaryLoginCard
+        isOpen={isLoginModalOpen}
+        onClose={() => {
+          setIsLoginModalOpen(false);
+          setLoginWarningMessage(null);
+        }}
+        onLoginSuccess={(user) => {
+          setLoggedInUser(user.username);
+          if (typeof window !== "undefined") {
+            localStorage.setItem("setu_active_user", user.username);
+          }
+          if (user.themeId) {
+            const matched = KEYBOARD_THEMES.find((t) => t.id === user.themeId);
+            if (matched) setCurrentTheme(matched);
+          }
+          if (user.colorZones !== undefined) {
+            setColorZones(Boolean(user.colorZones));
+          }
+          setIsLoginModalOpen(false);
+          setLoginWarningMessage(null);
+        }}
+        warningMessage={loginWarningMessage}
+        onClearWarning={() => setLoginWarningMessage(null)}
+        currentTheme={currentTheme}
+        colorZones={colorZones}
+        onKeyTriggered={handleKeyTriggered}
+      />
     </div>
   );
 }
