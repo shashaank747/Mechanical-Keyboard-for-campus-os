@@ -1,5 +1,6 @@
 // Local-First Student Analytics & User Management Database Engine
 // Operates with 100% client persistence and local offline storage
+import { supabase } from "./supabase";
 
 export interface StudentProgress {
   codeSprint: {
@@ -227,6 +228,24 @@ export async function registerUser(params: {
       }
     }
 
+    // Direct Supabase Cloud Database sync if available
+    if (supabase) {
+      try {
+        await supabase.from("students").insert({
+          user_id: userId,
+          username: payload.username,
+          email: payload.email,
+          password_hash: passwordHash,
+          ip_address: payload.ipAddress,
+          theme_id: "studio-light",
+          color_zones: false,
+          progress: defaultProgress,
+        });
+      } catch (err) {
+        console.warn("[Supabase Client Register Error]:", err);
+      }
+    }
+
     const newUser: UserRecord = {
       userId,
       username: payload.username,
@@ -296,6 +315,57 @@ export async function loginUser(params: {
         }
       } catch {
         // Offline fallback
+      }
+    }
+
+    // 1.5. Direct Supabase Cloud Database login check
+    if (supabase) {
+      try {
+        const { data: supaUsers } = await supabase
+          .from("students")
+          .select("*")
+          .or(`username.ilike.${identifier},email.ilike.${identifier}`);
+
+        if (supaUsers && supaUsers.length > 0) {
+          const u = supaUsers[0];
+          const isValid = await verifyClientPassword(params.password, u.password_hash);
+          if (isValid) {
+            const userRec: UserRecord = {
+              userId: u.user_id,
+              username: u.username,
+              email: u.email,
+              password: u.password_hash,
+              ipAddress: ipAddress,
+              createdAt: u.created_at,
+              lastLoginAt: new Date().toISOString(),
+              progress: u.progress || createDefaultProgress(),
+              themeId: u.theme_id || "studio-light",
+              colorZones: Boolean(u.color_zones),
+              preferences: {
+                themeId: u.theme_id || "studio-light",
+                colorZones: Boolean(u.color_zones),
+                lastUpdated: new Date().toISOString(),
+              },
+            };
+
+            const local = getLocalUsers();
+            const idx = local.findIndex((lu) => lu.userId === userRec.userId);
+            if (idx >= 0) local[idx] = userRec;
+            else local.push(userRec);
+            saveLocalUsers(local);
+
+            // Update last login timestamp in Supabase
+            supabase
+              .from("students")
+              .update({ last_login_at: userRec.lastLoginAt, ip_address: ipAddress })
+              .eq("user_id", u.user_id)
+              .then(() => {});
+
+            return { success: true, user: userRec };
+          }
+        }
+      } catch (e) {
+        console.warn("[Supabase Client Login Error]:", e);
       }
     }
 
@@ -556,6 +626,22 @@ export async function updateStudentProgress(params: {
 
     user.progress.summary.lastActivityTime = nowIso;
     saveLocalUsers(users);
+
+    // Sync to Supabase Cloud Database if available
+    if (supabase) {
+      try {
+        supabase
+          .from("students")
+          .update({
+            progress: user.progress,
+            last_login_at: nowIso,
+          })
+          .ilike("username", activeUser)
+          .then(() => {});
+      } catch {
+        // ignore
+      }
+    }
   }
 }
 
@@ -609,6 +695,22 @@ export async function updateUserTheme(params: {
       lastUpdated: nowIso,
     };
     saveLocalUsers(users);
+
+    // Sync to Supabase Cloud Database if available
+    if (supabase) {
+      try {
+        supabase
+          .from("students")
+          .update({
+            theme_id: themeId,
+            color_zones: colorZones,
+          })
+          .ilike("username", activeUser)
+          .then(() => {});
+      } catch {
+        // ignore
+      }
+    }
   }
 
   // Cache user theme locally for instant warm boot
