@@ -59,9 +59,9 @@ export interface UserRecord {
 
 const LOCAL_STORAGE_KEY = "setu_users_database_v1";
 
-// Check if dev server API or cloud backend is enabled
+// Check if server API is enabled (available in local dev and on Vercel via /api/* serverless functions)
 const isServerApiEnabled = (): boolean => {
-  return Boolean(import.meta.env.DEV || import.meta.env.VITE_ENABLE_SERVER_API === "true");
+  return typeof window !== "undefined";
 };
 
 export function createDefaultProgress(): StudentProgress {
