@@ -237,6 +237,16 @@ export async function registerUser(params: {
           color_zones: false,
           progress: defaultProgress,
         });
+
+        // Initialize student_progress entry for live tracking
+        await supabase.from("student_progress").upsert(
+          {
+            user_id: userId,
+            progress: defaultProgress,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id" }
+        );
       } catch (err) {
         console.warn("[Supabase Client Register Error]:", err);
       }
@@ -323,6 +333,18 @@ export async function loginUser(params: {
           const u = supaUsers[0];
           const isValid = await verifyClientPassword(params.password, u.password_hash);
           if (isValid) {
+            // Check student_progress for latest telemetry progress if present
+            try {
+              const { data: progRow } = await supabase
+                .from("student_progress")
+                .select("progress")
+                .eq("user_id", u.user_id)
+                .maybeSingle();
+              if (progRow && progRow.progress && Object.keys(progRow.progress).length > 0) {
+                u.progress = progRow.progress;
+              }
+            } catch {}
+
             const userRec: UserRecord = {
               userId: u.user_id,
               username: u.username,
@@ -346,11 +368,23 @@ export async function loginUser(params: {
             else local.push(userRec);
             saveLocalUsers(local);
 
-            // Update last login timestamp in Supabase
+            // Update last login timestamp in Supabase & ensure student_progress row exists
             supabase
               .from("students")
               .update({ last_login_at: userRec.lastLoginAt })
               .eq("user_id", u.user_id)
+              .then(() => {});
+
+            supabase
+              .from("student_progress")
+              .upsert(
+                {
+                  user_id: u.user_id,
+                  progress: userRec.progress,
+                  updated_at: userRec.lastLoginAt,
+                },
+                { onConflict: "user_id" }
+              )
               .then(() => {});
 
             return { success: true, user: userRec };
@@ -414,9 +448,43 @@ export async function validateUserExists(username: string): Promise<boolean> {
   if (!username) return false;
   const target = username.trim().toLowerCase();
   const users = getLocalUsers();
-  return users.some(
-    (u) => u.username.toLowerCase() === target || u.email.toLowerCase() === target
+  const found = users.some(
+    (u) =>
+      u.username.toLowerCase() === target ||
+      u.email.toLowerCase() === target ||
+      u.userId.toLowerCase() === target
   );
+  if (found) return true;
+
+  if (supabase) {
+    try {
+      const { data: supaUsers } = await supabase
+        .from("students")
+        .select("*")
+        .or(`username.ilike.${target},email.ilike.${target},user_id.eq.${target}`);
+      if (supaUsers && supaUsers.length > 0) {
+        const su = supaUsers[0];
+        const userRec: UserRecord = {
+          userId: su.user_id,
+          username: su.username,
+          email: su.email,
+          password: su.password_hash,
+          createdAt: su.created_at,
+          lastLoginAt: su.last_login_at,
+          progress: su.progress || createDefaultProgress(),
+          themeId: su.theme_id || "studio-light",
+          colorZones: Boolean(su.color_zones),
+        };
+        users.push(userRec);
+        saveLocalUsers(users);
+        return true;
+      }
+    } catch {
+      // offline fallback
+    }
+  }
+
+  return false;
 }
 
 // RESET PASSWORD
@@ -489,7 +557,9 @@ export async function updateStudentProgress(params: {
 }): Promise<void> {
   const activeUser =
     params.username ||
-    (typeof window !== "undefined" ? localStorage.getItem("setu_active_user") : null);
+    (typeof window !== "undefined"
+      ? localStorage.getItem("setu_active_user") || localStorage.getItem("setu_active_user_id")
+      : null);
   if (!activeUser) return;
 
   const rawGame = (params.gameId || params.gameType || "codesprint").toLowerCase();
@@ -506,7 +576,7 @@ export async function updateStudentProgress(params: {
   else if (rawGame.includes("shortcut")) targetGame = "shortcuts";
   else if (rawGame.includes("sound") || rawGame.includes("echo")) targetGame = "soundmatrix";
 
-  // 1. Post to local dev server API if running
+  // 1. Post to local dev server / serverless API if running
   if (isServerApiEnabled()) {
     try {
       fetch("/api/progress", {
@@ -515,7 +585,9 @@ export async function updateStudentProgress(params: {
         body: JSON.stringify({
           username: activeUser,
           gameId: targetGame,
+          gameType: targetGame,
           data: payload,
+          details: payload,
           timestamp: nowIso,
         }),
       }).catch(() => {});
@@ -526,11 +598,39 @@ export async function updateStudentProgress(params: {
 
   // 2. Update LocalStorage Database
   const users = getLocalUsers();
-  const user = users.find(
+  let user = users.find(
     (u) =>
       u.username.toLowerCase() === activeUser.toLowerCase() ||
-      u.email.toLowerCase() === activeUser.toLowerCase()
+      u.email.toLowerCase() === activeUser.toLowerCase() ||
+      u.userId.toLowerCase() === activeUser.toLowerCase()
   );
+
+  // If user not yet in local storage cache, fetch from Supabase
+  if (!user && supabase) {
+    try {
+      const { data: supaUsers } = await supabase
+        .from("students")
+        .select("*")
+        .or(`username.ilike.${activeUser},email.ilike.${activeUser},user_id.eq.${activeUser}`);
+      if (supaUsers && supaUsers.length > 0) {
+        const su = supaUsers[0];
+        user = {
+          userId: su.user_id,
+          username: su.username,
+          email: su.email,
+          password: su.password_hash,
+          createdAt: su.created_at,
+          lastLoginAt: nowIso,
+          progress: su.progress || createDefaultProgress(),
+          themeId: su.theme_id || "studio-light",
+          colorZones: Boolean(su.color_zones),
+        };
+        users.push(user);
+      }
+    } catch (e) {
+      console.warn("[updateStudentProgress Supabase recovery]:", e);
+    }
+  }
 
   if (user) {
     if (!user.progress) {
@@ -539,12 +639,13 @@ export async function updateStudentProgress(params: {
 
     switch (targetGame) {
       case "codesprint": {
-        const levelId = (payload.levelId as string) || "general";
+        const levelId = (payload.levelId as string) || (payload.level as string) || "general";
         const wpm = Number(payload.wpm) || 0;
         const timeSecs = Number(payload.timeSecs) || 0;
-        const language = (payload.language as string) || "python";
+        const language = (payload.language as string) || (payload.lang as string) || "python";
 
-        user.progress.codeSprint.completedLevels[levelId] = {
+        const key = `${language}_${levelId}`;
+        user.progress.codeSprint.completedLevels[key] = {
           completedAt: nowIso,
           wpm,
           timeSecs,
@@ -556,18 +657,18 @@ export async function updateStudentProgress(params: {
           user.progress.codeSprint.languagesPracticed.push(language);
         }
         user.progress.codeSprint.bestWpm = Math.max(user.progress.codeSprint.bestWpm, wpm);
-        user.progress.summary.lastActiveGame = "Code Sprint & Dev Syntax";
+        user.progress.summary.lastActiveGame = `Code Sprint (${language.toUpperCase()} Lvl ${levelId})`;
         break;
       }
       case "academy": {
-        const level = Number(payload.level) || 1;
+        const level = Number(payload.level || payload.levelId) || 1;
         const accuracy = Number(payload.accuracy) || 0;
         if (!user.progress.academy.completedLevels.includes(level)) {
           user.progress.academy.completedLevels.push(level);
         }
         user.progress.academy.highestLevel = Math.max(user.progress.academy.highestLevel, level);
-        user.progress.academy.avgAccuracy = accuracy;
-        user.progress.summary.lastActiveGame = "Touch Typing Academy";
+        if (accuracy > 0) user.progress.academy.avgAccuracy = accuracy;
+        user.progress.summary.lastActiveGame = `Touch Typing Academy (Lvl ${level})`;
         break;
       }
       case "speedtest": {
@@ -576,7 +677,7 @@ export async function updateStudentProgress(params: {
         user.progress.speedTest.testsTaken += 1;
         user.progress.speedTest.bestWpm = Math.max(user.progress.speedTest.bestWpm, wpm);
         user.progress.speedTest.avgAccuracy = accuracy;
-        user.progress.summary.lastActiveGame = "Speed Typing Arena";
+        user.progress.summary.lastActiveGame = `Speed Arena (${wpm} WPM)`;
         break;
       }
       case "fallingwords": {
@@ -584,24 +685,28 @@ export async function updateStudentProgress(params: {
         const wave = Number(payload.wave) || 1;
         user.progress.meteorDefense.highScore = Math.max(user.progress.meteorDefense.highScore, score);
         user.progress.meteorDefense.highestWave = Math.max(user.progress.meteorDefense.highestWave, wave);
-        user.progress.summary.lastActiveGame = "Key Meteor Defense";
+        user.progress.summary.lastActiveGame = `Key Meteor Defense (Wave ${wave})`;
         break;
       }
       case "blindtyping": {
         const lines = Number(payload.lines) || 1;
         const accuracy = Number(payload.accuracy) || 0;
         user.progress.blindTyping.completedLines += lines;
-        user.progress.blindTyping.accuracy = accuracy;
-        user.progress.summary.lastActiveGame = "Blind Typing Dojo";
+        if (accuracy > 0) user.progress.blindTyping.accuracy = accuracy;
+        user.progress.summary.lastActiveGame = `Blind Typing Dojo (${user.progress.blindTyping.completedLines} lines)`;
         break;
       }
       case "shortcuts": {
-        const mastered = Number(payload.shortcutsMastered) || 1;
+        const mastered = Number(payload.shortcutsMastered || payload.count || payload.mastered) || 1;
         user.progress.shortcutsDojo.shortcutsMastered = Math.max(
           user.progress.shortcutsDojo.shortcutsMastered,
           mastered
         );
-        user.progress.summary.lastActiveGame = "Keyboard Shortcuts Dojo";
+        user.progress.summary.lastActiveGame = `Shortcuts Dojo (${user.progress.shortcutsDojo.shortcutsMastered} mastered)`;
+        break;
+      }
+      case "soundmatrix": {
+        user.progress.summary.lastActiveGame = "Echo Matrix Voice";
         break;
       }
     }
@@ -610,7 +715,9 @@ export async function updateStudentProgress(params: {
       user.progress.codeSprint.totalSolved +
       user.progress.academy.completedLevels.length +
       user.progress.speedTest.testsTaken +
-      (user.progress.meteorDefense.highestWave > 0 ? 1 : 0);
+      (user.progress.meteorDefense.highestWave > 0 ? 1 : 0) +
+      (user.progress.blindTyping.completedLines > 0 ? 1 : 0) +
+      (user.progress.shortcutsDojo.shortcutsMastered > 0 ? 1 : 0);
 
     user.progress.summary.totalLevelsMastered =
       user.progress.codeSprint.totalSolved + user.progress.academy.completedLevels.length;
@@ -618,19 +725,37 @@ export async function updateStudentProgress(params: {
     user.progress.summary.lastActivityTime = nowIso;
     saveLocalUsers(users);
 
-    // Sync to Supabase Cloud Database if available
+    // LIVE SYNC DIRECTLY TO SUPABASE CLOUD DATABASE
     if (supabase) {
       try {
+        // 1. Update students table
         supabase
           .from("students")
           .update({
             progress: user.progress,
             last_login_at: nowIso,
           })
-          .ilike("username", activeUser)
-          .then(() => {});
-      } catch {
-        // ignore
+          .eq("user_id", user.userId)
+          .then(({ error }) => {
+            if (error) console.warn("[Supabase students live update error]:", error);
+          });
+
+        // 2. Realtime upsert into student_progress table
+        supabase
+          .from("student_progress")
+          .upsert(
+            {
+              user_id: user.userId,
+              progress: user.progress,
+              updated_at: nowIso,
+            },
+            { onConflict: "user_id" }
+          )
+          .then(({ error }) => {
+            if (error) console.warn("[Supabase student_progress live upsert error]:", error);
+          });
+      } catch (err) {
+        console.warn("[Supabase live sync exception]:", err);
       }
     }
   }

@@ -196,7 +196,7 @@ export async function getDb(): Promise<UserRecord[]> {
 
         inMemoryUsers = students.map((row: any) => {
           const prog =
-            row.progress || progressMap[row.user_id] || getDefaultProgress();
+            progressMap[row.user_id] || row.progress || getDefaultProgress();
           return {
             userId: row.user_id,
             username: row.username,
@@ -282,27 +282,30 @@ export async function saveDb(users: UserRecord[]): Promise<void> {
           progress: u.progress || getDefaultProgress(),
         };
 
+        // 1. Upsert into students table
         const { error: studentErr } = await supabaseClient
           .from('students')
           .upsert(studentPayload, { onConflict: 'user_id' });
 
-        // If 'progress' column is not on students, upsert without it and write to student_progress
-        if (studentErr && (studentErr.message?.includes('progress') || studentErr.code === 'PGRST204')) {
-          delete studentPayload.progress;
-          await supabaseClient
-            .from('students')
-            .upsert(studentPayload, { onConflict: 'user_id' });
+        if (studentErr) {
+          console.warn('[Supabase students upsert warning]:', studentErr);
+        }
 
-          try {
-            await supabaseClient.from('student_progress').upsert(
-              {
-                user_id: u.userId,
-                progress: u.progress || getDefaultProgress(),
-                updated_at: new Date().toISOString(),
-              },
-              { onConflict: 'user_id' }
-            );
-          } catch {}
+        // 2. Realtime upsert into student_progress table
+        try {
+          const { error: progErr } = await supabaseClient.from('student_progress').upsert(
+            {
+              user_id: u.userId,
+              progress: u.progress || getDefaultProgress(),
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'user_id' }
+          );
+          if (progErr) {
+            console.warn('[Supabase student_progress upsert warning]:', progErr);
+          }
+        } catch (progEx) {
+          console.warn('[Supabase student_progress exception]:', progEx);
         }
       }
     } catch (e) {

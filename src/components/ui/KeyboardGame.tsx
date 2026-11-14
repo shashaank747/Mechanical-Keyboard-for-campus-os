@@ -1013,6 +1013,7 @@ export function KeyboardGame({
       gameType: "academy",
       details: {
         levelId: activeLevel.id,
+        level: activeLevel.id,
         accuracy: finalAccuracy,
         maxStreak: finalMaxStreak,
       },

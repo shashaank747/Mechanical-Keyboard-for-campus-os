@@ -27,6 +27,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import { recordShortcutCommandPracticed } from "@/lib/userStats";
+import { updateStudentProgress } from "@/lib/db";
 
 export interface ShortcutItem {
   id: string;
@@ -622,8 +623,21 @@ export function ShortcutsGame({
   }, [activeCategory, activeShortcut]);
 
   const triggerSuccess = (shortcut: ShortcutItem) => {
-    setMasteredShortcuts((prev) => new Set(prev).add(shortcut.id));
+    const nextMastered = new Set(masteredShortcuts).add(shortcut.id);
+    setMasteredShortcuts(nextMastered);
     setLastSuccessId(shortcut.id);
+
+    // Update database & table analytics
+    try {
+      updateStudentProgress({
+        gameType: "shortcuts",
+        details: {
+          shortcutsMastered: nextMastered.size,
+          shortcutId: shortcut.id,
+          title: shortcut.title,
+        },
+      });
+    } catch {}
 
     // Award +0.25 XP for practicing this shortcut command
     try {

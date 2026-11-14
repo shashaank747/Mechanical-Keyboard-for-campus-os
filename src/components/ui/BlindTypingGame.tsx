@@ -382,11 +382,17 @@ export function BlindTypingGame({
 
             updateStudentProgress({
               gameType: "blindTyping",
-              details: { lines: 1 },
+              details: { lines: 1, errors: 0, accuracy: 100 },
             });
           } else {
             const newFailCount = lineFailCount + 1;
             setLineFailCount(newFailCount);
+
+            const calculatedAcc = Math.max(0, Math.round(((currentPhrase.length - errors) / (currentPhrase.length || 1)) * 100));
+            updateStudentProgress({
+              gameType: "blindTyping",
+              details: { lines: 0, errors, accuracy: calculatedAcc },
+            });
 
             if (errors <= 2) {
               setValidationState("minor_errors");

@@ -25,6 +25,7 @@ import {
   Award,
 } from "lucide-react";
 import confetti from "canvas-confetti";
+import { updateStudentProgress } from "@/lib/db";
 
 export type DictationMode = "spell" | "words";
 
@@ -372,6 +373,15 @@ export function SoundMatrixGame({
         setIsPlaying(false);
         isPlayingRef.current = false;
         setShowCompleteModal(true);
+        try {
+          updateStudentProgress({
+            gameType: "soundmatrix",
+            details: {
+              text: targetText,
+              maxStreak,
+            },
+          });
+        } catch {}
         try {
           confetti({
             particleCount: 90,

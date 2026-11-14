@@ -165,7 +165,7 @@
   </div>
 
   <script>
-    const USERS_DATA = [
+    let USERS_DATA = [
   {
     "userId": "USR-UMDZTBXW",
     "username": "Chhotu Monster",
@@ -537,8 +537,64 @@
       });
     }
 
-    // Initial render
+    // Live telemetry sync from Supabase and Serverless API
+    async function fetchLiveStudents() {
+      try {
+        const res = await fetch('/api/users');
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && Array.isArray(json.users) && json.users.length > 0) {
+            USERS_DATA = json.users;
+            renderTable();
+            return;
+          }
+        }
+      } catch (e) {}
+
+      try {
+        const supaRes = await fetch('https://gqzrtecgzwxrnteflmrc.supabase.co/rest/v1/students?select=*', {
+          headers: {
+            'apikey': 'sb_publishable_btcKUvdeuhp_RI3EfTTBeA_xQNxklvS',
+            'Authorization': 'Bearer sb_publishable_btcKUvdeuhp_RI3EfTTBeA_xQNxklvS'
+          }
+        });
+        if (supaRes.ok) {
+          const students = await supaRes.json();
+          let progMap = {};
+          try {
+            const progRes = await fetch('https://gqzrtecgzwxrnteflmrc.supabase.co/rest/v1/student_progress?select=*', {
+              headers: {
+                'apikey': 'sb_publishable_btcKUvdeuhp_RI3EfTTBeA_xQNxklvS',
+                'Authorization': 'Bearer sb_publishable_btcKUvdeuhp_RI3EfTTBeA_xQNxklvS'
+              }
+            });
+            if (progRes.ok) {
+              const progs = await progRes.json();
+              progs.forEach(p => { if (p.user_id) progMap[p.user_id] = p.progress; });
+            }
+          } catch {}
+
+          if (Array.isArray(students) && students.length > 0) {
+            USERS_DATA = students.map(s => ({
+              userId: s.user_id,
+              username: s.username,
+              email: s.email,
+              createdAt: s.created_at,
+              lastLoginAt: s.last_login_at,
+              progress: progMap[s.user_id] || s.progress || {},
+            }));
+            renderTable();
+          }
+        }
+      } catch (err) {
+        console.warn('Live fetch error:', err);
+      }
+    }
+
+    // Initial render & live sync
     renderTable();
+    fetchLiveStudents();
+    setInterval(fetchLiveStudents, 15000); // Live poll every 15s
   </script>
 </body>
 </html>

@@ -270,6 +270,7 @@ export default function KeyboardLandingPage() {
             setLoggedInUser(null);
             if (typeof window !== "undefined") {
               localStorage.removeItem("setu_active_user");
+              localStorage.removeItem("setu_active_user_id");
             }
           }}
           onSelectGame={(gameId) => {
@@ -472,6 +473,7 @@ export default function KeyboardLandingPage() {
           setLoggedInUser(user.username);
           if (typeof window !== "undefined") {
             localStorage.setItem("setu_active_user", user.username);
+            localStorage.setItem("setu_active_user_id", user.userId);
           }
           if (user.themeId) {
             const matched = KEYBOARD_THEMES.find((t) => t.id === user.themeId);
