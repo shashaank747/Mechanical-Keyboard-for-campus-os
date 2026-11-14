@@ -66,7 +66,7 @@ export interface UserRecord {
   username: string;
   email: string;
   password: string;
-  ipAddress: string;
+  ipAddress?: string;
   createdAt: string;
   lastLoginAt: string;
   progress?: StudentProgress;
@@ -202,7 +202,7 @@ export async function getDb(): Promise<UserRecord[]> {
             username: row.username,
             email: row.email,
             password: row.password_hash || row.password,
-            ipAddress: row.ip_address || '127.0.0.1',
+            ipAddress: row.ip_address || undefined,
             createdAt: row.created_at,
             lastLoginAt: row.last_login_at,
             progress:
@@ -274,7 +274,7 @@ export async function saveDb(users: UserRecord[]): Promise<void> {
           username: u.username,
           email: u.email,
           password_hash: u.password,
-          ip_address: u.ipAddress,
+          ip_address: null,
           created_at: u.createdAt,
           last_login_at: u.lastLoginAt,
           theme_id: u.themeId || 'studio-light',

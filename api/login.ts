@@ -15,12 +15,6 @@ export default async function handler(req: any, res: any) {
     const identifier = (data.loginIdentifier || '').trim().toLowerCase();
     const password = data.password || '';
 
-    const remoteIp =
-      (req.headers['x-forwarded-for'] as string)?.split(',')[0].trim() ||
-      req.socket?.remoteAddress ||
-      data.ipAddress ||
-      '127.0.0.1';
-
     const user = users.find(
       (u) =>
         u.email.toLowerCase() === identifier ||
@@ -40,8 +34,7 @@ export default async function handler(req: any, res: any) {
       user.password = hashPassword(password);
     }
 
-    // Update IP and last login timestamp
-    user.ipAddress = data.ipAddress || remoteIp;
+    // Update last login timestamp
     user.lastLoginAt = new Date().toISOString();
     if (!user.progress) {
       user.progress = getDefaultProgress();

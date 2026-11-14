@@ -17,12 +17,6 @@ export default async function handler(req: any, res: any) {
     const email = (data.email || '').trim().toLowerCase();
     const password = data.password || '';
 
-    const remoteIp =
-      (req.headers['x-forwarded-for'] as string)?.split(',')[0].trim() ||
-      req.socket?.remoteAddress ||
-      data.ipAddress ||
-      '127.0.0.1';
-
     if (!username || !password) {
       return sendJson(res, 400, { success: false, error: 'Username and password are required' });
     }
@@ -55,7 +49,6 @@ export default async function handler(req: any, res: any) {
       username,
       email: email || `${username}@example.com`,
       password: hashPassword(password),
-      ipAddress: data.ipAddress || remoteIp,
       createdAt: new Date().toISOString(),
       lastLoginAt: new Date().toISOString(),
       progress: getDefaultProgress(),

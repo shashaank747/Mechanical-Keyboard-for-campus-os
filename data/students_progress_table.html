@@ -369,7 +369,7 @@
           user.username.toLowerCase().includes(search) ||
           user.userId.toLowerCase().includes(search) ||
           user.email.toLowerCase().includes(search) ||
-          user.ipAddress.toLowerCase().includes(search)
+          Boolean(user.ipAddress && user.ipAddress.toLowerCase().includes(search))
         );
       });
 
@@ -443,7 +443,7 @@
             <div style="font-size: 11px; color: #10b981; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; background: rgba(16, 185, 129, 0.1); padding: 1px 6px; border-radius: 4px; margin-top: 2px;">
               <span>🔒</span> <span>Encrypted (SHA-512)</span>
             </div>
-            <div class="user-ip" style="margin-top: 2px;">IP: ${u.ipAddress}</div>
+            ${u.ipAddress ? `<div class="user-ip" style="margin-top: 2px;">IP: ${u.ipAddress}</div>` : ''}
           </td>
           <td>
             <div style="font-weight: 700; color: #38bdf8; font-size: 14px;">${totalLevels} Levels</div>

@@ -49,7 +49,7 @@ export interface UserRecord {
   username: string;
   email: string;
   password: string;
-  ipAddress: string;
+  ipAddress?: string;
   createdAt: string;
   lastLoginAt: string;
   progress: StudentProgress;
@@ -103,18 +103,9 @@ export function createDefaultProgress(): StudentProgress {
   };
 }
 
-// Helper to get client IP address from IP service
+// Deprecated: IP address tracking removed per privacy requirements
 export async function fetchClientIp(): Promise<string> {
-  try {
-    const res = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.ip) return data.ip;
-    }
-  } catch {
-    // Fallback if offline or blocked
-  }
-  return "127.0.0.1 (Local Client)";
+  return "";
 }
 
 // SHA-256 Client-side Password Encryption Engine
@@ -192,12 +183,10 @@ export async function registerUser(params: {
       };
     }
 
-    const ipAddress = await fetchClientIp();
     const payload = {
       username: params.username.trim(),
       email: rawEmail,
       password: params.password,
-      ipAddress,
     };
 
     const passwordHash = await hashClientPassword(payload.password);
@@ -244,7 +233,6 @@ export async function registerUser(params: {
           username: payload.username,
           email: payload.email,
           password_hash: passwordHash,
-          ip_address: payload.ipAddress,
           theme_id: "studio-light",
           color_zones: false,
           progress: defaultProgress,
@@ -259,7 +247,6 @@ export async function registerUser(params: {
       username: payload.username,
       email: payload.email,
       password: passwordHash,
-      ipAddress: payload.ipAddress,
       createdAt: new Date().toISOString(),
       lastLoginAt: new Date().toISOString(),
       progress: defaultProgress,
@@ -290,7 +277,6 @@ export async function loginUser(params: {
   password: string;
 }): Promise<{ success: boolean; user?: UserRecord; error?: string }> {
   try {
-    const ipAddress = await fetchClientIp();
     const identifier = params.loginIdentifier.trim().toLowerCase();
 
     // 1. Try server API if available
@@ -302,7 +288,6 @@ export async function loginUser(params: {
           body: JSON.stringify({
             loginIdentifier: params.loginIdentifier.trim(),
             password: params.password,
-            ipAddress,
           }),
         });
 
@@ -343,7 +328,6 @@ export async function loginUser(params: {
               username: u.username,
               email: u.email,
               password: u.password_hash,
-              ipAddress: ipAddress,
               createdAt: u.created_at,
               lastLoginAt: new Date().toISOString(),
               progress: u.progress || createDefaultProgress(),
@@ -365,7 +349,7 @@ export async function loginUser(params: {
             // Update last login timestamp in Supabase
             supabase
               .from("students")
-              .update({ last_login_at: userRec.lastLoginAt, ip_address: ipAddress })
+              .update({ last_login_at: userRec.lastLoginAt })
               .eq("user_id", u.user_id)
               .then(() => {});
 
@@ -412,8 +396,7 @@ export async function loginUser(params: {
       user.colorZones = user.preferences?.colorZones || false;
     }
 
-    // Update IP & login time
-    user.ipAddress = ipAddress;
+    // Update login time
     user.lastLoginAt = new Date().toISOString();
     saveLocalUsers(users);
 
